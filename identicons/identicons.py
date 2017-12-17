@@ -1,83 +1,153 @@
 import tornado.ioloop
 import tornado.web
 import tornado.gen
-from concurrent.futures import ThreadPoolExecutor
 import sys
+import motor.motor_tornado
+import pydenticon
+import hashlib
+import concurrent.futures
+import bson.binary
 
-def generate_identicon(name, size_x, size_y, output_format):
-    import pydenticon
-    import hashlib
-    foreground = [ "rgb(45,79,255)",
-                "rgb(254,180,44)",
-                "rgb(226,121,234)",
-                "rgb(30,179,253)",
-                "rgb(232,77,65)",
-                "rgb(49,203,115)",
-                "rgb(141,69,170)" ]
 
-    background = "rgb(224,224,224)"
-
+def generate_identicon(identicon, foreground, background):
     # Instantiate a generator that will create 5x5 block identicons using SHA1
-    # digest.
-    generator = pydenticon.Generator(5, 5, digest=hashlib.sha1,
-                                    foreground=foreground, background=background)
+    generator = pydenticon.Generator(identicon["rows"],
+                                     identicon["columns"],
+                                     digest=hashlib.sha1,
+                                     foreground=foreground,
+                                     background=background)
 
-    # Generate same identicon in three different formats.
-    image = generator.generate(name, size_x, size_y,
-                                    output_format=output_format)
+    image = generator.generate(identicon["name"],
+                               identicon["width"],
+                               identicon["height"],
+                               output_format=identicon["format"])
     return image
 
 
 class IdenticonHandler(tornado.web.RequestHandler):
-    __FORMATS = ["gif", "png"]
-    __DEFAULT_FORMAT = "png"
-    __DEFAUT_SIZE = 200
-    executor = ThreadPoolExecutor(max_workers=2)
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
+
+    def initialize(self, config):
+        self.config = config
+
+    def create_identicon(self, name, width, height, img_format):
+        return dict(
+            name=name,
+            width=width,
+            height=height,
+            format=img_format,
+            rows=self.config.BLOCK_SIZE,
+            columns=self.config.BLOCK_SIZE,
+        )
+
+    def get_storage(self):
+        db = self.settings["db"]
+        identicons = db.identicons
+        return identicons
+
+    @tornado.gen.coroutine
+    def save_identicon(self, identicon):
+        storage = self.get_storage()
+        identicon["data"] = bson.binary.Binary(identicon["data"])
+        yield storage.insert_one(identicon)
+
+    def create_identicon_from_query(self, name):
+        img_format = self.get_query_argument(
+            "format", self.config.DEFAULT_FORMAT)
+        if img_format not in self.config.FORMATS:
+            raise tornado.web.HTTPError(
+                log_message="Unsupported output format")
+
+        width_str = self.get_query_argument("width", self.config.DEFAUT_SIZE)
+        height_str = self.get_query_argument("height", self.config.DEFAUT_SIZE)
+        try:
+            width = int(width_str)
+            height = int(height_str)
+        except ValueError:
+            raise tornado.web.HTTPError(
+                log_message="Invalid type for size attribute")
+
+        # size validation
+        if width > config.MAX_SIZE or height > self.config.MAX_SIZE:
+            raise tornado.web.HTTPError(
+                log_message="Requested size is too big")
+
+        if width < config.MIN_SIZE or height < self.config.MIN_SIZE:
+            raise tornado.web.HTTPError(
+                log_message="Requested size is too small")
+
+        identicon = self.create_identicon(
+            name, width, height, img_format)
+        return identicon
+
+    @tornado.gen.coroutine
+    def create_identicon_image(self, identicon):
+        image = yield self.executor.submit(generate_identicon,
+                                           identicon,
+                                           self.config.FOREGROUND,
+                                           self.config.BACKGROUND)
+
+        identicon["data"] = image
+        raise tornado.gen.Return(identicon)
+
+    @tornado.gen.coroutine
+    def load_identicon(self, identicon):
+        """
+        :param identicon: dictionary containing all  necessary query data
+        """
+        storage = self.get_storage()
+        count = yield storage.find().count()
+        print ">>> IDENTICONS IN STORAGE %d" % count
+        # yield storage.find_one(identicon)
+        first= yield storage.find_one()
+        print "LOAD", identicon
+        print "FIRST", first
+        # cached = yield storage.find_one(dict(
+        #     name=identicon["name"],
+        # ))
+        cached = yield storage.find_one(identicon)
+        # print "CACHED", cached
+        raise tornado.gen.Return(cached)
+        # yield storage.find_one(dict(name=identicon["name"]))
 
     @tornado.gen.coroutine
     def get(self, name):
-        out_format = self.get_query_argument("format", self.__DEFAULT_FORMAT)
-        size_x = self.get_query_argument("size_x", self.__DEFAUT_SIZE)
-        size_y = self.get_query_argument("size_y", self.__DEFAUT_SIZE)
-        try:
-            size_x = int(size_x)
-            size_y = int(size_y)
-        except ValueError:
-            raise tornado.web.HTTPError(log_message="Invalid type for size attribute")
-        if out_format not in self.__FORMATS:
-            raise tornado.web.HTTPError(log_message="Unsupported output format")
-            
+        # input data
+        identicon_query = self.create_identicon_from_query(name)
+        cached_identicon = yield self.load_identicon(identicon_query)
+        identicon = None
+        if cached_identicon is None:
+            print "GENERATE NEW"
+            identicon = yield self.create_identicon_image(identicon_query)
+        else:
+            print "LOAD CACHED"
+            identicon = cached_identicon
 
-        image = yield self.executor.submit(generate_identicon, name, size_x, size_y, out_format)
-        # image = generate_identicon(name, size_x, size_y, out_format)
+        self.write(identicon["data"])
+        # self.set_status(200)
+        self.set_header("Content-Type", "image/%s" % identicon["format"])
+        self.set_header("Content-Length", len(identicon["data"]))
+        self.finish()
 
-        self.write(image)
-        self.set_status(200)
-        self.set_header("Content-Type", "image/%s" % out_format)
-        self.set_header("Content-Length", len(image))
+        if cached_identicon is None:
+            yield self.save_identicon(identicon)
 
-def print_help():
-    print "Usage: python identicons.py PORT"
 
-def main():
-    if len(sys.argv) != 2:
-        print_help()
-        return
+def main(config):
+    client = motor.motor_tornado.MotorClient(config.MONGODB_HOST)
+    # client.drop_database("identicons")
+    db = client.identicons
 
-    try:
-        port = int(sys.argv[1])
-    except:
-        print_help()
-        return
-        
     app = tornado.web.Application([
-        (r"/gen/(.*)", IdenticonHandler),
+        (r"/gen/(.*)", IdenticonHandler, dict(config=config)),
     ],
-    debug=True)
+        debug=config.DEBUG,
+        db=db)
 
-    app.listen(port)
+    app.listen(config.TORNADO_PORT)
     tornado.ioloop.IOLoop.current().start()
-    
+
 
 if __name__ == "__main__":
-    main()
+    import config
+    main(config)
