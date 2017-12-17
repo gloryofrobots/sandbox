@@ -1,9 +1,10 @@
 import tornado.ioloop
 import tornado.web
-from StringIO import StringIO
+import tornado.gen
+from concurrent.futures import ThreadPoolExecutor
+import sys
 
 def generate_identicon(name, size_x, size_y, output_format):
-    
     import pydenticon
     import hashlib
     foreground = [ "rgb(45,79,255)",
@@ -27,44 +28,54 @@ def generate_identicon(name, size_x, size_y, output_format):
     return image
 
 
-
 class IdenticonHandler(tornado.web.RequestHandler):
+    __FORMATS = ["gif", "png"]
+    __DEFAULT_FORMAT = "png"
+    __DEFAUT_SIZE = 200
+    executor = ThreadPoolExecutor(max_workers=2)
+
+    @tornado.gen.coroutine
     def get(self, name):
-        out_format = self.get_query_argument("format", "png")
-        size_x = self.get_query_argument("size_y", 200)
-        size_y = self.get_query_argument("size_x", 200)
+        out_format = self.get_query_argument("format", self.__DEFAULT_FORMAT)
+        size_x = self.get_query_argument("size_x", self.__DEFAUT_SIZE)
+        size_y = self.get_query_argument("size_y", self.__DEFAUT_SIZE)
         try:
             size_x = int(size_x)
             size_y = int(size_y)
         except ValueError:
             raise tornado.web.HTTPError(log_message="Invalid type for size attribute")
+        if out_format not in self.__FORMATS:
+            raise tornado.web.HTTPError(log_message="Unsupported output format")
+            
 
-        image = generate_identicon(name, 200, 200, "png")
+        image = yield self.executor.submit(generate_identicon, name, size_x, size_y, out_format)
+        # image = generate_identicon(name, size_x, size_y, out_format)
 
-        # strobj = StringIO()
-        # strobj.write(image)
-        # self.write(strobj.getvalue())
-        self.write(str(image))
-        # for line in strobj.getvalue():
-        #     self.write(line)
-
-        # self.write(image)
+        self.write(image)
         self.set_status(200)
-        self.set_header("Content-Type", "image/png")
+        self.set_header("Content-Type", "image/%s" % out_format)
         self.set_header("Content-Length", len(image))
-        # self.set_header("Content-Type", "text/css")
-        self.finish()
-        print self._headers
-        # self.write("Hello, world !! %s" % name)
 
+def print_help():
+    print "Usage: python identicons.py PORT"
 
 def main():
+    if len(sys.argv) != 2:
+        print_help()
+        return
+
+    try:
+        port = int(sys.argv[1])
+    except:
+        print_help()
+        return
+        
     app = tornado.web.Application([
         (r"/gen/(.*)", IdenticonHandler),
     ],
     debug=True)
 
-    app.listen(8888)
+    app.listen(port)
     tornado.ioloop.IOLoop.current().start()
     
 
