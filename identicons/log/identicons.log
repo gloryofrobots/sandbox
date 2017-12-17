@@ -1,0 +1,39 @@
+[I 171217 21:56:14 identicons:138] load cached image for name
+[I 171217 21:56:14 web:2063] 200 GET /gen/name?width=512&height=256&format=png (::1) 5.62ms
+[I 171217 22:04:50 identicons:138] load cached image for name
+[I 171217 22:04:50 web:2063] 304 GET /gen/name?width=512&height=256&format=png (::1) 2.69ms
+[I 171217 22:05:06 identicons:138] load cached image for name
+[I 171217 22:05:06 web:2063] 304 GET /gen/name?width=512&height=256&format=png (::1) 2.31ms
+[I 171217 22:06:17 identicons:138] load cached image for name
+[I 171217 22:06:17 web:2063] 304 GET /gen/name?width=512&height=256&format=png (::1) 2.62ms
+[I 171217 22:06:31 identicons:135] generate new image for plumbus
+[I 171217 22:06:31 web:2063] 200 GET /gen/plumbus?width=512&height=256&format=png (::1) 37.92ms
+[I 171217 22:06:37 identicons:135] generate new image for plumbus
+[I 171217 22:06:37 web:2063] 200 GET /gen/plumbus?with=512&height=256&format=png (::1) 8.87ms
+[I 171217 22:07:01 identicons:135] generate new image for plumbus
+[I 171217 22:07:01 web:2063] 200 GET /gen/plumbus?width=512&height=512&format=png (::1) 31.36ms
+[I 171217 22:07:12 autoreload:198] identicons.py modified; restarting server
+[I 171217 22:07:15 identicons:138] load cached image for plumbus
+[E 171217 22:07:15 web:1590] Uncaught exception GET /gen/plumbus?width=512&height=512&format=png (::1)
+    HTTPServerRequest(protocol='http', host='localhost:8888', method='GET', uri='/gen/plumbus?width=512&height=512&format=png', version='HTTP/1.1', remote_ip='::1', headers={'Accept-Language': 'en-US,en;q=0.9', 'Accept-Encoding': 'gzip, deflate, br', 'Host': 'localhost:8888', 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8', 'User-Agent': 'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/62.0.3202.94 Chrome/62.0.3202.94 Safari/537.36', 'Connection': 'keep-alive', 'Cache-Control': 'max-age=0', 'If-None-Match': '"1e77167d44fa363e25d43ac16216403916cf63cc"', 'Upgrade-Insecure-Requests': '1'})
+    Traceback (most recent call last):
+      File "/home/gloryofrobots/develop/sandbox/.venv/local/lib/python2.7/site-packages/tornado/web.py", line 1511, in _execute
+        result = yield result
+      File "/home/gloryofrobots/develop/sandbox/.venv/local/lib/python2.7/site-packages/tornado/gen.py", line 1055, in run
+        value = future.result()
+      File "/home/gloryofrobots/develop/sandbox/.venv/local/lib/python2.7/site-packages/tornado/concurrent.py", line 238, in result
+        raise_exc_info(self._exc_info)
+      File "/home/gloryofrobots/develop/sandbox/.venv/local/lib/python2.7/site-packages/tornado/gen.py", line 1069, in run
+        yielded = self.gen.send(value)
+      File "identicons.py", line 143, in get
+        self.x()
+    AttributeError: 'IdenticonHandler' object has no attribute 'x'
+[E 171217 22:07:15 web:2063] 500 GET /gen/plumbus?width=512&height=512&format=png (::1) 7.92ms
+[I 171217 22:07:22 autoreload:198] identicons.py modified; restarting server
+[I 171217 22:07:28 identicons:138] load cached image for plumbus
+[I 171217 22:07:28 web:2063] 200 GET /gen/plumbus?width=512&height=512&format=png (::1) 5.63ms
+[I 171217 22:07:57 autoreload:198] identicons.py modified; restarting server
+[I 171217 22:08:09 identicons:138] load cached image for plumbus
+[I 171217 22:08:09 web:2063] 304 GET /gen/plumbus?width=512&height=512&format=png (::1) 5.31ms
+[I 171217 22:08:10 identicons:138] load cached image for plumbus
+[I 171217 22:08:10 web:2063] 304 GET /gen/plumbus?width=512&height=512&format=png (::1) 2.47ms

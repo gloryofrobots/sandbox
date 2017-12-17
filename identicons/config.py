@@ -8,6 +8,7 @@ DEFAULT_FORMAT = "png"
 DEFAUT_SIZE = 200
 MAX_SIZE = 512
 MIN_SIZE = 32
+LOG_FILE = "log/identicons.log"
 
 BLOCK_SIZE = 5
 FOREGROUND = [ "rgb(45,79,255)",
