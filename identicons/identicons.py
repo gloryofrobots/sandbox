@@ -35,8 +35,7 @@ class IdenticonHandler(tornado.web.RequestHandler):
 
     def create_identicon_meta(self, name, width, height, img_format):
         """
-        returns identicon dictionary
-        "data" field with actual image data must be added later
+        returns identicon dictionary for cache queries
         """
         return dict(
             name=name,
@@ -62,7 +61,7 @@ class IdenticonHandler(tornado.web.RequestHandler):
 
     def create_query(self, name):
         """
-        gathers data from GET query and packs it to dict which itself maps to db structure
+        gathers data from GET and packs it to dict which itself maps to db structure
         """
         img_format = self.get_query_argument(
             "format", self.config.DEFAULT_FORMAT)
@@ -95,6 +94,9 @@ class IdenticonHandler(tornado.web.RequestHandler):
 
     @tornado.gen.coroutine
     def create_identicon_image(self, identicon):
+        """
+        uses thread to perform blocking python code
+        """
         image = yield self.executor.submit(generate_identicon,
                                            identicon,
                                            self.config.FOREGROUND,
@@ -109,20 +111,14 @@ class IdenticonHandler(tornado.web.RequestHandler):
         :return cached identicon dict with image data from database
         """
         storage = self.get_storage()
-        # count = yield storage.find().count()
-        # print ">>> IDENTICONS IN STORAGE %d" % count
-        # yield storage.find_one(identicon)
-        # first= yield storage.find_one()
-        # print "LOAD", query
-        # print "FIRST", first
-        # cached = yield storage.find_one(dict(
-        #     name=identicon["name"],
-        # ))
+        if self.config.DEBUG:
+            count = yield storage.find().count()
+            logging.debug("Identicons in storate %d" % count)
+
         cached = yield storage.find_one(query)
         if cached is not None:
             image = cached["data"]
             raise tornado.gen.Return(image)
-        # yield storage.find_one(dict(name=identicon["name"]))
 
     @tornado.gen.coroutine
     def get(self, name):
@@ -132,10 +128,10 @@ class IdenticonHandler(tornado.web.RequestHandler):
 
         if cached_image is None:
             image = yield self.create_identicon_image(query)
-            logging.info("generate new image for %s" % name)
+            logging.debug("generate new image for %s %dx%d (%s)" % (name,query["width"], query["height"], query["format"]))
         else:
             image = cached_image
-            logging.info("load cached image for %s" % name)
+            logging.debug("load cached image for %s %dx%d (%s)" % (name,query["width"], query["height"], query["format"]))
 
         self.write(image)
         self.set_header("Content-Type", "image/%s" % query["format"])
@@ -150,6 +146,9 @@ class IdenticonHandler(tornado.web.RequestHandler):
 
 def main(config):
     # initialize file logging
+    if config.DEBUG:
+        tornado.options.options['logging'] = "debug"
+
     if config.LOG_FILE is not None:
         tornado.options.options['log_file_prefix'] = config.LOG_FILE
         tornado.options.parse_command_line()
