@@ -5,6 +5,7 @@ import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField';
 import axios from 'axios';
 import Login from './Login';
+import {withRouter, Redirect} from 'react-router-dom';
 
 class Register extends Component {
     constructor(props){
@@ -13,48 +14,63 @@ class Register extends Component {
         first_name:'',
         last_name:'',
         email:'',
-        password:''
+        password:'',
+        registered:false
         };
     }
     render() {
-        return (
-        <div>
-            <MuiThemeProvider>
-            <div>
-            <AppBar
-                title="Register"
-            />
-            <TextField
-                hintText="Enter your First Name"
-                floatingLabelText="First Name"
-                onChange = {(event,newValue) => this.setState({first_name:newValue})}
-                />
-            <br/>
-            <TextField
-                hintText="Enter your Last Name"
-                floatingLabelText="Last Name"
-                onChange = {(event,newValue) => this.setState({last_name:newValue})}
-                />
-            <br/>
-            <TextField
-                hintText="Enter your Email"
-                type="email"
-                floatingLabelText="Email"
-                onChange = {(event,newValue) => this.setState({email:newValue})}
-                />
-            <br/>
-            <TextField
-                type = "password"
-                hintText="Enter your Password"
-                floatingLabelText="Password"
-                onChange = {(event,newValue) => this.setState({password:newValue})}
-                />
-            <br/>
-            <RaisedButton label="Submit" primary={true} style={style} onClick={(event) => this.handleClick(event)}/>
-            </div>
-            </MuiThemeProvider>
-        </div>
-        );
+        if (this.state.registered == false) {
+            return (
+                <div>
+                    <MuiThemeProvider>
+                    <div>
+                        <AppBar
+                            title="Register"
+                            className="app-bar"
+                        />
+                        <div className="centered-container">
+                            <TextField
+                                hintText="Enter your First Name"
+                                floatingLabelText="First Name"
+                                onChange = {(event,newValue) => this.setState({first_name:newValue})}
+                                />
+                            <br/>
+                            <TextField
+                                hintText="Enter your Last Name"
+                                floatingLabelText="Last Name"
+                                onChange = {(event,newValue) => this.setState({last_name:newValue})}
+                                />
+                            <br/>
+                            <TextField
+                                hintText="Enter your Email"
+                                type="email"
+                                floatingLabelText="Email"
+                                onChange = {(event,newValue) => this.setState({email:newValue})}
+                                />
+                            <br/>
+                            <TextField
+                                type = "password"
+                                hintText="Enter your Password"
+                                floatingLabelText="Password"
+                                onChange = {(event,newValue) => this.setState({password:newValue})}
+                                />
+                            <br/>
+                            <RaisedButton label="Submit" primary={true} onClick={(event) => this.handleClick(event)}/>
+                            <br/>
+                            <br/>
+                            <RaisedButton label="Cancel" primary={true} onClick={(event) => this.handleCancel(event)}/>
+                        </div>
+                    </div>
+                    </MuiThemeProvider>
+                </div>
+                );
+           }
+        else {
+            return (<Redirect to="/" />)
+        }
+    }
+    handleCancel(event) {
+        this.props.history.push("/");
     }
     handleClick(event){
         // var apiBaseUrl = "http://localhost:4000/api/";
@@ -62,21 +78,14 @@ class Register extends Component {
         //To be done:check for empty values before hitting submit
         var self = this;
         var payload={
-        "first_name": this.state.first_name,
-        "last_name":this.state.last_name,
-        "email":this.state.email,
-        "password":this.state.password
+            "first_name": this.state.first_name,
+            "last_name":this.state.last_name,
+            "email":this.state.email,
+            "password":this.state.password
         };
 
-        var loginscreen=[];
-        loginscreen.push(<Login parentContext={this}/>);
-        var loginmessage = "Not Registered yet.Go to registration";
-        self.props.parentContext.setState({
-            loginscreen:loginscreen,
-            loginmessage:loginmessage,
-            buttonLabel:"Register",
-            isLogin:true
-        });
+        this.setState({registered: true});
+
     //  axios.post(apiBaseUrl+'/register', payload)
     // .then(function (response) {
     //   console.log(response);
@@ -97,7 +106,5 @@ class Register extends Component {
     // });
     }
 }
-const style = {
-  margin: 15,
-};
+
 export default Register;

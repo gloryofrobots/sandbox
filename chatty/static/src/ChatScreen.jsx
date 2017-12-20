@@ -7,6 +7,8 @@ import Subheader from 'material-ui/Subheader';
 import Divider from 'material-ui/Divider';
 import CommunicationChatBubble from 'material-ui/svg-icons/communication/chat-bubble';
 import { Grid, Row, Col } from 'react-material-responsive-grid';
+import RaisedButton from 'material-ui/RaisedButton';
+import {withRouter, Redirect} from 'react-router-dom';
 
 class App extends React.Component {
   render() {
@@ -79,7 +81,7 @@ class ContactList extends Component {
 }
  
 
-class UploadScreen extends Component {
+class ChatScreen extends Component {
     constructor(props){
         super(props);
         this.state={
@@ -88,13 +90,16 @@ class UploadScreen extends Component {
     
     render() {
         return (
-        <div className="ChatApp">
+        <div>
             <MuiThemeProvider>
             <div>
                 <AppBar
+                    className="app-bar"
                     title="Chat"
                 />
-                <Grid className="ChatApp-Grid">
+
+                <RaisedButton className="logout-button" label="Log Out" secondary={true}  onClick={(event) => this.props.history.push("/")}/>
+                <Grid className="chat-grid" >
                     <Row>
                         <Col xs4={4} lg={4}>
                           <ContactList/>
@@ -110,5 +115,5 @@ class UploadScreen extends Component {
         );
     }
 }
-export default UploadScreen;
+export default withRouter(ChatScreen);
 
