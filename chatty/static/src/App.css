@@ -1,0 +1,17 @@
+.App {
+  text-align: center;
+}
+
+.ContactList {
+    width: 60%;
+}
+
+.ChatApp {
+  text-align: center;
+}
+
+.ChatApp-Grid {
+    /* width:80; */
+    margin-left: 30% !important;
+    /* margin: auto !important; */
+}
