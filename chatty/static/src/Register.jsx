@@ -5,40 +5,33 @@ import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField';
 import axios from 'axios';
 import Login from './Login';
+import AppBarDefault from './AppBarDefault';
 import {withRouter, Redirect} from 'react-router-dom';
 
 class Register extends Component {
     constructor(props){
         super(props);
         this.state={
-        first_name:'',
-        last_name:'',
-        email:'',
-        password:'',
-        registered:false
+            username:'',
+            email:'',
+            password:'',
+
+            registered:false
         };
     }
     render() {
         if (this.state.registered == false) {
             return (
-                <div>
-                    <MuiThemeProvider>
                     <div>
-                        <AppBar
-                            title="Register"
-                            className="app-bar"
-                        />
+                        <AppBarDefault
+                            title="TerminalStub Register"
+                            onRightButtonClick={(event) => this.handleCancel(event)}
+                            rightButtonLabel="Sign In"/>
                         <div className="centered-container">
                             <TextField
-                                hintText="Enter your First Name"
-                                floatingLabelText="First Name"
-                                onChange = {(event,newValue) => this.setState({first_name:newValue})}
-                                />
-                            <br/>
-                            <TextField
-                                hintText="Enter your Last Name"
-                                floatingLabelText="Last Name"
-                                onChange = {(event,newValue) => this.setState({last_name:newValue})}
+                                hintText="Enter your username"
+                                floatingLabelText="User name"
+                                onChange = {(event,newValue) => this.setState({username:newValue})}
                                 />
                             <br/>
                             <TextField
@@ -55,14 +48,12 @@ class Register extends Component {
                                 onChange = {(event,newValue) => this.setState({password:newValue})}
                                 />
                             <br/>
-                            <RaisedButton label="Submit" primary={true} onClick={(event) => this.handleClick(event)}/>
                             <br/>
-                            <br/>
-                            <RaisedButton label="Cancel" primary={true} onClick={(event) => this.handleCancel(event)}/>
+                            <div class="center-align">
+                              <RaisedButton label="Submit" primary={true} onClick={(event) => this.handleClick(event)}/>
+                            </div>
                         </div>
                     </div>
-                    </MuiThemeProvider>
-                </div>
                 );
            }
         else {
@@ -74,12 +65,10 @@ class Register extends Component {
     }
     handleClick(event){
         // var apiBaseUrl = "http://localhost:4000/api/";
-        console.log("values",this.state.first_name,this.state.last_name,this.state.email,this.state.password);
         //To be done:check for empty values before hitting submit
         var self = this;
         var payload={
-            "first_name": this.state.first_name,
-            "last_name":this.state.last_name,
+            "username": this.state.username,
             "email":this.state.email,
             "password":this.state.password
         };

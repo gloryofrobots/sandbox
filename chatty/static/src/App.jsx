@@ -1,8 +1,13 @@
 import React, { Component } from 'react';
-import injectTapEventPlugin from 'react-tap-event-plugin';
 // Needed for onTouchTap
 // // http://stackoverflow.com/a/34015469/988941
-import './App.css';
+import injectTapEventPlugin from 'react-tap-event-plugin';
+
+import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
+import getMuiTheme from 'material-ui/styles/getMuiTheme';
+import darkBaseTheme from 'material-ui/styles/baseThemes/darkBaseTheme';
+import lightBaseTheme from 'material-ui/styles/baseThemes/lightBaseTheme';
+
 
 import {
   Switch,
@@ -14,10 +19,14 @@ import {
 
 import { Grid, Row, Col } from 'react-material-responsive-grid';
 
-import ChatScreen from './ChatScreen';
 import Register from './Register';
 import Login from './Login';
-import ConsoleScreen from './ConsoleScreen';
+import TerminalScreen from './TerminalScreen';
+
+import './App.css';
+require("./materialize/css/materialize.css");
+
+
 
 injectTapEventPlugin();
 class App extends Component {
@@ -32,11 +41,13 @@ class App extends Component {
 
     render() {
         return (
-            <Switch>
-                <Route exact path="/" component={Login}/>
-                <Route path="/chat" component={ConsoleScreen}/>
-                <Route path="/register" component={Register}/>
-            </Switch>
+            <MuiThemeProvider muiTheme={getMuiTheme(lightBaseTheme)}>
+                <Switch>
+                    <Route exact path="/" component={Login}/>
+                    <Route path="/terminal" component={TerminalScreen}/>
+                    <Route path="/register" component={Register}/>
+                </Switch>
+            </MuiThemeProvider>
         );
     }
 }

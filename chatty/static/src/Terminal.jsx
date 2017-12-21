@@ -10,7 +10,7 @@ class Terminal extends Console {
     }
 
     promptLabel() {
-        return ">>>";
+        return " $ ";
     }
 
     render() {
