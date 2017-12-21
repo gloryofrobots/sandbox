@@ -1,70 +1,31 @@
 
-import React, {Component} from 'react';
-import AppBar from 'material-ui/AppBar';
-import IconButton from 'material-ui/IconButton';
-import IconMenu from 'material-ui/IconMenu';
-import MenuItem from 'material-ui/MenuItem';
-import FlatButton from 'material-ui/FlatButton';
-import Toggle from 'material-ui/Toggle';
-import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
-import NavigationClose from 'material-ui/svg-icons/navigation/close';
+// import ReactGridLayout from 'react-grid-layout';
+// require('react-grid-layout/css/styles.css');
+// require('react-resizable/css/styles.css');
+//  <ReactGridLayout className="layout" cols={2} rowHeight={200} width={1200}>
+//   <div key="a" data-grid={{x: 0, y: 0, w: 1, h: 2}}></div>
+//   <div key="b" data-grid={{x: 2, y: 0, w: 1, h: 2}}></div>
+// </ReactGridLayout>
 
-class Login extends Component {
-  static muiName = 'FlatButton';
+                  <div className="row terminal-grid">
+                    <div className="col s6">
+                      <div className="row">
+                        <div className="col s12">
+                          <Terminal/>
+                         </div>
+                       </div>
+                      <div className="row">
+                        <div className="col s12">
+                          <TextEditor/>
+                         </div>
+                       </div>
+                    </div>
+                    <div className="col s6">
+                      <OutputView />
+                    </div>
+                  </div>
 
-  render() {
-    return (
-      <FlatButton {...this.props} label="Login" />
-    );
-  }
-}
 
-const Logged = (props) => (
-  <IconMenu
-    {...props}
-    iconButtonElement={
-      <IconButton><MoreVertIcon /></IconButton>
-    }
-    targetOrigin={{horizontal: 'right', vertical: 'top'}}
-    anchorOrigin={{horizontal: 'right', vertical: 'top'}}
-  >
-    <MenuItem primaryText="Refresh" />
-    <MenuItem primaryText="Help" />
-    <MenuItem primaryText="Sign out" />
-  </IconMenu>
-);
 
-Logged.muiName = 'IconMenu';
 
-/**
- * This example is taking advantage of the composability of the `AppBar`
- * to render different components depending on the application state.
- */
-class AppBarExampleComposition extends Component {
-  state = {
-    logged: true,
-  };
-
-  handleChange = (event, logged) => {
-    this.setState({logged: logged});
-  };
-
-  render() {
-    return (
-      <div>
-        <Toggle
-          label="Logged"
-          defaultToggled={true}
-          onToggle={this.handleChange}
-          labelPosition="right"
-          style={{margin: 20}}
-        />
-        <AppBar
-          title="Title"
-          iconElementLeft={<IconButton><NavigationClose /></IconButton>}
-          iconElementRight={this.state.logged ? <Logged /> : <Login />}
-        />
-      </div>
-    );
-  }
-}
+              <p className="center-align">--text-editor--</p>

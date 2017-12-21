@@ -7,6 +7,11 @@ import TextEditor from "./TextEditor";
 import OutputView from "./OutputView";
 import AppBarDefault from "./AppBarDefault";
 
+                                // <Row>
+                                //     <Col md={12}>
+                                //         <TextEditor/>
+                                //     </Col>
+                                // </Row>
 
 class TerminalScreen extends Component {
     constructor(props){
@@ -26,29 +31,22 @@ class TerminalScreen extends Component {
                     onRightButtonClick={(event) => this.handleLogOut(event)}
 
                     rightButtonLabel="Log Out"/>
-
                 <Grid className="terminal-grid">
                     <Row>
-                        <Col xs4={4} lg={6} md={6}>
+                        <Col md={6}>
                             <Grid className="terminal-grid">
                                 <Row>
-                                    <Col xs4={4} lg={12} md={12}>
+                                    <Col md={12}>
                                         <Terminal/>
-                                    </Col>
-                                </Row>
-                                <Row>
-                                    <Col xs4={4} lg={12} md={12}>
-                                        <TextEditor/>
                                     </Col>
                                 </Row>
                             </Grid>
                         </Col>
-                        <Col xs4={4} lg={6} md={6}>
+                        <Col md={6}>
                             <OutputView/>
                         </Col>
                     </Row>
                 </Grid>
-                  
             </div>
         );
     }

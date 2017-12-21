@@ -16,8 +16,7 @@ class Terminal extends Console {
     render() {
         return (
 
-        <div className="widget-header" style={{height:"85%"}}>
-          <p className="center-align">--console--</p>
+        <div className="widget-header">
             <Console
                 ref="console"
                 handler={(text) => this.command(text)}

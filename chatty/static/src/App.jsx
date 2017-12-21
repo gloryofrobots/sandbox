@@ -24,7 +24,6 @@ import Login from './Login';
 import TerminalScreen from './TerminalScreen';
 
 import './App.css';
-require("./materialize/css/materialize.css");
 
 
 

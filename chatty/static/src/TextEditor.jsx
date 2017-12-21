@@ -19,18 +19,17 @@ class TextEditor extends Component {
     render () {  
         return (
             <div className="widget-header">
-            <p className="center-align">--text-editor--</p>
-
-            <CodeMirror
-                value='var revelation = "I ♥ spoons";'
-                options={{
-                    mode: 'javascript',
-                    theme: 'material',
-                    lineNumbers: true
-                }}
-                onChange={(editor, data, value) => this.onTextChange(editor, data, value)
-                }
-                />
+                <CodeMirror
+                   className="text-editor"
+                    value='var revelation = "I ♥ spoons";'
+                    options={{
+                        mode: 'javascript',
+                        theme: 'material',
+                        lineNumbers: true
+                    }}
+                    onChange={(editor, data, value) => this.onTextChange(editor, data, value)
+                    }
+                    />
             </div>
         );
     }
