@@ -49,7 +49,7 @@ class Register extends Component {
                                 />
                             <br/>
                             <br/>
-                            <div class="center-align">
+                            <div className="center-align">
                               <RaisedButton label="Submit" primary={true} onClick={(event) => this.handleClick(event)}/>
                             </div>
                         </div>

@@ -15,11 +15,15 @@ class Terminal extends Console {
 
     render() {
         return (
+
+        <div className="widget-header" style={{height:"85%"}}>
+          <p className="center-align">--console--</p>
             <Console
                 ref="console"
                 handler={(text) => this.command(text)}
                 promptLabel={()=>this.promptLabel()}
                 autofocus={true} />
+        </div>
         );
     }
 }
