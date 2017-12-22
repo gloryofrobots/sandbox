@@ -18,6 +18,7 @@ class TerminalScreen extends Component {
         super(props);
         this.state={
         };
+        this.handleLogOut = this.handleLogOut.bind(this);
     }
     handleLogOut(event) {
         this.props.history.push("/");
@@ -28,7 +29,7 @@ class TerminalScreen extends Component {
                 <AppBarDefault
                     className="app-bar"
                     title="Terminal"
-                    onRightButtonClick={(event) => this.handleLogOut(event)}
+                    onRightButtonClick={this.handleLogOut}
 
                     rightButtonLabel="Log Out"/>
                 <Grid className="terminal-grid">

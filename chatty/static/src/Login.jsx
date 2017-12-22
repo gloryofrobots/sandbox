@@ -17,6 +17,9 @@ class Login extends Component {
             authenticated: false,
             registered: false,
         };
+
+        this.handleRegister = this.handleRegister.bind(this);
+        this.handleLogin = this.handleLogin.bind(this);
     }
 
     render() {
@@ -30,7 +33,7 @@ class Login extends Component {
                 <div>
                     <AppBarDefault
                         title="TerminalStub Sign In"
-                        onRightButtonClick={(event) => this.handleRegister(event)}
+                        onRightButtonClick={this.handleRegister}
                         rightButtonLabel="Register"/>
 
                     <div className="centered-container">
@@ -52,7 +55,7 @@ class Login extends Component {
                             <RaisedButton
                                 label="Submit"
                                 primary={true}
-                                onClick={(event) => this.handleLogin(event)}
+                                onClick={this.handleLogin}
                             />
                             </div>
                     </div>

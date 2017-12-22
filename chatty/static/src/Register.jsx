@@ -18,14 +18,18 @@ class Register extends Component {
 
             registered:false
         };
+        this.handleSignIn = this.handleSignIn.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
     }
+
+
     render() {
         if (this.state.registered == false) {
             return (
                     <div>
                         <AppBarDefault
                             title="TerminalStub Register"
-                            onRightButtonClick={(event) => this.handleCancel(event)}
+                            onRightButtonClick={this.handleSignIn}
                             rightButtonLabel="Sign In"/>
                         <div className="centered-container">
                             <TextField
@@ -50,7 +54,7 @@ class Register extends Component {
                             <br/>
                             <br/>
                             <div className="center-align">
-                              <RaisedButton label="Submit" primary={true} onClick={(event) => this.handleClick(event)}/>
+                              <RaisedButton label="Submit" primary={true} onClick={this.handleSubmit}/>
                             </div>
                         </div>
                     </div>
@@ -60,10 +64,14 @@ class Register extends Component {
             return (<Redirect to="/" />)
         }
     }
-    handleCancel(event) {
+
+
+    handleSignIn(event) {
         this.props.history.push("/");
     }
-    handleClick(event){
+
+
+    handleSubmit(event){
         // var apiBaseUrl = "http://localhost:4000/api/";
         //To be done:check for empty values before hitting submit
         var self = this;
