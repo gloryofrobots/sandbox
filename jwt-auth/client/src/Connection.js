@@ -11,7 +11,7 @@ class Connection {
         this._connect = this._connect.bind(this);
         this.connection = null;
         this.opened = false;
-        _connect();
+        this._connect();
     }
 
     observe(observers) {
@@ -77,7 +77,7 @@ class Connection {
             return false;
         }
 
-        var data = _prepare(msg);
+        var data = this._prepare(msg);
 
         if (!data) {
             return false;
