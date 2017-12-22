@@ -7,6 +7,7 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import darkBaseTheme from 'material-ui/styles/baseThemes/darkBaseTheme';
 import lightBaseTheme from 'material-ui/styles/baseThemes/lightBaseTheme';
+import Connection from './Connection';
 
 
 import {
@@ -26,8 +27,8 @@ import TerminalScreen from './TerminalScreen';
 import './App.css';
 
 
-
 injectTapEventPlugin();
+
 class App extends Component {
     constructor(props){
         super(props);

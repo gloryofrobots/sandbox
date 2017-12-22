@@ -19,6 +19,7 @@ class TerminalScreen extends Component {
         this.state={
         };
         this.handleLogOut = this.handleLogOut.bind(this);
+
     }
     handleLogOut(event) {
         this.props.history.push("/");

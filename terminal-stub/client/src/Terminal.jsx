@@ -2,11 +2,15 @@
 import React from 'react';
 import Console from "react-console-component";
 // import 'react-console-component/main.css';
+import config from "./config";
 
 class Terminal extends Console {
-    command (text) {
-        this.refs.console.log(text);
-        this.refs.console.return();
+    command (cmd) {
+        var console = this.refs.console;
+
+        console.log(cmd);
+
+        console.return();
     }
 
     promptLabel() {
