@@ -20,7 +20,7 @@ class MainScreen extends Component {
             <div>
                 <AppBarDefault
                     className="app-bar"
-                    title="Terminal"
+                    title="Workspace"
                     onRightButtonClick={this.handleLogOut}
                     rightButtonLabel="Log Out"/>
 

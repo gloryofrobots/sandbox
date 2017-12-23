@@ -5,11 +5,21 @@ import concurrent.futures
 import bson.binary
 import copy
 import logging
-import tornado.options 
+import tornado.options
 import tornado.ioloop
 import tornado.web
 import tornado.gen
 import motor.motor_tornado
+import message_schema
+
+
+def validate_json_payload(fn):
+    def wrapper(self, json_args, *args):
+        self.validator.validate(json_args)
+        return fn(self, json_args, *args)
+
+    return wrapper
+
 
 def parse_json_payload(fn):
     def wrapper(self, *args):
@@ -23,14 +33,36 @@ def parse_json_payload(fn):
     return wrapper
 
 
-class RegisterHandler(tornado.web.RequestHandler):
-    def set_default_headers(self):
-        print "setting headers!!!"
-        self.set_header("Access-Control-Allow-Origin", "*")
-        # self.set_header("Access-Control-Allow-Headers", "x-requested-with")
-        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
-        self.set_header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+def write_json_headers(fn):
+    def wrapper(self, *args):
+        self.set_header('Content-Type', 'application/json')
+        return fn(self, *args)
+    return wrapper
 
+
+class RegisterHandler(tornado.web.RequestHandler):
+    __SCHEMAS = [{
+            "action": "REGISTER",
+            "schema": {
+                "password": {"type": "string", "blank": False},
+                "username": {"type": "string", }
+            }
+        }
+    ]
+
+    def initialize(self, config):
+        self.config = config
+        self.validator = message_schema.create_validator(self.__SCHEMAS)
+
+    def get_config(self):
+        return self.settings["config"]
+
+    def set_default_headers(self):
+        config = self.get_config()
+        self.set_header("Access-Control-Allow-Origin", config.CORS_DOMAINS)
+        self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+        self.set_header("Access-Control-Allow-Headers",
+                        "Origin, X-Requested-With, Content-Type, Accept");
 
     def options(self):
         # no body
@@ -42,28 +74,49 @@ class RegisterHandler(tornado.web.RequestHandler):
         db = self.settings["db"]
         return db
 
-    def get_users_collection():
-        return get_storage().users
-    
-    def initialize(self, config):
-        self.config = config
+    def get_users_collection(self):
+        return self.get_storage().users
 
-    def get_json_payload():
+    def get_json_payload(self):
         if not self.request.headers["Content-Type"].startswith("application/json"):
             return None
 
         return json.loads(self.request.body)
 
-    @parse_json_payload
-    @tornado.gen.coroutine
-    def post(self, json_args):
-        self.set_header("Content-Type", "text/plain")
-        self.write("ECHO -- %s" % str(json_args))
-        # username = self.get_body_argument("username")
-        # email = self.get_body_argument("email")
-        # password = self.get_body_argument("password")
+    def write_json(self, payload):
+        json_str = json.dumps(payload)
+        self.write(json_str)
+
+    def respond_empty(self, action):
+        self.respond(action, None)
+
+    def respond_status(self, action, status):
+        self.respond(action, dict(status=status))
+
+    def respond_error(self, action, error):
+        self.respond("ERROR", dict(action=action, error=error))
+
+    def respond(self, action, data):
+        if data == None:
+            self.write_json(dict(action=action))
+        else:
+            self.write_json(dict(action=action, data=data))
         
-        # self.write("You wrote %s %s %s" % (username, email, password))
+    @parse_json_payload
+    @validate_json_payload
+    @write_json_headers
+    @tornado.gen.coroutine
+    def post(self, msg):
+        users = self.get_users_collection()
+        data = msg["data"]
+        existed = yield users.find_one(dict(username=data["username"]))
+        if existed is not None:
+            self.respond_error("REGISTER", "User with given credentials has been already registered")
+            
+        else:
+            users.insert_one(data)
+            self.respond_empty("REGISTER_SUCCESS")
+        self.finish()
 
 
 def main(config):
@@ -76,15 +129,17 @@ def main(config):
         tornado.options.parse_command_line()
 
     client = motor.motor_tornado.MotorClient(config.MONGODB_HOST)
-    # client.drop_database("identicons")
+    client.drop_database("jwtauth")
     db = client.jwtauth
 
     app = tornado.web.Application([
         (r"/register", RegisterHandler, dict(config=config)),
     ],
         debug=config.DEBUG,
-        db=db)
-    
+        db=db,
+        config=config
+    )
+
     app.listen(config.PORT)
     tornado.ioloop.IOLoop.current().start()
 

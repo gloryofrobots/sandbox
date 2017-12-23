@@ -32,7 +32,7 @@ class Login extends Component {
             return (
                 <div>
                     <AppBarDefault
-                        title="TerminalStub Sign In"
+                        title="Sign In"
                         onRightButtonClick={this.handleRegister}
                         rightButtonLabel="Register"/>
 

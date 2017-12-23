@@ -6,6 +6,8 @@ MONGODB_HOST = 'mongodb://localhost:27017'
 
 LOG_FILE = "log/auth.log"
 
+CORS_DOMAINS = "*"
+
 JWT_SECRET = 'TOPSECRET'
 JWT_ALGORITHM = 'HS256'
 JWT_EXP_DELTA_SECONDS = 20
