@@ -19,7 +19,8 @@
     "react-tap-event-plugin": "^3.0.2",
     "redux": "^3.7.2",
     "sockjs-client": "^1.1.4",
-    "underscore": "^1.8.3"
+    "underscore": "^1.8.3",
+    "universal-cookie": "^2.1.2"
   },
   "scripts": {
     "start": "react-scripts start",

@@ -3,3 +3,4 @@ futures
 motor == 0.7
 pyjwt
 validictory
+passlib

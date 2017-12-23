@@ -6,6 +6,7 @@ import Divider from 'material-ui/Divider';
 import AppBarDefault from './AppBarDefault';
 import {withRouter, Redirect} from 'react-router-dom';
 import { Grid, Row, Col } from 'react-material-responsive-grid';
+import axios from 'axios';
 
 
 class Login extends Component {
@@ -15,7 +16,7 @@ class Login extends Component {
             username:'',
             password:'',
             authenticated: false,
-            registered: false,
+            error:""
         };
 
         this.handleRegister = this.handleRegister.bind(this);
@@ -25,7 +26,7 @@ class Login extends Component {
     render() {
         if (this.state.authenticated) {
             return (
-                <Redirect to="/main" />
+                <Redirect to="/" />
             );
         }
         else {
@@ -57,6 +58,9 @@ class Login extends Component {
                                 primary={true}
                                 onClick={this.handleLogin}
                             />
+                            <p className="center-align" style={{color:"red"}}>
+                                {this.state.error}
+                            </p>
                             </div>
                     </div>
                 </div>
@@ -69,35 +73,45 @@ class Login extends Component {
     }
 
     handleLogin(event){
-        var apiBaseUrl = "http://localhost:4000/api/";
         var self = this;
-        var payload={
-            "email":this.state.username,
-            "password":this.state.password
-        };
-        this.setState({authenticated:true});
+        if (this.state.username.length == 0) {
+            self.setState({error:"Username can not be empty!"});
+            return;
+        }
+        if (this.state.password.length == 0) {
+            self.setState({error:"Password can not be empty!"});
+            return;
+        }
 
-        // axios.post(apiBaseUrl+'login', payload)
-        //     .then(function (response) {
-        //         console.log(response);
-        //         if(response.data.code == 200){
-        //             console.log("Login successfull");
-        //             var uploadScreen=[];
-        //             uploadScreen.push(<UploadScreen appContext={self.props.appContext}/>)
-        //             self.props.appContext.setState({loginPage:[],uploadScreen:uploadScreen})
-        //         }
-        //         else if(response.data.code == 204){
-        //             console.log("Username password do not match");
-        //             alert("username password do not match")
-        //         }
-        //         else{
-        //             console.log("Username does not exists");
-        //             alert("Username does not exist");
-        //         }
-        // })
-        // .catch(function (error) {
-        //     console.log(error);
-        // });
+        var payload={
+            action:"REGISTER",
+            data:{
+                "username": this.state.username,
+                "password":this.state.password
+           }
+        };
+
+        self.setState({error:""});
+        axios.post(this.props.authUrl, payload)
+        .then(function (response) {
+            console.log("AUTH RESPONSE", response);
+            if(response.status != 200){
+                self.setState({error:"Authentication failed due to server error!"});
+            } else {
+                var msg = response.data;
+                if (msg.action == "ERROR") {
+                    self.setState({error: msg.data.error + "!"});
+                } else if (msg.action != "AUTH_SUCCESS") {
+                    self.setState({error:"Authentication failed due to server error!"});
+                } else {
+                    self.setState({authenticated: true});
+                }
+            }
+        })
+        .catch(function (error) {
+            self.setState({error:"Authentication failed due to invalid data"});
+            console.log("Authentication failed!", error);
+        });
     }
 }
 
