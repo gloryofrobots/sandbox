@@ -54,7 +54,8 @@ class App extends Component {
                     <Route exact path="/"
                            render={(props) => (<Login onAuth={this.onAuth}/>)} />
                     <Route path="/main" component={MainScreen}/>
-                    <Route path="/register" component={Register}/>
+                    <Route path="/register"
+                           render={(props) => (<Register registerUrl={Config.REGISTER_URL}/>)} />
                 </Switch>
             </MuiThemeProvider>
         );

@@ -1,0 +1,11 @@
+DEBUG = True
+
+PORT = 8881
+
+MONGODB_HOST = 'mongodb://localhost:27017'
+
+LOG_FILE = "log/auth.log"
+
+JWT_SECRET = 'TOPSECRET'
+JWT_ALGORITHM = 'HS256'
+JWT_EXP_DELTA_SECONDS = 20

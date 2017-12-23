@@ -81,26 +81,18 @@ class Register extends Component {
             "password":this.state.password
         };
 
-        this.setState({registered: true});
+        // this.setState({registered: true});
 
-    //  axios.post(apiBaseUrl+'/register', payload)
-    // .then(function (response) {
-    //   console.log(response);
-    //   if(response.data.code == 200){
-    //    //  console.log("registration successfull");
-    //     var loginscreen=[];
-    //     loginscreen.push(<Login parentContext={this}/>);
-    //     var loginmessage = "Not Registered yet.Go to registration";
-    //     self.props.parentContext.setState({loginscreen:loginscreen,
-    //     loginmessage:loginmessage,
-    //     buttonLabel:"Register",
-    //     isLogin:true
-    //      });
-    //   }
-    // })
-    // .catch(function (error) {
-    //   console.log(error);
-    // });
+        axios.post(this.props.registerUrl, payload)
+        .then(function (response) {
+            console.log("REG RESPONSE", response);
+            if(response.data.code == 200){
+                console.log("registration successfull");
+            }
+        })
+        .catch(function (error) {
+            console.log("registration failed", error);
+        });
     }
 }
 

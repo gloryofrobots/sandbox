@@ -1,11 +1,13 @@
 
-var config = {
-    SOCKET_URL: "http://localhost:8686",
-    AUTH_URL: "http://localhost:8686/auth",
-    AUTH_URL: "http://localhost:8686/auth"
-}
 
-Object.freeze(config);
+var Config = {};
+
+(function(){
+    Config.SOCKET_URL = "http://localhost:8881";
+    Config.REGISTER_URL = Config.SOCKET_URL + "/register";
+    Config.AUTH_URL = Config.SOCKET_URL + "/auth";
+    Object.freeze(Config);
+})();
 
 
-export default config;
+export default Config;
