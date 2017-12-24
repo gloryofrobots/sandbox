@@ -6,8 +6,6 @@ import Divider from 'material-ui/Divider';
 import AppBarDefault from './AppBarDefault';
 import {withRouter, Redirect} from 'react-router-dom';
 import { Grid, Row, Col } from 'react-material-responsive-grid';
-import axios from 'axios';
-import Cookies from 'universal-cookie';
 
 
 class Login extends Component {
@@ -25,10 +23,10 @@ class Login extends Component {
     }
 
     render() {
-                // <Redirect to="/" />
         if (this.state.authenticated) {
             return (
-                <h4>Auth Success!!</h4>
+                // <h4>Auth Success!!</h4>
+                <Redirect to="/" />
             );
         }
         else {
@@ -87,38 +85,40 @@ class Login extends Component {
         }
 
         var payload={
-            action:"AUTH",
-            data:{
-                "username": this.state.username,
-                "password":this.state.password
-           }
+            "username": this.state.username,
+            "password":this.state.password
         };
 
         self.setState({error:""});
-        axios.post(this.props.authUrl, payload)
-        .then(function (response) {
-            console.log("AUTH RESPONSE", response);
-            if(response.status != 200){
-                self.setState({error:"Authentication failed due to server error!"});
-            } else {
-                var msg = response.data;
-                if (msg.action == "ERROR") {
-                    self.setState({error: msg.data.error + "!"});
-                } else if (msg.action != "AUTH_SUCCESS") {
+        this.props.connection.post("AUTH", {
+            route:this.props.route,
+            payload:payload,
+            accept:function(response) {
+                if(response.status != 200){
                     self.setState({error:"Authentication failed due to server error!"});
-                } else {
-                    var cookies = new Cookies();
-                    cookies.set("JWT", msg.data.jwt, {expires:new Date(parseInt(msg.data.exp)), path:"/"});
-                    // console.log("JWT", msg.data.jwt, msg.data);
-                    // console.log("COO", cookies.getAll());
-                    self.setState({authenticated: true});
+                    return false;
                 }
+                return true;
+            },
+            actions:{
+                "ERROR":function(response, msg) {
+                    self.setState({error:msg.error + "!"});
+                },
+                "AUTH_SUCCESS": function(response, msg) {
+                    // console.log("JWT", msg.data.jwt, msg.data);
+                    self.props.onAuth(msg);
+                    self.setState({authenticated: true});
+                },
+                "*": function(response, msg) {
+                    self.setState({error:"Authentication failed due to server error!"});
+                }
+            },
+            error: function (error) {
+                self.setState({error:"Authentication failed due to invalid data"});
+                console.log("Authentication failed!", error);
             }
-        })
-        .catch(function (error) {
-            self.setState({error:"Authentication failed due to invalid data"});
-            console.log("Authentication failed!", error);
         });
+
     }
 }
 

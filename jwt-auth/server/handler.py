@@ -3,6 +3,42 @@ import logging
 import message_schema
 import tornado.web
 import tornado.gen
+import security
+
+
+def jwtauth(fn):
+    def wrapper(self, *args):
+        auth = self.request.headers.get('Authorization')
+        payload = None
+        if auth:
+            parts = auth.split()
+
+            if parts[0].lower() != 'bearer' or len(parts) != 2:
+                self.write_unauthorized("invalid authorization header")
+                raise tornado.web.Finish()
+
+            token = parts[1]
+            try:
+                cfg = self.get_config()
+                payload = security.decode_payload(
+                    token,
+                    cfg.JWT_SECRET,
+                    cfg.JWT_ALGO,
+                )
+
+            except security.SessionExpiredError as e:
+                self.terminate_session()
+                raise tornado.web.Finish()
+            except Exception as e:
+                self.write_unauthorized(e.message)
+                raise tornado.web.Finish()
+        else:
+            self.write_unauthorized("Missing authorization")
+            raise tornado.web.Finish()
+
+        return fn (self, payload, *args)
+    return wrapper
+
 
 def validate_json_payload(fn):
     def wrapper(self, json_args, *args):
@@ -48,7 +84,11 @@ class BaseHandler(tornado.web.RequestHandler):
         self.set_header("Access-Control-Allow-Origin", config.CORS_DOMAINS)
         self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
         self.set_header("Access-Control-Allow-Headers",
-                        "Origin, X-Requested-With, Content-Type, Accept");
+                        "Authorization, Origin, X-Requested-With, Content-Type, Accept");
+
+    def write_unauthorized(message):
+        self.set_status(401)
+        self.write(message)
 
     def options(self):
         # no body
@@ -75,6 +115,9 @@ class BaseHandler(tornado.web.RequestHandler):
 
     def respond_error(self, action, error):
         self.respond("ERROR", dict(action=action, error=error))
+
+    def terminate_session(self):
+        self.respond_empty("SESSION_TERMINATED")
 
     def respond(self, action, data):
         if data == None:

@@ -8,7 +8,7 @@ import motor.motor_tornado
 
 import register
 import auth
-import crud
+import echo
 
 
 def main(config):
@@ -28,6 +28,7 @@ def main(config):
     app = tornado.web.Application([
         (r"/register", register.RegisterHandler),
         (r"/auth", auth.AuthHandler),
+        (r"/echo", echo.EchoHandler),
     ],
         debug=config.DEBUG,
         db=db,

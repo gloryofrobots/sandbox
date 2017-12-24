@@ -3,8 +3,13 @@ from passlib.hash import pbkdf2_sha256 as hasher
 import uuid
 import jwt
 from datetime import datetime, timedelta
+import time
 
 epoch = datetime.utcfromtimestamp(0)
+
+
+class SessionExpiredError(Exception):
+    pass
 
 def unix_time_millis(dt):
     return (dt - epoch).total_seconds() * 1000.0
@@ -29,5 +34,16 @@ def generate_uuid():
 def create_token(payload, secret, algo, duration):
     exp = datetime.utcnow() + timedelta(seconds=duration)
     payload["exp"] = exp
-    token = jwt.encode(payload, secret, algo)
+    token = jwt.encode(payload, secret, algorithm=algo)
     return token, unix_time_millis(exp)
+
+
+def decode_payload(token, secret, algo):
+    try:
+        return jwt.decode(token, secret, algorithm=algo)
+    except jwt.ExpiredSignatureError as e:
+        raise SessionExpiredError(e.message)
+
+
+def utc_now():
+    return int(round(time.time() * 1000))

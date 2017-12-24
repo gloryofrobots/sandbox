@@ -3,10 +3,10 @@ import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import AppBar from 'material-ui/AppBar';
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField';
-import axios from 'axios';
 import Login from './Login';
 import AppBarDefault from './AppBarDefault';
 import {withRouter, Redirect} from 'react-router-dom';
+
 
 class Register extends Component {
     constructor(props){
@@ -93,39 +93,36 @@ class Register extends Component {
         }
 
         var payload={
-            action:"REGISTER",
-            data:{
-                "username": this.state.username,
-                "password":this.state.password
-           }
+            "username": this.state.username,
+            "password":this.state.password
         };
-        sendRequest({
-            url:this.props.registerUrl,
+
+        this.props.connection.post("REGISTER", {
+            route:this.props.route,
             payload:payload,
-            actions:{
-                
-            }
-        }
-        axios.post(this.props.registerUrl, payload)
-        .then(function (response) {
-            console.log("REG RESPONSE", response);
-            if(response.status != 200){
-                self.setState({error:"Registration failed due to server error!"});
-            } else{
-                var msg = response.data;
-                if (msg.action == "ERROR") {
-                    self.setState({error:msg.data.error + "!"});
-                } else if (msg.action != "REGISTER_SUCCESS") {
+            accept:function(response) {
+                if(response.status != 200){
                     self.setState({error:"Registration failed due to server error!"});
-                } else {
+                    return false;
+                }
+                return true;
+            },
+            actions:{
+                "ERROR":function(response, msg) {
+                    self.setState({error:msg.error + "!"});
+                },
+                "REGISTER_SUCCESS": function(response, msg) {
                     self.setState({registered: true,
                                    success: "Registration has been successful! Please try to sign in"});
+                },
+                "*": function(response, msg) {
+                    self.setState({error:"Registration failed due to server error!"});
                 }
+            },
+            error: function (error) {
+                self.setState({error:"Registration failed due to invalid data"});
+                console.log("Registration failed!", error);
             }
-        })
-        .catch(function (error) {
-            self.setState({error:"Registration failed due to invalid data"});
-            console.log("Registration failed!", error);
         });
     }
 }

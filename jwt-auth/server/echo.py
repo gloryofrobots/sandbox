@@ -23,16 +23,18 @@ class EchoHandler(handler.BaseHandler):
             },
         ]
 
+    @handler.write_json_headers
+    @handler.jwtauth
     @handler.parse_json_payload
     @handler.validate_json_payload
-    @handler.write_json_headers
     @handler.tornado.gen.coroutine
-    def post(self, msg):
+    def post(self, msg, jwt_payload):
         users = self.get_users_collection()
         data = msg["data"]
-        logging.info(request.headers)
+        action = msg["action"]
+        if action == "TIME":
+            self.respond("TIME", {"time":security.utc_now(), "jwt":jwt_payload})
 
-        self.respond_empty("ACCESS_DENIED")
         # user = yield users.find_one(dict(username=data["username"]))
         # if user is None:
         #     self.respond_error(

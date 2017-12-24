@@ -1,13 +1,12 @@
 
-
-var Config = {};
-
-(function(){
-    Config.SOCKET_URL = "http://localhost:8881";
-    Config.REGISTER_URL = Config.SOCKET_URL + "/register";
-    Config.AUTH_URL = Config.SOCKET_URL + "/auth";
-    Object.freeze(Config);
-})();
-
+let Config = {};
+Config.SERVER_URL = "http://localhost:8881";
+Config.REGISTER_URL = Config.SERVER_URL + "/register";
+Config.AUTH_URL = Config.SERVER_URL + "/auth";
+Config.ECHO_URL = Config.SERVER_URL + "/echo";
+Config.TOKEN_COOKIE = "JWT";
+Object.freeze(Config);
 
 export default Config;
+
+
