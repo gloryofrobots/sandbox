@@ -6,11 +6,11 @@ import Cookies from 'universal-cookie';
 let cookies = new Cookies();
 
 function saveToken(token, exp) {
-    cookies.set(Config.TOKEN_COOKIE, token, {expires:new Date(parseInt(exp) + 10000 * 32), path:"/"});
+    cookies.set(Config.TOKEN_COOKIE, token, {expires:new Date(parseInt(exp, 10) + 1000 * 10), path:"/"});
 }
 
 function hasToken(){
-    return getToken() != undefined;
+    return getToken() !== undefined;
 }
 function getToken(){
     return cookies.get(Config.TOKEN_COOKIE);

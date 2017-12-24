@@ -13,8 +13,6 @@ import AppBarDefault from "./AppBarDefault";
 import {
   Switch,
   Route,
-  Link,
-  Redirect,
   withRouter
 } from 'react-router-dom';
 

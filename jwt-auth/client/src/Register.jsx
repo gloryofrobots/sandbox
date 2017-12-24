@@ -1,11 +1,8 @@
 import React, { Component } from 'react';
-import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
-import AppBar from 'material-ui/AppBar';
 import RaisedButton from 'material-ui/RaisedButton';
 import TextField from 'material-ui/TextField';
-import Login from './Login';
 import AppBarDefault from './AppBarDefault';
-import {withRouter, Redirect} from 'react-router-dom';
+import {withRouter} from 'react-router-dom';
 
 
 class Register extends Component {
@@ -83,11 +80,11 @@ class Register extends Component {
         var self = this;
         self.setState({success: "", error:""});
 
-        if (this.state.username.length == 0) {
+        if (this.state.username.length === 0) {
             self.setState({error:"Username can not be empty!"});
             return;
         }
-        if (this.state.password.length == 0) {
+        if (this.state.password.length === 0) {
             self.setState({error:"Password can not be empty!"});
             return;
         }
@@ -101,7 +98,7 @@ class Register extends Component {
             route:this.props.route,
             payload:payload,
             accept:function(response) {
-                if(response.status != 200){
+                if(response.status !== 200){
                     self.setState({error:"Registration failed due to server error!"});
                     return false;
                 }

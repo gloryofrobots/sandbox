@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import RaisedButton from 'material-ui/RaisedButton';
 import {withRouter} from 'react-router-dom';
 import AppBarDefault from "./AppBarDefault";
 import Toggle from 'material-ui/Toggle';
@@ -32,7 +31,7 @@ class MainScreen extends Component {
             route:self.props.route,
             payload:{},
             accept:function(response) {
-                if(response.status != 200){
+                if(response.status !== 200){
                     self.setState({error:"Request failed due to server error!"});
                     return false;
                 }
@@ -44,7 +43,7 @@ class MainScreen extends Component {
                 },
                 "TIME": function(response, msg) {
                     self.setState({time:msg.time});
-                    console.log("TIME RECEIVED", msg.time);
+                    // console.log("TIME RECEIVED", msg.time);
                 }
             },
             error: function (error) {
@@ -60,7 +59,7 @@ class MainScreen extends Component {
             clearInterval(self.interval);
             self.interval = null;
         }
-        if (state == false){
+        if (state === false){
             return;
         }
 

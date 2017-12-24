@@ -26,7 +26,6 @@ class AuthHandler(handler.BaseHandler):
         users = self.get_users_collection()
         data = msg["data"]
         user = yield users.find_one(dict(username=data["username"]))
-        logging.info(user)
         if user is None:
             self.respond_error(
                 "AUTH", "Invalid username")
