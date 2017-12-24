@@ -7,6 +7,7 @@ import AppBarDefault from './AppBarDefault';
 import {withRouter, Redirect} from 'react-router-dom';
 import { Grid, Row, Col } from 'react-material-responsive-grid';
 import axios from 'axios';
+import Cookies from 'universal-cookie';
 
 
 class Login extends Component {
@@ -24,9 +25,10 @@ class Login extends Component {
     }
 
     render() {
+                // <Redirect to="/" />
         if (this.state.authenticated) {
             return (
-                <Redirect to="/" />
+                <h4>Auth Success!!</h4>
             );
         }
         else {
@@ -74,6 +76,7 @@ class Login extends Component {
 
     handleLogin(event){
         var self = this;
+
         if (this.state.username.length == 0) {
             self.setState({error:"Username can not be empty!"});
             return;
@@ -84,7 +87,7 @@ class Login extends Component {
         }
 
         var payload={
-            action:"REGISTER",
+            action:"AUTH",
             data:{
                 "username": this.state.username,
                 "password":this.state.password
@@ -104,6 +107,10 @@ class Login extends Component {
                 } else if (msg.action != "AUTH_SUCCESS") {
                     self.setState({error:"Authentication failed due to server error!"});
                 } else {
+                    var cookies = new Cookies();
+                    cookies.set("JWT", msg.data.jwt, {expires:new Date(parseInt(msg.data.exp)), path:"/"});
+                    // console.log("JWT", msg.data.jwt, msg.data);
+                    // console.log("COO", cookies.getAll());
                     self.setState({authenticated: true});
                 }
             }

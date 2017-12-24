@@ -6,8 +6,10 @@ MONGODB_HOST = 'mongodb://localhost:27017'
 
 LOG_FILE = "log/auth.log"
 
+# allowed cross origin request domains
 CORS_DOMAINS = "*"
 
 JWT_SECRET = 'TOPSECRET'
-JWT_ALGORITHM = 'HS256'
-JWT_EXP_DELTA_SECONDS = 20
+JWT_ALGO = 'HS256'
+# jwt lifetime in seconds
+JWT_DURATION = 20

@@ -24,6 +24,7 @@ import Login from './Login';
 import MainScreen from './MainScreen';
 import Connection from './Connection';
 import Config from "./Config";
+import axios from 'axios';
 
 
 import './App.css';
@@ -40,12 +41,17 @@ class App extends Component {
 
     isAuthenticated() {
         var cookies = new Cookies();
+        // cookies.remove("JWT");
         console.log("COOKIES", cookies.getAll());
-        return false;
+        var JWT = cookies.get("JWT");
+        if (!JWT) {
+            return false;
+        }
+        return true;
     }
 
     onAuth(token) {
-        this.connection = new Connection(Config.SOCKET_URL);
+        // this.connection = new Connection(Config.SOCKET_URL);
     }
 
     componentWillMount(){

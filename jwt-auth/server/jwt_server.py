@@ -7,6 +7,8 @@ import tornado.gen
 import motor.motor_tornado
 
 import register
+import auth
+import crud
 
 
 def main(config):
@@ -21,9 +23,11 @@ def main(config):
     client = motor.motor_tornado.MotorClient(config.MONGODB_HOST)
     client.drop_database("jwtauth")
     db = client.jwtauth
+    users = db.users
 
     app = tornado.web.Application([
-        (r"/register", register.RegisterHandler, dict(config=config)),
+        (r"/register", register.RegisterHandler),
+        (r"/auth", auth.AuthHandler),
     ],
         debug=config.DEBUG,
         db=db,

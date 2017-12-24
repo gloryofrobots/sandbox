@@ -37,8 +37,7 @@ class BaseHandler(tornado.web.RequestHandler):
         return []
 
 
-    def initialize(self, config):
-        self.config = config
+    def initialize(self):
         self.validator = message_schema.create_validator(self.get_schemas())
 
     def get_config(self):

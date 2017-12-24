@@ -79,8 +79,19 @@ class Register extends Component {
     }
 
 
-    handleSubmit(event){
+    handleSubmit(event) {
         var self = this;
+        self.setState({success: "", error:""});
+
+        if (this.state.username.length == 0) {
+            self.setState({error:"Username can not be empty!"});
+            return;
+        }
+        if (this.state.password.length == 0) {
+            self.setState({error:"Password can not be empty!"});
+            return;
+        }
+
         var payload={
             action:"REGISTER",
             data:{
@@ -88,8 +99,13 @@ class Register extends Component {
                 "password":this.state.password
            }
         };
-
-        self.setState({success: "", error:""});
+        sendRequest({
+            url:this.props.registerUrl,
+            payload:payload,
+            actions:{
+                
+            }
+        }
         axios.post(this.props.registerUrl, payload)
         .then(function (response) {
             console.log("REG RESPONSE", response);

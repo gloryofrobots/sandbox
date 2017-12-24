@@ -31,8 +31,10 @@ class RegisterHandler(handler.BaseHandler):
         else:
             password = security.hash_password(data["password"])
             security.verify_password(data["password"], password)
-            users.insert_one(dict(username=data["username"],
-                                  password=password))
+            users.insert_one(dict(uid=security.generate_uuid(),
+                                  username=data["username"],
+                                  password=password,
+                                  text=""))
 
             self.respond_empty("REGISTER_SUCCESS")
         self.finish()

@@ -3,6 +3,7 @@ import { Grid, Row, Col } from 'react-material-responsive-grid';
 import RaisedButton from 'material-ui/RaisedButton';
 import {withRouter} from 'react-router-dom';
 import AppBarDefault from "./AppBarDefault";
+import axios from 'axios';
 
 class MainScreen extends Component {
     constructor(props){
@@ -10,7 +11,6 @@ class MainScreen extends Component {
         this.state={
         };
         this.handleLogOut = this.handleLogOut.bind(this);
-
     }
     handleLogOut(event) {
         this.props.history.push("/");
@@ -24,7 +24,7 @@ class MainScreen extends Component {
                     onRightButtonClick={this.handleLogOut}
                     rightButtonLabel="Log Out"/>
 
-                <h1> Succesfull Login!!!</h1>
+                <p className="center-align"> <b>Server Time:</b> {this.state.serverTime} </p>
             </div>
         );
     }
