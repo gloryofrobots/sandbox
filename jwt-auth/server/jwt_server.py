@@ -9,6 +9,7 @@ import motor.motor_tornado
 import register
 import auth
 import echo
+import sockjs.tornado
 
 
 def main(config):
@@ -25,11 +26,17 @@ def main(config):
     db = client.jwtauth
     users = db.users
 
-    app = tornado.web.Application([
+    echo_router = sockjs.tornado.SockJSRouter(echo.TimeEchoConnection, '/time_echo')
+
+    routes = [
         (r"/register", register.RegisterHandler),
         (r"/auth", auth.AuthHandler),
         (r"/echo", echo.EchoHandler),
-    ],
+    ]
+
+    routes += echo_router.urls
+
+    app = tornado.web.Application(routes,
         debug=config.DEBUG,
         db=db,
         config=config

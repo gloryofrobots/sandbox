@@ -67,11 +67,9 @@ def write_json_headers(fn):
     return wrapper
 
 
-
 class BaseHandler(tornado.web.RequestHandler):
     def get_schemas(self):
         return []
-
 
     def initialize(self):
         self.validator = message_schema.create_validator(self.get_schemas())
@@ -94,7 +92,6 @@ class BaseHandler(tornado.web.RequestHandler):
         # no body
         self.set_status(204)
         self.finish()
-        pass
 
     def get_storage(self):
         db = self.settings["db"]

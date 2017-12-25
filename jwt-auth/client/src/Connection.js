@@ -1,6 +1,7 @@
 import _ from "underscore";
 import axios from 'axios';
 import * as tokens from './tokens';
+import SockJSConnection from "./SockJSConnection";
 
 class BaseConnection {
     constructor(routes, onTerminate){
@@ -57,6 +58,14 @@ class BaseConnection {
         handler(response, msg);
     }
 
+    openSocket(route, observers, options) {
+        var url = this.routes[route];
+        if (!url) {
+            throw new Error("INVALID ROUTE");
+        }
+
+        return new SockJSConnection(url, _.extend(observers, this.defaultActions), options);
+    }
 }
 
 class SecureConnection extends BaseConnection {

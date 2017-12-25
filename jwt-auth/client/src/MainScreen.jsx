@@ -16,57 +16,45 @@ class MainScreen extends Component {
         this.onReceiveTimeToggle = this.onReceiveTimeToggle.bind(this);
         this.intervalStep = 1000;
         this.interval = null;
+        var self = this;
+        this.socket = props.connection.openSocket("time_echo", {
+            "TIME":function(msg){
+                 self.setState({time:msg.time});
+            }
+        });
     }
 
     componentWillUnmount() {
+
         if (this.interval) {
             clearInterval(this.interval);
             this.interval = null;
         }
     }
 
-    requestTime() {
-        var self = this;
-        self.props.connection.post("TIME", {
-            route:self.props.route,
-            payload:{},
-            accept:function(response) {
-                if(response.status !== 200){
-                    self.setState({error:"Request failed due to server error!"});
-                    return false;
-                }
-                return true;
-            },
-            actions:{
-                "ERROR":function(response, msg) {
-                    self.setState({error:msg.error + "!"});
-                },
-                "TIME": function(response, msg) {
-                    self.setState({time:msg.time});
-                    // console.log("TIME RECEIVED", msg.time);
-                }
-            },
-            error: function (error) {
-                self.setState({error:"Internal error!"});
-                console.log("Echo Error!", error);
-            }
-        });
-    }
 
     onReceiveTimeToggle(event, state){
-        var self = this;
-        if (self.interval) {
-            clearInterval(self.interval);
-            self.interval = null;
+        if (state === true){
+            this.socket.send("START_TIME_ECHO", {"interval":1000});
+        } else{
+            this.socket.send("STOP_TIME_ECHO");
         }
-        if (state === false){
-            return;
-        }
-
-        self.interval = setInterval(function(){
-        self.requestTime();
-        },self.intervalStep);
     }
+
+    // onReceiveTimeToggle(event, state){
+    //     var self = this;
+    //     if (self.interval) {
+    //         clearInterval(self.interval);
+    //         self.interval = null;
+    //     }
+    //     if (state === false){
+    //         return;
+    //     }
+
+    //     self.interval = setInterval(function(){
+    //     self.requestTime();
+    //     },self.intervalStep);
+    // }
 
     handleLogOut(event) {
         this.props.history.push("/");
@@ -102,6 +90,34 @@ class MainScreen extends Component {
                 <p className="center-align" style={{color:"red"}}> {this.state.error} </p>
             </div>
         );
+    }
+
+    requestTime() {
+        var self = this;
+        self.props.connection.post("TIME", {
+            route:self.props.route,
+            payload:{},
+            accept:function(response) {
+                if(response.status !== 200){
+                    self.setState({error:"Request failed due to server error!"});
+                    return false;
+                }
+                return true;
+            },
+            actions:{
+                "ERROR":function(response, msg) {
+                    self.setState({error:msg.error + "!"});
+                },
+                "TIME": function(response, msg) {
+                    self.setState({time:msg.time});
+                    // console.log("TIME RECEIVED", msg.time);
+                }
+            },
+            error: function (error) {
+                self.setState({error:"Internal error!"});
+                console.log("Echo Error!", error);
+            }
+        });
     }
 }
 

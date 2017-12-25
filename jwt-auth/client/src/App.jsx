@@ -61,7 +61,8 @@ class App extends Component {
         this.connection = new Connection({
             "register":Config.REGISTER_URL,
             "auth":Config.AUTH_URL,
-            "echo": Config.ECHO_URL
+            "echo": Config.ECHO_URL,
+            "time_echo": Config.TIME_ECHO_URL
         }, (function() {
             tokens.removeToken();
             this.setState({sessionTerminated:true});

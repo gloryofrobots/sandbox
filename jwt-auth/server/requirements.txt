@@ -4,3 +4,4 @@ motor == 0.7
 pyjwt
 validictory
 passlib
+sockjs-tornado

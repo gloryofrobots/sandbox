@@ -1,8 +1,9 @@
 import _ from "underscore";
 import SockJS from "sockjs-client";
+import * as tokens from './tokens';
 
 class SockJSConnection {
-    constructor(url, options, observers){
+    constructor(url, observers, options){
         this.observers = {};
         this.observe(observers);
         this.url = url;
@@ -14,14 +15,15 @@ class SockJSConnection {
     }
 
     observe(observers) {
+        var self = this;
         _.each(observers, function (key, observer, observers) {
-            if (!_.has(this.observers, key)) {
-                this.observers[key] = [];
+            if (!_.has(self.observers, key)) {
+                self.observers[key] = [];
             }
             if (_.isArray(observer)){
-                this.observers[key] = _.union(observer, this.observers[key])
+                self.observers[key] = _.union(observer, this.observers[key])
             } else {
-                this.observers[key].push(observer);
+                self.observers[key].push(observer);
             }
         });
     }
@@ -46,7 +48,7 @@ class SockJSConnection {
             }
 
             var observers = self.observers[msg.type];
-            _.each(observers, (observer) => observer(msg));
+            _.each(observers, (observer) => observer(msg.data));
 
             console.log('RECEIVED ', msg);
         };
@@ -55,6 +57,10 @@ class SockJSConnection {
             console.log('SOCKET CLOSED');
             self.connection = null;
         };
+    }
+
+    close(){
+        this.connection.close();
     }
 
     isInitialized() {
@@ -71,14 +77,28 @@ class SockJSConnection {
         }
     }
 
-    send(msg) {
+    send(action, payload) {
+        var token = tokens.getToken();
+        if (!token) {
+            console.error("send:SESSION IS DEAD");
+            return
+        }
+
+        var msg = {
+            action:action,
+            jwt:token,
+            data:payload
+        }
+
         if (!this.isInitialized()) {
+            console.log("send:connection is closed");
             return false;
         }
 
         var data = this._prepare(msg);
 
         if (!data) {
+            console.log("send:data is null");
             return false;
         }
         
@@ -86,6 +106,7 @@ class SockJSConnection {
             this.connection.send(data);
             return true;
         } catch(e) {
+            console.log("send: exception",e);
             return false;
         }
     }
