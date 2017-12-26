@@ -43,3 +43,24 @@ class AuthHandler(handler.BaseHandler):
             self.respond("AUTH_SUCCESS", dict(jwt=token, exp=exp))
 
         self.finish()
+
+
+class LogOutHandler(handler.BaseHandler):
+    def get_schemas(self):
+        return [
+            {
+                "action": "LOGOUT",
+                "schema": {
+                }
+            },
+        ]
+
+    @handler.write_json_headers
+    @handler.jwtauth
+    @handler.parse_json_payload
+    @handler.validate_json_payload
+    @handler.tornado.gen.coroutine
+    def post(self, msg, jwt_payload):
+        self.terminate_session()
+        self.finish()
+    

@@ -31,7 +31,7 @@ def main(config):
     routes = [
         (r"/register", register.RegisterHandler),
         (r"/auth", auth.AuthHandler),
-        (r"/echo", echo.EchoHandler),
+        (r"/logout", auth.LogOutHandler),
     ]
 
     routes += echo_router.urls

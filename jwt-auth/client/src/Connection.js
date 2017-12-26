@@ -1,7 +1,7 @@
 import _ from "underscore";
 import axios from 'axios';
 import * as tokens from './tokens';
-import SockJSConnection from "./SockJSConnection";
+import {SockJSConnection, Monitor} from "./SockJSConnection";
 
 class BaseConnection {
     constructor(routes, onTerminate){
@@ -57,18 +57,13 @@ class BaseConnection {
 
         handler(response, msg);
     }
-
-    openSocket(route, observers, options) {
-        var url = this.routes[route];
-        if (!url) {
-            throw new Error("INVALID ROUTE");
-        }
-
-        return new SockJSConnection(url, _.extend(observers, this.defaultActions), options);
-    }
 }
 
 class SecureConnection extends BaseConnection {
+    constructor(routes, onTerminate, socketCheckInterval){
+        super(routes, onTerminate);
+        this.socketMonitor = new Monitor(socketCheckInterval);
+    }
     post(action, opts) {
         var self = this;
         var token = tokens.getToken();
@@ -88,11 +83,27 @@ class SecureConnection extends BaseConnection {
             options.error(error);
         });
     }
+
+    openSocket(route, observers, options) {
+        var url = this.routes[route];
+        if (!url) {
+            throw new Error("INVALID ROUTE");
+        }
+
+        var conn = new SockJSConnection(url, _.extend(observers, this.defaultActions), options);
+        conn.setMonitor(this.socketMonitor);
+        return conn;
+    }
 }
 
 class Connection extends BaseConnection{
+    constructor(routes, onTerminate, socketCheckInterval){
+        super(routes, onTerminate);
+        this.socketCheckInterval = socketCheckInterval;
+    }
+
     secure() {
-        return new SecureConnection(this.routes, this.onTerminate);
+        return new SecureConnection(this.routes, this.onTerminate, this.socketCheckInterval);
     }
 
     post(action, opts) {

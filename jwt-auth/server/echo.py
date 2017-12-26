@@ -46,38 +46,17 @@ class TimeEchoConnection(conn.BaseConnection):
     @conn.jwtauth
     def on_stop_time_echo(self, jwt, msg):
         logging.info("stop time echo %s", str(self.looper))
-        if self.looper != None:
+        if self.looper == None:
             return
 
         self.remove_loop(self.looper)
 
+        logging.info("loop running: %s", self.looper.is_running())
+        self.looper = None
+
     def time_echo(self):
         if self.is_closed:
             return
-        logging.info("TIME ECHO")
         self.respond("TIME", {"time":security.utc_now()})
 
 
-class EchoHandler(handler.BaseHandler):
-    def get_schemas(self):
-        return [
-            {
-                "action": "TIME",
-                "schema": {
-                }
-            },
-        ]
-
-    @handler.write_json_headers
-    @handler.jwtauth
-    @handler.parse_json_payload
-    @handler.validate_json_payload
-    @handler.tornado.gen.coroutine
-    def post(self, msg, jwt_payload):
-        users = self.get_users_collection()
-        data = msg["data"]
-        action = msg["action"]
-        if action == "TIME":
-            self.respond("TIME", {"time":security.utc_now()})
-
-        self.finish()

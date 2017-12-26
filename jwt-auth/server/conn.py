@@ -52,6 +52,7 @@ class BaseConnection(sockjs.tornado.SockJSConnection):
         loop = tornado.ioloop.PeriodicCallback(cb, interval)
         loop.start()
         self.loops.append(loop)
+        return loop
 
     def remove_loop(self, loop):
         self.loops.remove(loop)

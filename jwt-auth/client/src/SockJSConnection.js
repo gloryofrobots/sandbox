@@ -2,71 +2,143 @@ import _ from "underscore";
 import SockJS from "sockjs-client";
 import * as tokens from './tokens';
 
+
+class Monitor{
+    constructor(period){
+        this.connections = [];
+        this.interval = null;
+        this.period = period;
+        this.monitor = this.monitor.bind(this);
+    }
+
+    monitor() {
+        console.log("monitor");
+        _.each(this.connections, function(connection) {
+            if(!connection.isOpen()) {
+                connection.open();
+            }
+        });
+    }
+
+    addConnection(connection) {
+        //in case some time js stops being single threaded we stop current loop
+        if(this.interval !== null){
+            clearInterval(this.interval);
+        }
+
+        this.connections.push(connection);
+        // this.interval = setInterval(this.monitor, this.period);
+    }
+
+    removeConnection(connection) {
+        if(this.interval !== null){
+            clearInterval(this.interval);
+        }
+
+        this.connections = _.without(this.connections, connection);
+
+        if(this.connections.length !== 0){
+            // this.interval = setInterval(this.monitor, this.period);
+        }
+    }
+}
+
+
 class SockJSConnection {
     constructor(url, observers, options){
+        this.connection = null;
+
+        this.opened = false;
         this.observers = {};
         this.observe(observers);
+
         this.url = url;
         this.options = options;
-        this._connect = this._connect.bind(this);
-        this.connection = null;
-        this.opened = false;
-        this._connect();
+        // weakref
+        this.monitor = null;
+        this.open();
+    }
+
+    setMonitor(monitor) {
+        this.monitor = monitor;
+        this.monitor.addConnection(this);
+    }
+
+    addObserver(key, observer) {
+        if (!_.has(this.observers, key)) {
+            this.observers[key] = [];
+        }
+        if (_.isArray(observer)){
+            this.observers[key] = _.union(observer, this.observers[key])
+        } else {
+            this.observers[key].push(observer);
+        }
     }
 
     observe(observers) {
         var self = this;
-        _.each(observers, function (key, observer, observers) {
-            if (!_.has(self.observers, key)) {
-                self.observers[key] = [];
-            }
-            if (_.isArray(observer)){
-                self.observers[key] = _.union(observer, this.observers[key])
-            } else {
-                self.observers[key].push(observer);
-            }
-        });
+        console.log("OBSERVE", observers);
+        if (!_.isObject(observers)) {
+            console.error("expecting object{action:obserber || [...observers]}")
+            return;
+         }
+        _.each(observers,
+               (observer, key, observers) => self.addObserver(key, observer)
+        );
+
+        console.log("OBSERVE AFTER", this.observers);
+    }
+
+    open() {
+        if (this.connection) {
+            this.connection.close();
+        }
+        this.connection = new SockJS(this.url, this.options);
+        this.connection.onopen = this.onOpen.bind(this);
+
+        this.connection.onmessage = this.onMessage.bind(this);
+
+        this.connection.onclose = this.onClose.bind(this);
     }
     
-    _connect() {
-        var self = this;
+    onMessage(e) {
+        var data = e.data;
+        var msg;
+        try {
+            msg = JSON.parse(data);
+        } catch (e) {
+            console.log("JSON parse Error:", data);
+        }
+
+        var observers = this.observers[msg.action];
+        _.each(observers, (observer) => observer(msg.data));
+
+        console.log('RECEIVED ', msg, this.observers);
+    }
+
+    onClose() {
+        console.log('SOCKET CLOSED');
         this.connection = null;
-        this.connection = new SockJS(this.url, this.options);
+        this.opened = false;
+    }
 
-        this.connection.onopen = function() {
-            self.opened = true;
-            console.log('SOCKET OPEN');
-        };
+    isOpen(){
+        return this.connection !== null && this.opened === true;
+    }
 
-        this.connection.onmessage = function(e) {
-            var data = e.data;
-            var msg;
-            try {
-                msg = JSON.parse(data);
-            } catch (e) {
-                console.log("JSON parse Error:", data);
-            }
-
-            var observers = self.observers[msg.type];
-            _.each(observers, (observer) => observer(msg.data));
-
-            console.log('RECEIVED ', msg);
-        };
-
-        this.connection.onclose = function() {
-            console.log('SOCKET CLOSED');
-            self.connection = null;
-        };
+    onOpen(){
+        this.opened = true;
+        console.log('SOCKET OPEN');
     }
 
     close(){
         this.connection.close();
+        if(this.monitor) {
+            this.monitor.removeConnection(this);
+            this.monitor = null;
+        }
     }
 
-    isInitialized() {
-        return this.connection != null;
-        
-     }
 
     _prepare(data) {
         try {
@@ -78,6 +150,7 @@ class SockJSConnection {
     }
 
     send(action, payload) {
+        payload = payload || {};
         var token = tokens.getToken();
         if (!token) {
             console.error("send:SESSION IS DEAD");
@@ -90,7 +163,7 @@ class SockJSConnection {
             data:payload
         }
 
-        if (!this.isInitialized()) {
+        if (!this.isOpen()) {
             console.log("send:connection is closed");
             return false;
         }
@@ -112,4 +185,4 @@ class SockJSConnection {
     }
 }
 
-export default SockJSConnection;
+export  {SockJSConnection, Monitor};

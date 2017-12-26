@@ -14,10 +14,16 @@ class MainScreen extends Component {
 
         this.handleLogOut = this.handleLogOut.bind(this);
         this.onReceiveTimeToggle = this.onReceiveTimeToggle.bind(this);
-        this.intervalStep = 1000;
-        this.interval = null;
+    }
+
+    componentWillMount() {
         var self = this;
-        this.socket = props.connection.openSocket("time_echo", {
+        if(this.socket != null){
+            this.socket.close();
+            this.socket = null;
+            throw new Error("Unclosed socket on mounting");
+        }
+        this.socket = this.props.connection.openSocket(this.props.echoRoute, {
             "TIME":function(msg){
                  self.setState({time:msg.time});
             }
@@ -25,13 +31,11 @@ class MainScreen extends Component {
     }
 
     componentWillUnmount() {
-
-        if (this.interval) {
-            clearInterval(this.interval);
-            this.interval = null;
+        if(this.socket != null){
+            this.socket.close();
+            this.socket = null;
         }
     }
-
 
     onReceiveTimeToggle(event, state){
         if (state === true){
@@ -41,29 +45,37 @@ class MainScreen extends Component {
         }
     }
 
-    // onReceiveTimeToggle(event, state){
-    //     var self = this;
-    //     if (self.interval) {
-    //         clearInterval(self.interval);
-    //         self.interval = null;
-    //     }
-    //     if (state === false){
-    //         return;
-    //     }
-
-    //     self.interval = setInterval(function(){
-    //     self.requestTime();
-    //     },self.intervalStep);
-    // }
-
     handleLogOut(event) {
+        var self = this;
+        self.props.connection.post("LOGOUT", {
+            route:self.props.logoutRoute,
+            payload:{},
+            accept:function(response) {
+                if(response.status !== 200){
+                    self.setState({error:"LogOut Server error"});
+                    return false;
+                }
+                return true;
+            },
+            actions:{
+                "ERROR":function(response, msg) {
+                    self.setState({error:"LogOut Server error " + msg.error + "!"});
+                },
+            },
+            error: function (error) {
+                self.setState({error:"LogOut Server error"});
+            }
+        });
+
         this.props.history.push("/");
     }
+
     timeString() {
         return (
           <span><b>Server Time:</b>  <span>{this.state.time} </span></span>
         );
     }
+
     render() {
         return (
             <div>

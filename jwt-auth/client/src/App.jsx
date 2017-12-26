@@ -54,23 +54,32 @@ const ExpiredScreen = (props) => (
 class App extends Component {
     constructor(props){
         super(props);
+        this.onAuth = this.onAuth.bind(this);
+        this.handleSignInAgain = this.handleSignInAgain.bind(this);
+        this.onTerminate = this.onTerminate.bind(this);
+
         this.state = {
             sessionTerminated:false
         };
         
-        this.connection = new Connection({
-            "register":Config.REGISTER_URL,
-            "auth":Config.AUTH_URL,
-            "echo": Config.ECHO_URL,
-            "time_echo": Config.TIME_ECHO_URL
-        }, (function() {
-            tokens.removeToken();
-            this.setState({sessionTerminated:true});
-            this.props.history.push("/");
-        }).bind(this));
+        var routes = {
+                "register":Config.REGISTER_URL,
+                "auth":Config.AUTH_URL,
+                "logout":Config.LOGOUT_URL,
+                "echo": Config.ECHO_URL,
+                "time_echo": Config.TIME_ECHO_URL
+        };
 
-        this.onAuth = this.onAuth.bind(this);
-        this.handleSignInAgain = this.handleSignInAgain.bind(this);
+        this.connection = new Connection(
+            routes,
+            this.onTerminate,
+            Config.SOCKET_CHECK_INTERVAL
+       );
+    }
+    onTerminate(){
+        tokens.removeToken();
+        this.setState({sessionTerminated:true});
+        this.props.history.push("/");
     }
 
     isAuthenticated() {
@@ -107,7 +116,8 @@ class App extends Component {
                         <Switch>
                             <Route path="/" render={(props)=> (<MainScreen
                                                                   connection={this.connection.secure()}
-                                                                  route={"echo"}/>)}/>
+                                                                  echoRoute="time_echo"
+                                                                  logoutRoute={"logout"}/>)}/>
                         </Switch>
                     </MuiThemeProvider>
             );
