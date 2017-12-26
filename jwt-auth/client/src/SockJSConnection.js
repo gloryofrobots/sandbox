@@ -12,7 +12,7 @@ class Monitor{
     }
 
     monitor() {
-        console.log("monitor");
+        // console.log("monitor");
         _.each(this.connections, function(connection) {
             if(!connection.isOpen()) {
                 connection.open();
@@ -27,7 +27,7 @@ class Monitor{
         }
 
         this.connections.push(connection);
-        // this.interval = setInterval(this.monitor, this.period);
+        this.interval = setInterval(this.monitor, this.period);
     }
 
     removeConnection(connection) {
@@ -38,7 +38,7 @@ class Monitor{
         this.connections = _.without(this.connections, connection);
 
         if(this.connections.length !== 0){
-            // this.interval = setInterval(this.monitor, this.period);
+            this.interval = setInterval(this.monitor, this.period);
         }
     }
 }
