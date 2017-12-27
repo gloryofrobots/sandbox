@@ -6,6 +6,7 @@ import injectTapEventPlugin from 'react-tap-event-plugin';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
 import lightBaseTheme from 'material-ui/styles/baseThemes/lightBaseTheme';
+import {getTheme} from "./Theme";
 
 import {
   Switch,
@@ -14,9 +15,7 @@ import {
 } from 'react-router-dom';
 
 import MainScreen from './MainScreen';
-import Connection from './Connection';
 import CONF from "./CONF";
-import Session from "./Session";
 import SockJSConnection from "./SockJSConnection";
 
 import './App.css';
@@ -46,11 +45,13 @@ class App extends React.Component {
         this.connection.close();
     }
 
+                // <MuiThemeProvider muiTheme={getMuiTheme(lightBaseTheme)}>
     render() {
         return (
-                <MuiThemeProvider muiTheme={getMuiTheme(lightBaseTheme)}>
+                <MuiThemeProvider muiTheme={getTheme()}>
                     <Switch>
                         <Route path="/" render={(props)=> (<MainScreen
+                                                            tokenBaseName={CONF.TOKEN_BASENAME}
                                                             connection={this.connection}
                                                             />)}/>
                     </Switch>

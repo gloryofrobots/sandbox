@@ -717,11 +717,13 @@ terminal .terminal-output > div {
     margin-left:0;
     margin-right:0;
     margin-bottom:0;
-    background: #333;
+    background: #222;
+    /* background: #37474f; */
+    /* color:#78909c; */
     /* display:block */
 }
 .cmd {
-    background: #333;
+    background: #424242;
     color:#FFCCFF;
 
 }

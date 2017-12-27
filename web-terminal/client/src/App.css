@@ -1,6 +1,8 @@
 body {
     /* background: #303030; */
+    background: #111;
     height:100vh;
+
 }
 .App {
   text-align: center;

@@ -1,28 +1,26 @@
 import React, { Component } from 'react';
 import { Grid, Row, Col } from 'react-material-responsive-grid';
-import RaisedButton from 'material-ui/RaisedButton';
-import {withRouter} from 'react-router-dom';
-// import Terminal from "./Terminal";
-import Terminal from "./JQTerminal";
-import TextEditor from "./TextEditor";
-import AppBarDefault from "./AppBarDefault";
+import {withRouter} from 'react-router-dom'; // 
+import Terminal from "./Terminal";
+// import TextEditor from "./TextEditor";
 import AppBar from 'material-ui/AppBar';
+import _ from "underscore";
 
-                                // <Row>
-                                //     <Col md={12}>
-                                //     </Col>
-                                // </Row>
 
 class MainScreen extends Component {
     constructor(props){
         super(props);
         this.state={
         };
-        this.handleLogOut = this.handleLogOut.bind(this);
+        this.termCount = 3;
+        this.colWidth = 12 / this.termCount;
     }
-    handleLogOut(event) {
-        this.props.history.push("/");
+
+    createSession(index) {
+        var tokenName = this.props.tokenBaseName + index;
+        return this.props.connection.createSession(tokenName);
     }
+
     render() {
         return (
             <div>
@@ -32,12 +30,13 @@ class MainScreen extends Component {
                    />
                 <Grid className="terminal-grid">
                     <Row>
-                        <Col md={6}>
-                            <Terminal /> 
-                        </Col>
-                        <Col md={6}>
-                            <Terminal />
-                        </Col>
+                      {
+                          _.range(this.termCount).map((i) => (
+                             <Col md={this.colWidth} key={i}>
+                               <Terminal session={this.createSession(i)}/> 
+                            </Col>
+                          ))
+                      }
                     </Row>
                 </Grid>
             </div>
@@ -45,4 +44,5 @@ class MainScreen extends Component {
     }
 }
 
-export default withRouter(TerminalScreen);
+                                // 
+export default withRouter(MainScreen);

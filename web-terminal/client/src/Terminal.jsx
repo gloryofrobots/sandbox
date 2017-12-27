@@ -23,12 +23,16 @@ class Terminal extends React.Component {
             console.log(rest);
         }
     };
+
+    this.interpreter = this.interpreter.bind(this);
   }
+
   interpreter(command, term){
+      console.log("Session", this.props.session);
       console.log($.terminal.parse_command(command));
       console.log($.terminal.parse_arguments(command));
-      
   }
+
   render() {
     return (
       <div>

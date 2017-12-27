@@ -2,6 +2,10 @@ import _ from "underscore";
 import SockJS from "sockjs-client";
 import Cookies from 'universal-cookie';
 
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min)) + min;
+}
+
 class Monitor{
     constructor(connection, period){
         // weakref
@@ -13,7 +17,7 @@ class Monitor{
 
     start(){
         if (this.interval !== null) {
-            stop();
+            this.stop();
         }
 
         this.interval = setInterval(this.monitor, this.period);
@@ -28,7 +32,7 @@ class Monitor{
     }
 
     destroy(){
-        stop();
+        this.stop();
         // clear weakref
         this.connection = undefined;
     }
@@ -45,22 +49,131 @@ class Monitor{
 }
 
 
-
 class SockJSConnection {
     constructor(url, observers, options){
-        this.connection = null;
+        this.sockjs = null;
 
         this.opened = false;
-        this.observers = {};
-        this.observe(observers || {});
 
         this.url = url;
         this.options = options || {};
         
+        this.sessions = [];
+
         if (_.has(this.options, "monitorInterval") && this.options.monitorInterval >= 1000){
-            this.monitor = new Monitor(this, this.options.monitorInterval;
+            this.monitor = new Monitor(this, this.options.monitorInterval);
         }
         this.open();
+    }
+
+    open() {
+        if (this.sockjs) {
+            this.sockjs.close();
+        }
+        this.sockjs = new SockJS(this.url, this.options);
+        this.sockjs.onopen = this.onOpen.bind(this);
+
+        this.sockjs.onmessage = this.onMessage.bind(this);
+        this.sockjs.onclose = this.onClose.bind(this);
+    }
+    
+    onMessage(e) {
+        var data = e.data;
+        var msg;
+        try {
+            msg = JSON.parse(data);
+        } catch (e) {
+            console.log("JSON parse Error:", data);
+        }
+
+        var session = this.sessions[msg.sid];
+        if (!session) {
+            console.error("SJConn:onMessage bad session");
+            return;
+        }
+
+        session.receive(msg);
+    }
+
+    onClose() {
+        console.log('SOCKET CLOSED');
+        this.sockjs = null;
+        this.opened = false;
+    }
+
+    isOpen(){
+        return this.sockjs !== null && this.opened === true;
+    }
+
+    onOpen(){
+        this.opened = true;
+        console.log('SOCKET OPEN');
+    }
+
+    close(){
+        this.sockjs.close();
+        if(this.monitor) {
+            this.monitor.destroy();
+            this.monitor = null;
+        }
+    }
+
+
+    _prepare(data) {
+        try {
+            return JSON.stringify(data);
+        } catch(e) {
+            console.log("JSON serialize Error:", data);
+            return null;
+        }
+    }
+
+    _send(msg) {
+        if (!this.isOpen()) {
+            console.log("send:connection is closed");
+            return false;
+        }
+
+        var data = this._prepare(msg || {});
+
+        if (!data) {
+            console.log("send:data is null");
+            return false;
+        }
+        
+        try {
+            this.sockjs.send(data);
+            return true;
+        } catch(e) {
+            console.log("send: exception",e);
+            return false;
+        }
+    }
+
+    createSession(tokenName) {
+        var id = _.size(this.sessions);
+        var session =  new Session(id, this, tokenName);
+        this.sessions.push(session);
+        return session;
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+class Session{
+    constructor(id, connection, tokenName, observers) {
+        this.tokenName = tokenName;
+        this.cookies = new Cookies();
+        this.observers = {
+            "SESSION_TERMINATED":(msg) => {
+                this.logout();
+            }
+        };
+        this.observe(observers || {});
+        this.token = null;
+        this.id = id;
     }
 
     __observe(key, observer) {
@@ -88,129 +201,117 @@ class SockJSConnection {
         console.log("OBSERVE AFTER", this.observers);
     }
 
-    open() {
-        if (this.connection) {
-            this.connection.close();
-        }
-        this.connection = new SockJS(this.url, this.options);
-        this.connection.onopen = this.onOpen.bind(this);
-
-        this.connection.onmessage = this.onMessage.bind(this);
-        this.connection.onclose = this.onClose.bind(this);
-    }
-    
-    onMessage(e) {
-        var data = e.data;
-        var msg;
-        try {
-            msg = JSON.parse(data);
-        } catch (e) {
-            console.log("JSON parse Error:", data);
-        }
-
-        var observers = this.observers[msg.action];
-        _.each(observers, (observer) => observer(msg.data));
-
-        console.log('RECEIVED ', msg, this.observers);
-    }
-
-    onClose() {
-        console.log('SOCKET CLOSED');
-        this.connection = null;
-        this.opened = false;
-    }
-
-    isOpen(){
-        return this.connection !== null && this.opened === true;
-    }
-
-    onOpen(){
-        this.opened = true;
-        console.log('SOCKET OPEN');
-    }
-
-    close(){
-        this.connection.close();
-        if(this.monitor) {
-            this.monitor.destroy();
-            this.monitor = null;
-        }
-    }
-
-
-    _prepare(data) {
-        try {
-            return JSON.stringify(data);
-        } catch(e) {
-            console.log("JSON serialize Error:", data);
-            return null;
-        }
-    }
-
-    send(msg) {
-        if (!this.isOpen()) {
-            console.log("send:connection is closed");
-            return false;
-        }
-
-        var data = this._prepare(msg || {});
-
-        if (!data) {
-            console.log("send:data is null");
-            return false;
-        }
-        
-        try {
-            this.connection.send(data);
-            return true;
-        } catch(e) {
-            console.log("send: exception",e);
-            return false;
-        }
-    }
-
-    createSession(tokenName, observers) {
-        return  new Session(this, tokenName);
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-
-class Session{
-    constructor(connection, tokenName) {
-        this.tokenName = tokenName;
-        this.cookies = new Cookies();
-    }
-
     save(token, exp) {
         this.cookies.set(this.tokenName, token, {expires:new Date(parseInt(exp, 10) + 1000 * 10), path:"/"});
     }
 
     exists(){
-        return this.getId() !== undefined;
+        return this.cookies.has(this.tokenName);
     }
 
-    getId(){
-        return this.cookies.get(this.tokenName);
+    getToken(){
+        if (!this.token)  {
+            this.token =  this.cookies.get(this.tokenName);
+        }
+        return this.token;
     }
 
     logout(){
-        return this.cookies.remove(this.tokenName);
+        this.token = null;
+        this.cookies.remove(this.tokenName);
+    }
+
+    receive(msg){
+        var token = msg.token;
+        if (token !== this.getToken()){
+            console.error("session:receive tokens not match");
+            return;
+        }
+
+        var observers;
+        if (_.has(msg, "rid")){
+            var handlers = this.handlers[msg.rid];
+            if (!handlers) {
+                console.error("Invalid RID!")
+                return;
+            }
+            observers = handlers[msg.action];
+            // faster than delete
+            this.handlers[msg.rid] = undefined;
+        } else {
+            observers = this.observers[msg.action];
+        }
+
+        _.each(observers, (observer) => observer(msg.data));
+        console.log('RECEIVED ', this.tokenName, msg, this.observers);
+    }
+
+    addResponseHandler(callback) {
+        var requestId = getRandomInt(0, 100000);
+
+        while(!_.isUndefined(this.handlers, requestId)) {
+            requestId = getRandomInt(0, 100000);
+        }
+
+        this.handlers[requestId] = callback;
+        return requestId;
+    }
+
+    authenticate(action, payload, callback) {
+       if (this.exists()) {
+            throw new Error("Session has already authenticated");
+       }
+
+       var requestId = this.addResponseCallback(
+           (msg) => {
+               if(callback(msg) === true) {
+                   this.save(msg.data.token, msg.data.exp);
+               }
+           }
+       );
+
+       var data = {
+            sid:this.id,
+            rid:requestId,
+            action:action,
+            data:payload
+       }
+
+       return this.connection._send(data);
+    }
+
+    sendSync(action, payload, callback) {
+       if(!this.exists()) {
+           console.error("Session:send not active");
+            return;
+       }
+
+       var requestId = this.addResponseCallback(callback);
+       var data = {
+            action:action,
+            sid:this.id,
+            rid:requestId,
+            token:this.getToken(),
+            data:payload
+       }
+
+       return this.connection._send(data);
     }
 
     send(action, payload) {
-        if(!this.exists()) {
-            console.error("Session:send not active");
-        }
+       if(!this.exists()) {
+           console.error("Session:send not active");
+            return;
+       }
 
-        var data = {
-            action=action,
-            sid=this.getId(),
+       var data = {
+            action:action,
+            sid:this.id,
+            token:this.getToken(),
             data:payload
        }
-       return this.connection.send(data);
+
+       return this.connection._send(data);
     }
 }
 
