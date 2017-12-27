@@ -1,0 +1,7 @@
+Tornado == 4.5.2
+futures
+motor == 0.7
+pyjwt
+validictory
+passlib
+sockjs-tornado

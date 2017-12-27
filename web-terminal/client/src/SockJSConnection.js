@@ -1,47 +1,49 @@
 import _ from "underscore";
 import SockJS from "sockjs-client";
-import * as tokens from './tokens';
-
+import Cookies from 'universal-cookie';
 
 class Monitor{
-    constructor(period){
-        this.connections = [];
+    constructor(connection, period){
+        // weakref
+        this.connection = connection;
         this.interval = null;
         this.period = period;
         this.monitor = this.monitor.bind(this);
     }
 
-    monitor() {
-        // console.log("monitor");
-        _.each(this.connections, function(connection) {
-            if(!connection.isOpen()) {
-                connection.open();
-            }
-        });
-    }
-
-    addConnection(connection) {
-        //in case some time js stops being single threaded we stop current loop
-        if(this.interval !== null){
-            clearInterval(this.interval);
+    start(){
+        if (this.interval !== null) {
+            stop();
         }
 
-        this.connections.push(connection);
         this.interval = setInterval(this.monitor, this.period);
     }
 
-    removeConnection(connection) {
-        if(this.interval !== null){
-            clearInterval(this.interval);
+    stop(){
+        if (this.interval === null) {
+            return;
         }
-
-        this.connections = _.without(this.connections, connection);
-
-        if(this.connections.length !== 0){
-            this.interval = setInterval(this.monitor, this.period);
-        }
+        clearInterval(this.interval);
+        this.interval = null;
     }
+
+    destroy(){
+        stop();
+        // clear weakref
+        this.connection = undefined;
+    }
+
+    monitor() {
+        // console.log("monitor");
+        if(this.connection.isOpen()) {
+            return;
+        }
+
+        this.connection.open();
+    }
+
 }
+
 
 
 class SockJSConnection {
@@ -50,21 +52,18 @@ class SockJSConnection {
 
         this.opened = false;
         this.observers = {};
-        this.observe(observers);
+        this.observe(observers || {});
 
         this.url = url;
-        this.options = options;
-        // weakref
-        this.monitor = null;
+        this.options = options || {};
+        
+        if (_.has(this.options, "monitorInterval") && this.options.monitorInterval >= 1000){
+            this.monitor = new Monitor(this, this.options.monitorInterval;
+        }
         this.open();
     }
 
-    setMonitor(monitor) {
-        this.monitor = monitor;
-        this.monitor.addConnection(this);
-    }
-
-    addObserver(key, observer) {
+    __observe(key, observer) {
         if (!_.has(this.observers, key)) {
             this.observers[key] = [];
         }
@@ -83,7 +82,7 @@ class SockJSConnection {
             return;
          }
         _.each(observers,
-               (observer, key, observers) => self.addObserver(key, observer)
+               (observer, key, observers) => self.__observe(key, observer)
         );
 
         console.log("OBSERVE AFTER", this.observers);
@@ -97,7 +96,6 @@ class SockJSConnection {
         this.connection.onopen = this.onOpen.bind(this);
 
         this.connection.onmessage = this.onMessage.bind(this);
-
         this.connection.onclose = this.onClose.bind(this);
     }
     
@@ -134,7 +132,7 @@ class SockJSConnection {
     close(){
         this.connection.close();
         if(this.monitor) {
-            this.monitor.removeConnection(this);
+            this.monitor.destroy();
             this.monitor = null;
         }
     }
@@ -149,26 +147,13 @@ class SockJSConnection {
         }
     }
 
-    send(action, payload) {
-        payload = payload || {};
-        var token = tokens.getToken();
-        if (!token) {
-            console.error("send:SESSION IS DEAD");
-            return
-        }
-
-        var msg = {
-            action:action,
-            jwt:token,
-            data:payload
-        }
-
+    send(msg) {
         if (!this.isOpen()) {
             console.log("send:connection is closed");
             return false;
         }
 
-        var data = this._prepare(msg);
+        var data = this._prepare(msg || {});
 
         if (!data) {
             console.log("send:data is null");
@@ -183,6 +168,51 @@ class SockJSConnection {
             return false;
         }
     }
+
+    createSession(tokenName, observers) {
+        return  new Session(this, tokenName);
+    }
 }
 
-export  {SockJSConnection, Monitor};
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+class Session{
+    constructor(connection, tokenName) {
+        this.tokenName = tokenName;
+        this.cookies = new Cookies();
+    }
+
+    save(token, exp) {
+        this.cookies.set(this.tokenName, token, {expires:new Date(parseInt(exp, 10) + 1000 * 10), path:"/"});
+    }
+
+    exists(){
+        return this.getId() !== undefined;
+    }
+
+    getId(){
+        return this.cookies.get(this.tokenName);
+    }
+
+    logout(){
+        return this.cookies.remove(this.tokenName);
+    }
+
+    send(action, payload) {
+        if(!this.exists()) {
+            console.error("Session:send not active");
+        }
+
+        var data = {
+            action=action,
+            sid=this.getId(),
+            data:payload
+       }
+       return this.connection.send(data);
+    }
+}
+
+
+export default SockJSConnection;

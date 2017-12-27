@@ -13,7 +13,7 @@ import AppBar from 'material-ui/AppBar';
                                 //     </Col>
                                 // </Row>
 
-class TerminalScreen extends Component {
+class MainScreen extends Component {
     constructor(props){
         super(props);
         this.state={
