@@ -42,7 +42,6 @@ def decode_payload(token, secret, algo):
     try:
         return jwt.decode(token, secret, algorithm=algo)
     except jwt.ExpiredSignatureError as e:
-        print "EXPIRED", e.message
         raise SessionExpiredError(e.message)
     except Exception as e:
         raise UnauthorizedAccessError(e.args)

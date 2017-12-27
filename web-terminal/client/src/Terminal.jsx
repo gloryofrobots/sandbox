@@ -2,7 +2,7 @@
 import React from 'react';
 import Console from "react-console-component";
 // import 'react-console-component/main.css';
-import config from "./config";
+import './react-console.css';
 
 class Terminal extends Console {
     command (cmd) {
