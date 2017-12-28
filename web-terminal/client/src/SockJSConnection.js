@@ -30,15 +30,18 @@ class SockJSConnection {
         this.sockjs.onclose = this.onClose.bind(this);
     }
     
-    onMessage(e) {
-        var data = e.data;
+    onMessage(event) {
+        var data = event.data;
+
         var msg;
         try {
             msg = JSON.parse(data);
         } catch (e) {
-            console.log("JSON parse Error:", data);
+            console.log("JSON parse Error:", e,  data);
+            return;
         }
 
+        console.log("RECEIVED", msg);
         var session = this.sessions[msg.sid];
         if (!session) {
             console.error("SJConn:onMessage bad session");
@@ -149,7 +152,7 @@ class Monitor{
     }
 
     monitor() {
-        // console.log("monitor");
+        console.log("monitor");
         if(this.connection.isOpen()) {
             return;
         }

@@ -1,12 +1,13 @@
 import tornado.gen
 import tornado.web
-import security
 import logging
-import protocol
-import conn
 
-class PingProtocol(protocol.Protocol):
-    def _schemas(self):
+from webterm.controller import controller
+
+
+class PingController(controller.Controller):
+
+    def get_schemas(self):
         return [
             {
                 "action": "PING",
@@ -15,14 +16,11 @@ class PingProtocol(protocol.Protocol):
             },
         ]
 
-    def _actions(self):
+    def get_actions(self):
         return {
-            "PING":self.on_ping,
+            "PING": self.on_ping,
         }
 
     def on_ping(self, response, msg):
         logging.info("ping %s", msg)
-        response.write(self.protocol.Pong())
-
-
-
+        response.send(self.protocol.Pong())

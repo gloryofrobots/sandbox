@@ -1,4 +1,3 @@
-
 import json
 import validictory
 import copy

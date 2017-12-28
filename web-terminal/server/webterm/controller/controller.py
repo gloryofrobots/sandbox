@@ -1,26 +1,23 @@
 import json
 import tornado.gen
 import tornado.web
-import security
 import logging
 import sockjs.tornado
 import tornado.ioloop
-import input_schema
-import output_schema
-import config
+from webterm import (input_schema, output_schema, security)
 
 
-class Protocol(object):
+
+class Controller(object):
     def __init__(self):
-        self.validator = input_schema.create_validator(self._schemas())
-        self.actions = self._actions()
+        self.validator = input_schema.create_validator(self.get_schemas())
         self.protocol = output_schema.Schema
         self.loops = []
 
-    def _actions(self):
+    def get_actions(self):
         raise RuntimeError("Abstract method")
 
-    def _schemas(self):
+    def get_schemas(self):
         raise RuntimeError("Abstract method")
 
     def add_loop(self, cb, interval):
@@ -30,7 +27,7 @@ class Protocol(object):
         self.loops.append(loop)
         return loop
 
-    def validate(msg):
+    def validate(self, msg):
         self.validator.validate(msg)
 
     def remove_loop(self, loop):
@@ -38,7 +35,7 @@ class Protocol(object):
         loop.stop()
 
     def close(self):
-        logging.debug("close protocol loops:%d", len(self.loops)) 
+        logging.debug("close controller loops:%d", len(self.loops)) 
         for loop in self.loops:
             loop.stop()
         self.loops = []
@@ -46,4 +43,3 @@ class Protocol(object):
 
     def _on_close(self):
         pass
-
