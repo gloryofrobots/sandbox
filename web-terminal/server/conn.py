@@ -84,14 +84,14 @@ class BaseConnection(sockjs.tornado.SockJSConnection):
         try:
             action = msg["action"]
             method = self.actions[action]
-            method(msg["jwt"], msg["data"])
-            logging.info("Action %s handled", action)
+            return method
         except KeyError as e:
             raise UnsupportedActionError(e.args, action)
         
     def on_message(self, message):
         try:
-            self.dispatch_message(message)
+            method = self.dispatch_message(message)
+            method(msg)
         except MessageParseError as e:
             logging.error("%s -- %s", "SOCKJS PARSE ERROR", str(e))
             self.respond_error("INVALID_FORMAT", message)
@@ -107,7 +107,7 @@ class BaseConnection(sockjs.tornado.SockJSConnection):
             self.respond_error("ERROR", "UNAUTHORIZED_ACCESS", message)
         except Exception as e:
             self.respond_error("INVALID_ACTION", message)
-            logging.error("%s -- %s", "SOCKJS DISPACTH ERROR", str(e))
+            logging.error("%s -- %s", "RUNTIME ERROR", str(e))
             
     def send_json(self, data):
         msg = json.dumps(data)

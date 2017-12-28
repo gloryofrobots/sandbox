@@ -4,13 +4,14 @@ import tornado.options
 import tornado.ioloop
 import tornado.web
 import tornado.gen
-import motor.motor_tornado
 
 import register
-import auth
-import echo
+import entry
 import sockjs.tornado
 
+def create_connection(*args, **kwargs):
+    return entry.Connection(*args, **kwargs)
+    
 
 def main(config):
     # initialize file logging
@@ -21,24 +22,10 @@ def main(config):
         tornado.options.options['log_file_prefix'] = config.LOG_FILE
         tornado.options.parse_command_line()
 
-    client = motor.motor_tornado.MotorClient(config.MONGODB_HOST)
-    client.drop_database("jwtauth")
-    db = client.jwtauth
-    users = db.users
-
-    echo_router = sockjs.tornado.SockJSRouter(echo.TimeEchoConnection, '/time_echo')
-
-    routes = [
-        (r"/register", register.RegisterHandler),
-        (r"/auth", auth.AuthHandler),
-        (r"/logout", auth.LogOutHandler),
-    ]
-
-    routes += echo_router.urls
-
-    app = tornado.web.Application(routes,
+    router = sockjs.tornado.SockJSRouter(entry.Connection, '/entry', dict(config=config))
+    # router = sockjs.tornado.SockJSRouter(create_connection, '/entry', dict(config=config))
+    app = tornado.web.Application(router.urls,
         debug=config.DEBUG,
-        db=db,
         config=config
     )
 

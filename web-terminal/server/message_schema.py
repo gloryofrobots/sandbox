@@ -4,19 +4,14 @@ import validictory
 import copy
 import logging
 
-COMMON_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "action": {"type": "string"},
-        "data": {"type": "object", "properties": None},
-    }
-}
 
 COMMON_SOCKJS_SCHEMA = {
     "type": "object",
     "properties": {
         "action": {"type": "string"},
-        "jwt": {"type": "string"},
+        "sid": {"type":"integer", "required":False},
+        "token": {"type":"string", "required":False},
+        # "jwt": {"type": "string"},
         "data": {"type": "object", "properties": None},
     }
 }
@@ -30,11 +25,6 @@ def extend_child_schemas(parent, schemas):
         full_schemas[schema["action"]] = full_schema
 
     return full_schemas
-
-
-def create_validator(schemas):
-    new_schemas = extend_child_schemas(COMMON_SCHEMA, schemas)
-    return Validator(new_schemas)
 
 
 def create_sockjs_validator(schemas):

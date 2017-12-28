@@ -28,7 +28,7 @@ class Terminal extends React.Component {
   }
 
   interpreter(command, term){
-      console.log("Session", this.props.session);
+      this.props.session.send("PING", {});
       console.log($.terminal.parse_command(command));
       console.log($.terminal.parse_arguments(command));
   }
@@ -37,9 +37,9 @@ class Terminal extends React.Component {
     return (
       <div>
         <TerminalWrapper
-          interpreter={this.interpreter}
+           interpreter={this.interpreter}
            checkArity={false}
-          greetings="Type help to see available commands"/>
+           greetings={"Type help to see available commands\n"}/>
       </div>
     );
   }

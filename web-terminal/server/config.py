@@ -2,9 +2,7 @@ DEBUG = True
 
 PORT = 8882
 
-MONGODB_HOST = 'mongodb://localhost:27017'
-
-LOG_FILE = "log/auth.log"
+LOG_FILE = "log/server.log"
 
 # allowed cross origin request domains
 CORS_DOMAINS = "*"

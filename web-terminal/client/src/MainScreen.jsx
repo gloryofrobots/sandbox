@@ -12,7 +12,7 @@ class MainScreen extends Component {
         super(props);
         this.state={
         };
-        this.termCount = 3;
+        this.termCount = 1;
         this.colWidth = 12 / this.termCount;
     }
 
