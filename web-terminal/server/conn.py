@@ -2,10 +2,10 @@ import json
 import tornado.gen
 import tornado.web
 import security
+import input_schema
 import logging
 import sockjs.tornado
 import tornado.ioloop
-import message_schema
 import config
 
 class MessageParseError(Exception):
@@ -30,72 +30,92 @@ def jwtauth(fn):
         return fn (self, payload, msg, *args)
     return wrapper
 
+
+class Response(object):
+    def __init__(self, conn, message):
+        super(Response, self).__init__()
+        self.conn = connection
+        self.sid = message.get("sid", None)
+        self.rid = message.get("rid", None)
+        self.token = message.get("token", None)
+
+    def respond(self, message):
+        if self.sid:
+            message["sid"] = self.sid
+        if self.token:
+            message["token"] = self.token
+        if self.rid:
+            message["rid"] = self.rid
+            
+        self.conn.send_json(message)
+    
+
 class BaseConnection(sockjs.tornado.SockJSConnection):
     def __init__(self, *args, **kwargs):
         super(BaseConnection, self).__init__(*args, **kwargs)
         self.validator = None
         self.actions = {}
         self.loops = []
-        
+        self.actions = {}
+        self.protocols = []
+
+    def add_protocol(protocol):
+        actions = protocol.get_actions()
+        for action in actions:
+            if action in self.actions:
+                raise ProtocolConflictError(action)
+                self.actions[action] = (protocol, actions[action])
+
     def on_open(self, info):
         logging.info("SockJs open %s", str(info))
-        self.validator = message_schema.create_sockjs_validator(self.get_schemas())
-        self.actions = self.get_actions()
-        self.loops = []
         self._on_open(info)
         
     def _on_open(self, info):
         pass
 
-    def add_loop(self, cb, interval):
-        # tornado.ioloop.IOLoop.current().spawn_callback(self.echo_loop)
-        loop = tornado.ioloop.PeriodicCallback(cb, interval)
-        loop.start()
-        self.loops.append(loop)
-        return loop
-
-    def remove_loop(self, loop):
-        self.loops.remove(loop)
-        loop.stop()
-
     def on_close(self):
         logging.debug("close connection loops:%d", len(self.loops)) 
-        for loop in self.loops:
-            loop.stop()
-        self.loops = []
+        for protocol in self.protocols:
+            protocol.close()
+
+        self.protocols = []
         self._on_close()
 
     def _on_close(self):
         pass
 
-    def dispatch_message(self, message):
-        method = None
+    def parse(self, message):
         try:
             msg = json.loads(message)
         except Exception as e:
             raise MessageParseError(e.args, message)
-
-        try:
-            self.validator.validate(msg)
-        except Exception as e:
-            logging.error("VALIDATE ERROR:!! %s", type(e))
-            raise InvalidMessageSchemaError(e.args, message)
-
+        return msg
+        
+    def dispatch_message(self, message):
         try:
             action = msg["action"]
-            method = self.actions[action]
-            return method
+        except KeyError as e:
+            logging.error("VALIDATE ERROR: NO ACTION !!")
+            raise InvalidMessageSchemaError(e.args, action)
+
+        try:
+            protocol, method = self.actions[action]
         except KeyError as e:
             raise UnsupportedActionError(e.args, action)
         
-    def on_message(self, message):
+        protocol.validate(msg)
+        return method,msg
+
+    def on_message(self, data):
         try:
+            message = self.parse_message(data)
             method = self.dispatch_message(message)
-            method(msg)
+            response = Response(self, message)
+            method(response, message)
         except MessageParseError as e:
             logging.error("%s -- %s", "SOCKJS PARSE ERROR", str(e))
             self.respond_error("INVALID_FORMAT", message)
-        except InvalidMessageSchemaError as e:
+        except input_schema.ValidationError as e:
             logging.error("%s -- %s", "SOCKJS VALIDATE ERROR", str(e))
             self.respond_error("INVALID_SCHEMA", message)
         except UnsupportedActionError as e:
@@ -109,23 +129,6 @@ class BaseConnection(sockjs.tornado.SockJSConnection):
             self.respond_error("INVALID_ACTION", message)
             logging.error("%s -- %s", "RUNTIME ERROR", str(e))
             
-    def send_json(self, data):
+    def write_json(self, data):
         msg = json.dumps(data)
         self.send(msg)
-
-    def respond(self, action, data):
-        if data == None:
-            self.send_json(dict(action=action))
-        else:
-            self.send_json(dict(action=action, data=data))
-
-    def respond_empty(self, action):
-        self.respond(action, None)
-
-    def respond_error(self, code, message):
-        self.respond("ERROR", dict(code=code, msg=message))
-
-    def terminate_session(self):
-        self.respond_empty("SESSION_TERMINATED")
-
-

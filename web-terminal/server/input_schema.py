@@ -5,7 +5,7 @@ import copy
 import logging
 
 
-COMMON_SOCKJS_SCHEMA = {
+COMMON_SCHEMA = {
     "type": "object",
     "properties": {
         "action": {"type": "string"},
@@ -27,12 +27,12 @@ def extend_child_schemas(parent, schemas):
     return full_schemas
 
 
-def create_sockjs_validator(schemas):
-    new_schemas = extend_child_schemas(COMMON_SOCKJS_SCHEMA, schemas)
+def create_validator(schemas):
+    new_schemas = extend_child_schemas(COMMON_SCHEMA, schemas)
     return Validator(new_schemas)
 
 
-class ValidationException(Exception):
+class ValidationError(Exception):
     pass
 
 
@@ -47,16 +47,16 @@ class Validator(object):
 
     def validate(self, msg_data):
         if "action" not in msg_data:
-            raise ValidationException("action")
+            raise ValidationError("action")
 
         action = msg_data["action"]
 
         if action not in self.message_schemas:
-            raise ValidationException("Unknown Action" + str(action))
+            raise ValidationError("Unknown Action" + str(action))
 
         schema = self.message_schemas[action]
         try:
             validictory.validate(
                 msg_data, schema, disallow_unknown_properties=True)
         except Exception as e:
-            raise ValidationException(str(e))
+            raise ValidationError(str(e))

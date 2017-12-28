@@ -5,10 +5,10 @@ import tornado.gen
 import tornado.web
 import security
 import logging
+import protocol
 
-
-class Connection(conn.BaseConnection):
-    def get_schemas(self):
+class PingProtocol(protocol.Protocol):
+    def _schemas(self):
         return [
             {
                 "action": "PING",
@@ -17,14 +17,12 @@ class Connection(conn.BaseConnection):
             },
         ]
 
-    def get_actions(self):
+    def _actions(self):
         return {
             "PING":self.on_ping,
         }
 
-    @tornado.gen.coroutine
-    def on_ping(self, msg):
+    def on_ping(self, response, msg):
         logging.info("ping %s", msg)
-        self.respond_empty("PONG", {"sid":msg["data"]["sid"]})
-
+        response.write(self.protocol.Pong())
 
