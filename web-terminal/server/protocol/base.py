@@ -1,11 +1,9 @@
-
-import handler
-import conn
 import tornado.gen
 import tornado.web
 import security
 import logging
 import protocol
+import conn
 
 class PingProtocol(protocol.Protocol):
     def _schemas(self):
@@ -25,4 +23,6 @@ class PingProtocol(protocol.Protocol):
     def on_ping(self, response, msg):
         logging.info("ping %s", msg)
         response.write(self.protocol.Pong())
+
+
 
