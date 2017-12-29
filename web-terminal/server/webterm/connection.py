@@ -4,7 +4,7 @@ import tornado.web
 from webterm import (security, input_schema)
 import logging
 import sockjs.tornado
-import output_schema
+import response_protocol
 
 
 class MessageParseError(Exception):
@@ -139,7 +139,7 @@ class Connection(sockjs.tornado.SockJSConnection):
         #     logging.error("%s -- %s", "RUNTIME ERROR", str(e))
 
     def write_error(self, error_type, message):
-        self.write_json(output_schema.Schema.Error(error_type, message))
+        self.write_json(response_protocol.Protocol().Error(error_type, message))
 
     def write_json(self, data):
         msg = json.dumps(data)

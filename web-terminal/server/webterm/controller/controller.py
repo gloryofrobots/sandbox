@@ -4,20 +4,24 @@ import tornado.web
 import logging
 import sockjs.tornado
 import tornado.ioloop
-from webterm import (input_schema, output_schema, security)
-
+from webterm import (input_schema, security)
 
 
 class Controller(object):
-    def __init__(self):
+    def __init__(self, options):
         self.validator = input_schema.create_validator(self.get_schemas())
-        self.protocol = output_schema.Schema
+        self.protocol = self.get_protocol()
+        self.options = options
+        self.db = self.options["db"]
         self.loops = []
 
     def get_actions(self):
         raise RuntimeError("Abstract method")
 
     def get_schemas(self):
+        raise RuntimeError("Abstract method")
+
+    def get_protocol(self):
         raise RuntimeError("Abstract method")
 
     def add_loop(self, cb, interval):

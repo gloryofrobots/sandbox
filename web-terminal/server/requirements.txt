@@ -5,3 +5,4 @@ pyjwt
 validictory
 passlib
 sockjs-tornado
+momoko

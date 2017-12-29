@@ -52,7 +52,8 @@ class Session{
     }
 
     exists(){
-        return this.getToken() != undefined;
+        return true;
+        // return this.getToken() != undefined;
     }
 
     getToken(){
@@ -126,12 +127,12 @@ class Session{
        return this.connection._send(data);
     }
 
-    sendSync(action, payload, callback) {
+    sendSync(callback, action, payload) {
        if(!this.exists()) {
            console.error("Session:send not active");
             return;
        }
-
+       payload = payload || {}
        var requestId = this.addResponseCallback(callback);
        var data = {
             action:action,

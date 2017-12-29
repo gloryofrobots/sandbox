@@ -4,22 +4,25 @@ import tornado.options
 import tornado.ioloop
 import tornado.web
 import sockjs.tornado
+import webterm.db
 
 ######################################################
 
 
-def make_connection(*args, **kwargs):
-    from webterm.controller import (basic, )
-    import webterm.connection
-    controllers = [
-        basic.PingController()
-    ]
+def make_connection(options):
+    def _constructor(*args, **kwargs):
+        from webterm.controller import (basic, )
+        import webterm.connection
+        controllers = [
+            basic.PingController(options)
+        ]
 
-    connection = webterm.connection.Connection(*args, **kwargs)
-    for controller in controllers:
-        connection.add_controller(controller)
+        connection = webterm.connection.Connection(*args, **kwargs)
+        for controller in controllers:
+            connection.add_controller(controller)
 
-    return connection
+        return connection
+    return _constructor
 
 
 ######################################################
@@ -36,12 +39,14 @@ def main(config):
         # this will enable logging options
         tornado.options.parse_command_line()
     # print protocol.base.PingProtocol
+    db = webterm.db.create_db(config, tornado.ioloop.IOLoop.current())
     router = sockjs.tornado.SockJSRouter(
-        make_connection, '/entry', dict(config=config))
+        make_connection(dict(db=db, config=config)), '/entry')
 
     application = tornado.web.Application(router.urls,
                                           debug=config.DEBUG,
-                                          config=config
+                                          config=config,
+                                          db=db
                                           )
 
     application.listen(config.PORT)
