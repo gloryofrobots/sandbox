@@ -8,6 +8,7 @@ function getRandomInt(min, max) {
 
 class Session{
     constructor(id, connection, tokenName, observers) {
+        this.cookies = new Cookies();
         this.id = id;
         this.connection = connection;
         this.tokenName = tokenName;
@@ -18,7 +19,6 @@ class Session{
         };
         this.observe(observers || {});
 
-        this.cookies = new Cookies();
         this.token = null;
     }
 
@@ -52,8 +52,7 @@ class Session{
     }
 
     exists(){
-        return true;
-        // return this.cookies.has(this.tokenName);
+        return this.getToken() != undefined;
     }
 
     getToken(){

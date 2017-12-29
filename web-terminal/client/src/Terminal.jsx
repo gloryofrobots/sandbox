@@ -2,13 +2,16 @@ import React from 'react';
 import JQuery  from 'jquery';
 import "./jquery.terminal.css";
 import 'jquery.terminal';
+import _ from "underscore";
 var $ = JQuery;
 
 
 class Terminal extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
+
+    this.commands = {};
+
     this.interpreter_2 = {
         clear:(command) => {
             this.clear();
@@ -24,23 +27,46 @@ class Terminal extends React.Component {
         }
     };
 
-    this.interpreter = this.interpreter.bind(this);
+    var greetings;
+      
+
+    if (!this.props.session.exists()){
+        greetings = "Type login [username] [password] for authentication \n";
+        this.interpreter = this._auth_interpreter.bind(this);
+    } else{
+        greetings = "Type help to see available commands\n";
+        this.interpreter = this._interpreter.bind(this);
+    }
+
+    this.state = {greetings:greetings};
   }
 
-  interpreter(command, term){
-      this.props.session.send("PING", {});
+  addCommand(command) {
+      this.commands[command.name] = command;
+  }
+
+  addCommands(commands) {
+      _.each(commands, (command) => this.addCommand(command));
+  }
+
+  _auth_interpreter(command, term){
       console.log($.terminal.parse_command(command));
       console.log($.terminal.parse_arguments(command));
+   }
+
+  _interpreter(command_text, term){
+      var command_data = $.terminal.parse_command(command_text);
+      // var command
+
+      console.log(command_data);
   }
 
   render() {
     return (
-      <div>
         <TerminalWrapper
            interpreter={this.interpreter}
            checkArity={false}
-           greetings={"Type help to see available commands\n"}/>
-      </div>
+           greetings={this.state.greetings}/>
     );
   }
 }
