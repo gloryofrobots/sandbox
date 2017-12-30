@@ -5,7 +5,7 @@ class Postgresql:
         GET_USERS = "SELECT * FROM USERS"
 
 
-_LIBTYPES = dict(posgresql=Postgresql())
+_LIBTYPES = dict(postgresql=Postgresql())
 
 
 def get_library(dbtype):

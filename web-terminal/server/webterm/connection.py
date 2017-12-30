@@ -1,10 +1,11 @@
 import json
 import tornado.gen
 import tornado.web
-from webterm import (security, input_schema)
+from webterm import (security, request_schema)
 import logging
 import sockjs.tornado
 import response_protocol
+import webterm.component.component
 
 
 class MessageParseError(Exception):
@@ -64,16 +65,13 @@ class Connection(sockjs.tornado.SockJSConnection):
         self.validator = None
         self.actions = {}
         self.loops = []
-        self.actions = {}
-        self.controllers = []
+        self.controllers = {}
 
     def add_controller(self, controller):
-        actions = controller.get_actions()
-        for action in actions:
-            if action in self.actions:
-                raise ControllerConflictError(action)
+        if controller.route in self.controllers:
+            raise ControllerConflictError(controller.route)
 
-            self.actions[action] = (controller, actions[action])
+        self.controllers[controller.route] = controller
 
     def on_open(self, info):
         logging.info("SockJs open %s", str(info))
@@ -84,10 +82,10 @@ class Connection(sockjs.tornado.SockJSConnection):
 
     def on_close(self):
         logging.debug("close connection loops:%d", len(self.loops))
-        for controller in self.controllers:
+        for controller in self.controllers.values():
             controller.close()
 
-        self.controllers = []
+        self.controllers = {}
         self._on_close()
 
     def _on_close(self):
@@ -115,27 +113,52 @@ class Connection(sockjs.tornado.SockJSConnection):
         controller.validate(message)
         return method
 
+    def split_action(self, action):
+        parts = action.split("/")
+        if len(parts) < 2:
+            raise MessageParseError("Invalid route format")
+        controller = parts[0]
+        controller_action = "/".join(parts[1:])
+        return controller, controller_action
+
+    @tornado.get.coroutine
     def on_message(self, data):
         try:
             message = self.parse(data)
-            method = self.dispatch_message(message)
-            response = Response(self, message)
-            method(response, message)
         except MessageParseError as e:
             logging.error("%s -- %s", "SOCKJS PARSE ERROR", str(e))
             self.write_error("INVALID_FORMAT", message)
-        except input_schema.ValidationError as e:
-            logging.error("%s -- %s", "SOCKJS VALIDATE ERROR", str(e))
+
+        try:
+            action = message["action"]
+        except KeyError as e:
+            logging.error("VALIDATE ERROR: NO ACTION !!")
             self.write_error("INVALID_SCHEMA", message)
-        except UnsupportedActionError as e:
-            self.write_error("INVALID_ACTION", message)
-            logging.error("%s -- %s", "SOCKJS DISPACTH ERROR", str(e))
+
+        try:
+            controller_name, controller_action = self.split_action(action)
+        except MessageParseError as e:
+            logging.error("VALIDATE ERROR:  INVALID ROUTE !!")
+            self.write_error("INVALID_SCHEMA", message)
+
+        try:
+            controller = self.controllers[controller_name]
+        except KeyError as e:
+            logging.error("UNKNOWN CONTROLLER", controller_name)
+            self.write_error("INVALID_ROUTE", message)
+
+        response = Response(self, message)
+
+        try:
+            yield controller.dispatch(controller_action, response, message)
         except security.SessionExpiredError as e:
             self.write_error("SESSION_TERMINATED", message)
         except security.UnauthorizedAccessError as e:
             self.write_error("UNAUTHORIZED_ACCESS", message)
+        except webterm.component.component.InvalidActionError as e:
+            self.write_error("INVALID_ACTION", message)
         # except Exception as e:
-        #     self.write_error("INVALID_ACTION", message)
+        #     self.write_error("Server Error", message)
         #     logging.error("%s -- %s", "RUNTIME ERROR", str(e))
 
     def write_error(self, error_type, message):

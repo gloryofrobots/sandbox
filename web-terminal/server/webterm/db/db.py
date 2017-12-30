@@ -5,7 +5,6 @@ from tornado.gen import Return
 
 
 class DBMapper(object):
-
     def __init__(self, db, library):
         super(DBMapper, self).__init__()
         self.db = db
@@ -62,7 +61,7 @@ class Users(DBMapper):
 class DB(object):
 
     def __init__(self, connection, library):
-        super(DBMapper, self).__init__()
+        super(DB, self).__init__()
         self.connection = connection
         self.Users = Users(connection, library)
 

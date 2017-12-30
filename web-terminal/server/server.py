@@ -9,12 +9,12 @@ import webterm.db
 ######################################################
 
 
-def make_connection(options):
+def make_connection(config, db):
     def _constructor(*args, **kwargs):
-        from webterm.controller import (basic, )
+        from webterm.component.basic import basic
         import webterm.connection
         controllers = [
-            basic.PingController(options)
+            basic.create_controller("basic", config, db)
         ]
 
         connection = webterm.connection.Connection(*args, **kwargs)
@@ -23,7 +23,6 @@ def make_connection(options):
 
         return connection
     return _constructor
-
 
 ######################################################
 ######################################################
@@ -41,7 +40,7 @@ def main(config):
     # print protocol.base.PingProtocol
     db = webterm.db.create_db(config, tornado.ioloop.IOLoop.current())
     router = sockjs.tornado.SockJSRouter(
-        make_connection(dict(db=db, config=config)), '/entry')
+        make_connection(config, db), '/entry')
 
     application = tornado.web.Application(router.urls,
                                           debug=config.DEBUG,
