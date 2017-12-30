@@ -1,9 +1,8 @@
-import json
 import tornado.gen
 import tornado.web
 import logging
 import tornado.ioloop
-import webterm.request_schema
+import webterm.component.request_schema
 import webterm.security
 from webterm.component.error import (
     InvalidConfigurationError, InvalidActionError)
@@ -12,13 +11,13 @@ DEFAULT_DATA = {}
 
 
 class ResponseSchema(object):
-    def __init__(self, route):
+    def __init__(self, root):
         super(Controller, self).__init__()
-        self.route = route
+        self.root = root
 
     def create(self, action, payload=DEFAULT_DATA):
-        route = "/".join([self.route, action])
-        return dict(action=route, data=payload)
+        route = "/".join([self.root, action])
+        return dict(route=route, data=payload)
 
     def Error(self, error_type, message):
         return self.create("ERROR", {"type": error_type, "message": message})
@@ -48,13 +47,16 @@ class Controller(object):
             if action not in self.actions:
                 raise InvalidConfigurationError("Action %s not set" % action)
 
+    def validate(self, message):
+        self.validator.validate(message)
+
     @tornado.gen.coroutine
-    def dispatch(self, action, response, message):
+    def dispatch(self, request, response):
         try:
-            handler = self.actions[action]
+            handler = self.actions[request.action]
         except KeyError:
-            raise InvalidActionError(action)
-        result = yield handler(action)
+            raise InvalidActionError(request.action)
+        result = yield handler(request, response)
         raise tornado.gen.Result(result)
 
     def _actions(self):
@@ -66,9 +68,6 @@ class Controller(object):
         loop.start()
         self.loops.append(loop)
         return loop
-
-    def validate(self, msg):
-        self.validator.validate(msg)
 
     def remove_loop(self, loop):
         self.loops.remove(loop)
@@ -83,8 +82,3 @@ class Controller(object):
 
     def _on_close(self):
         pass
-
-
-def install_controller(connection, route, controller_type,
-                       request_schema, response_schema, db, config):
-    pass

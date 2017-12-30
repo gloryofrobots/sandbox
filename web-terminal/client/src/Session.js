@@ -37,7 +37,7 @@ class Session{
         var self = this;
         console.log("OBSERVE", observers);
         if (!_.isObject(observers)) {
-            console.error("expecting object{action:obserber || [...observers]}")
+            console.error("expecting object{route:obserber || [...observers]}")
             return;
          }
         _.each(observers,
@@ -82,11 +82,11 @@ class Session{
                 console.error("Invalid RID!")
                 return;
             }
-            observers = handlers[msg.action];
+            observers = handlers[msg.route];
             // faster than delete
             this.handlers[msg.rid] = undefined;
         } else {
-            observers = this.observers[msg.action];
+            observers = this.observers[msg.route];
         }
 
         _.each(observers, (observer) => observer(msg.data));
@@ -104,7 +104,7 @@ class Session{
         return requestId;
     }
 
-    authenticate(action, payload, callback) {
+    authenticate(route, payload, callback) {
        if (this.exists()) {
             throw new Error("Session has already authenticated");
        }
@@ -120,14 +120,14 @@ class Session{
        var data = {
             sid:this.id,
             rid:requestId,
-            action:action,
+            route:route,
             data:payload
        }
 
        return this.connection._send(data);
     }
 
-    sendSync(callback, action, payload) {
+    sendSync(callback, route, payload) {
        if(!this.exists()) {
            console.error("Session:send not active");
             return;
@@ -135,7 +135,7 @@ class Session{
        payload = payload || {}
        var requestId = this.addResponseCallback(callback);
        var data = {
-            action:action,
+            route:route,
             sid:this.id,
             rid:requestId,
             token:this.getToken(),
@@ -145,14 +145,14 @@ class Session{
        return this.connection._send(data);
     }
 
-    send(action, payload) {
+    send(route, payload) {
        if(!this.exists()) {
            console.error("Session:send not active");
             return;
        }
 
        var data = {
-            action:action,
+            route:route,
             sid:this.id,
             token:this.getToken(),
             data:payload

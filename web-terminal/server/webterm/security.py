@@ -14,6 +14,22 @@ class SessionExpiredError(Exception):
 class UnauthorizedAccessError(Exception):
     pass
 
+
+# must be used only on actions
+def authenticate(fn):
+    def wrapper(self, response, request):
+        token = response.token
+        payload = webterm.security.decode_payload(
+            token,
+            self.config.cfg.JWT_SECRET,
+            self.config.cfg.JWT_ALGO,
+        )
+
+        response.set_auth_data(payload)
+        return fn(self, response, request)
+    return wrapper
+
+
 def unix_time_millis(dt):
     return (dt - epoch).total_seconds() * 1000.0
 

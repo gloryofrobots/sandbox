@@ -1,15 +1,22 @@
 import json
 import tornado.gen
 import tornado.web
-from webterm import (security, request_schema)
+import webterm.security
+import webterm.component.request_schema
 import logging
 import sockjs.tornado
-import response_protocol
-import webterm.component.component
+import webterm.component
+import traceback
 
 
 class MessageParseError(Exception):
     pass
+
+
+class MessageProcessError(Exception):
+    def __init__(self, error_type, exception=None):
+        self.error_type = error_type
+        self.exception = exception
 
 
 class InvalidMessageSchemaError(Exception):
@@ -24,36 +31,43 @@ class ControllerConflictError(Exception):
     pass
 
 
-# must be used only on actions
-def jwtauth(fn):
-    def wrapper(self, token, msg, *args):
-        # payload = security.decode_payload(
-        #     token,
-        #     cfg.JWT_SECRET,
-        #     cfg.JWT_ALGO,
-        # )
-        pass
-        # return fn(self, payload, msg, *args)
-    return wrapper
+def split_route(action):
+    parts = action.split("/")
+    if len(parts) < 2:
+        raise MessageParseError("Invalid route format")
+    root = parts[0]
+    action = "/".join(parts[1:])
+    return root, action
+
+
+class Request(object):
+
+    def __init__(self, message):
+        super(Request, self).__init__()
+        self.message = message
+        self.data = message.get("data", {})
+        self.route = message.get("route")
+        self.root, self.action = split_route(self.route)
+
+        self.sid = message.get("sid", None)
+        self.rid = message.get("rid", None)
+        self.token = message.get("token", None)
 
 
 class Response(object):
 
-    def __init__(self, conn, message):
+    def __init__(self, conn, request):
         super(Response, self).__init__()
         self.conn = conn
-        self.sid = message.get("sid", None)
-        self.rid = message.get("rid", None)
-        self.token = message.get("token", None)
-        logging.info("message %s %s", message, self.sid)
+        self.request = request
 
     def send(self, message):
-        if self.sid is not None:
-            message["sid"] = self.sid
-        if self.token is not None:
-            message["token"] = self.token
-        if self.rid is not None:
-            message["rid"] = self.rid
+        if self.request.sid is not None:
+            message["sid"] = self.request.sid
+        if self.request.token is not None:
+            message["token"] = self.request.token
+        if self.request.rid is not None:
+            message["rid"] = self.request.rid
 
         self.conn.write_json(message)
 
@@ -62,7 +76,6 @@ class Connection(sockjs.tornado.SockJSConnection):
 
     def __init__(self, *args, **kwargs):
         super(Connection, self).__init__(*args, **kwargs)
-        self.validator = None
         self.actions = {}
         self.loops = []
         self.controllers = {}
@@ -113,56 +126,49 @@ class Connection(sockjs.tornado.SockJSConnection):
         controller.validate(message)
         return method
 
-    def split_action(self, action):
-        parts = action.split("/")
-        if len(parts) < 2:
-            raise MessageParseError("Invalid route format")
-        controller = parts[0]
-        controller_action = "/".join(parts[1:])
-        return controller, controller_action
-
-    @tornado.get.coroutine
-    def on_message(self, data):
+    @tornado.gen.coroutine
+    def _on_message(self, data):
         try:
             message = self.parse(data)
+            request = Request(message)
         except MessageParseError as e:
-            logging.error("%s -- %s", "SOCKJS PARSE ERROR", str(e))
-            self.write_error("INVALID_FORMAT", message)
+            raise MessageProcessError("INVALID_SCHEMA", e)
 
         try:
-            action = message["action"]
+            controller = self.controllers[request.root]
+            controller.validate(message)
         except KeyError as e:
-            logging.error("VALIDATE ERROR: NO ACTION !!")
-            self.write_error("INVALID_SCHEMA", message)
+            raise MessageProcessError("INVALID_ROUTE", e)
+        except webterm.component.request_schema.ValidationError as e:
+            raise MessageProcessError("INVALID_SCHEMA",  e)
+
+        response = Response(self, request)
 
         try:
-            controller_name, controller_action = self.split_action(action)
-        except MessageParseError as e:
-            logging.error("VALIDATE ERROR:  INVALID ROUTE !!")
-            self.write_error("INVALID_SCHEMA", message)
-
-        try:
-            controller = self.controllers[controller_name]
-        except KeyError as e:
-            logging.error("UNKNOWN CONTROLLER", controller_name)
-            self.write_error("INVALID_ROUTE", message)
-
-        response = Response(self, message)
-
-        try:
-            yield controller.dispatch(controller_action, response, message)
-        except security.SessionExpiredError as e:
-            self.write_error("SESSION_TERMINATED", message)
-        except security.UnauthorizedAccessError as e:
-            self.write_error("UNAUTHORIZED_ACCESS", message)
+            yield controller.dispatch(request, response)
+        except webterm.security.SessionExpiredError as e:
+            raise MessageProcessError("SESSION_TERMINATED", e)
+        except webterm.security.UnauthorizedAccessError as e:
+            raise MessageProcessError("UNAUTHORIZED_ACCESS", e)
         except webterm.component.component.InvalidActionError as e:
-            self.write_error("INVALID_ACTION", message)
-        # except Exception as e:
-        #     self.write_error("Server Error", message)
-        #     logging.error("%s -- %s", "RUNTIME ERROR", str(e))
+            raise MessageProcessError("INVALID_ACTION", e)
 
-    def write_error(self, error_type, message):
-        self.write_json(response_protocol.Protocol().Error(error_type, message))
+    @tornado.gen.coroutine
+    def on_message(self, data):
+        try:
+            yield self._on_message(data)
+        except MessageProcessError as e:
+            self.write_error(e.error_type, data, e.exception)
+        except Exception as e:
+            self.write_error("UNCAUGHT_SERVER_ERROR", data, e)
+
+    def write_error(self, error_type, message, exception=None):
+        logging.error(
+            "CONN ERROR \n\t type:%s \n\t message%s \n\t exception:%s",
+            error_type, message, traceback.format_exc(exception, 10))
+
+        self.write_json(
+            webterm.component.ResponseSchema().Error(error_type, message))
 
     def write_json(self, data):
         msg = json.dumps(data)

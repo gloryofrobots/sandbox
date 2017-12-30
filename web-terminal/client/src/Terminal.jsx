@@ -70,6 +70,14 @@ class Terminal extends React.Component {
 
   setupAuth(){
       var interpreter = new Interpreter({
+            "ping" :(term, command) => {
+                this.props.session.sendSync(
+                    (msg) => {
+                        console.log("PING", msg);
+                    },
+                    "BASIC/PING"
+                );
+            },
             "users" :(term, command) => {
                 this.props.session.sendSync(
                     (msg) => {

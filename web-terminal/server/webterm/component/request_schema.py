@@ -7,7 +7,7 @@ import logging
 COMMON_SCHEMA = {
     "type": "object",
     "properties": {
-        "action": {"type": "string"},
+        "route": {"type": "string"},
         "sid": {"type":"integer", "required":False},
         "token": {"type":"string", "required":False},
         # "jwt": {"type": "string"},
