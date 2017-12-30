@@ -24,16 +24,19 @@ class ResponseSchema(component.ResponseSchema):
 ##########################################
 
 class Controller(component.Controller):
-    def get_actions(self):
+    def _actions(self):
         return {
             "PING": self.on_ping,
         }
 
-    def on_ping(self, response, msg):
-        logging.info("ping %s", msg)
-        ping = yield seld.db.connection.ping()
-        logging.info("DB PING %s", ping)
-        response.send(self.protocol.Pong())
+    @tornado.gen.coroutine
+    def on_ping(self, request, response):
+        logging.info("ping received %s", request)
+        # raise RuntimeError("d1111111")
+        # ping = yield self.db.connection.ping()
+        # logging.info("DB PING %s", ping)
+        response.send(self.schema.Pong())
+        # raise tornad.gen.Return(None)
 
 ##########################################
 ##########################################

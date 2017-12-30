@@ -84,12 +84,13 @@ class SockJSConnection {
         }
     }
 
-    _send(msg) {
+    send(msg) {
         if (!this.isOpen()) {
             console.log("send:connection is closed");
             return false;
         }
 
+        console.log("PREPARE TO SEND", msg)
         var data = this._prepare(msg || {});
 
         if (!data) {
@@ -98,6 +99,7 @@ class SockJSConnection {
         }
         
         try {
+            console.log("SENDING", msg)
             this.sockjs.send(data);
             return true;
         } catch(e) {

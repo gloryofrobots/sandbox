@@ -19,7 +19,7 @@ class UnauthorizedAccessError(Exception):
 def authenticate(fn):
     def wrapper(self, response, request):
         token = response.token
-        payload = webterm.security.decode_payload(
+        payload = decode_payload(
             token,
             self.config.cfg.JWT_SECRET,
             self.config.cfg.JWT_ALGO,

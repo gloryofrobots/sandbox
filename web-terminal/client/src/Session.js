@@ -18,6 +18,7 @@ class Session{
             }
         };
         this.observe(observers || {});
+        this.handlers = {};
 
         this.token = null;
     }
@@ -75,28 +76,28 @@ class Session{
             return;
         }
 
-        var observers;
+        console.log('SESSION ' + this.id + ' RECEIVED ', this.tokenName, msg);
         if (_.has(msg, "rid")){
-            var handlers = this.handlers[msg.rid];
-            if (!handlers) {
+            var observer = this.handlers[msg.rid];
+            if (!observer) {
                 console.error("Invalid RID!")
                 return;
             }
-            observers = handlers[msg.route];
+            console.log("OBSERVER", observer, this.handlers)
+            observer(msg)
             // faster than delete
             this.handlers[msg.rid] = undefined;
         } else {
-            observers = this.observers[msg.route];
+            var observers = this.observers[msg.route];
+            _.each(observers, (observer) => observer(msg.data));
         }
 
-        _.each(observers, (observer) => observer(msg.data));
-        console.log('RECEIVED ', this.tokenName, msg, this.observers);
     }
 
     addResponseHandler(callback) {
         var requestId = getRandomInt(0, 100000);
 
-        while(!_.isUndefined(this.handlers, requestId)) {
+        while(!_.isUndefined(this.handlers[requestId])) {
             requestId = getRandomInt(0, 100000);
         }
 
@@ -109,7 +110,7 @@ class Session{
             throw new Error("Session has already authenticated");
        }
 
-       var requestId = this.addResponseCallback(
+       var requestId = this.addResponseHandler(
            (msg) => {
                if(callback(msg) === true) {
                    this.save(msg.data.token, msg.data.exp);
@@ -124,7 +125,7 @@ class Session{
             data:payload
        }
 
-       return this.connection._send(data);
+       return this.connection.send(data);
     }
 
     sendSync(callback, route, payload) {
@@ -133,7 +134,7 @@ class Session{
             return;
        }
        payload = payload || {}
-       var requestId = this.addResponseCallback(callback);
+       var requestId = this.addResponseHandler(callback);
        var data = {
             route:route,
             sid:this.id,
@@ -141,8 +142,8 @@ class Session{
             token:this.getToken(),
             data:payload
        }
-
-       return this.connection._send(data);
+      
+       return this.connection.send(data);
     }
 
     send(route, payload) {
@@ -158,7 +159,7 @@ class Session{
             data:payload
        }
 
-       return this.connection._send(data);
+       return this.connection.send(data);
     }
 }
 

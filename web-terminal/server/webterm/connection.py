@@ -5,7 +5,7 @@ import webterm.security
 import webterm.component.request_schema
 import logging
 import sockjs.tornado
-import webterm.component
+from webterm.component import component
 import traceback
 
 
@@ -14,7 +14,9 @@ class MessageParseError(Exception):
 
 
 class MessageProcessError(Exception):
+
     def __init__(self, error_type, exception=None):
+        super(MessageProcessError, self).__init__(error_type, exception)
         self.error_type = error_type
         self.exception = exception
 
@@ -52,6 +54,12 @@ class Request(object):
         self.sid = message.get("sid", None)
         self.rid = message.get("rid", None)
         self.token = message.get("token", None)
+
+    def __repr__(self):
+        return "<Request %s %s>" % (self.route, self.message)
+
+    def __str__(self):
+        return self.__repr__()
 
 
 class Response(object):
@@ -111,23 +119,9 @@ class Connection(sockjs.tornado.SockJSConnection):
             raise MessageParseError(e.args, message)
         return msg
 
-    def dispatch_message(self, message):
-        try:
-            action = message["action"]
-        except KeyError as e:
-            logging.error("VALIDATE ERROR: NO ACTION !!")
-            raise InvalidMessageSchemaError(e.args, action)
-
-        try:
-            controller, method = self.actions[action]
-        except KeyError as e:
-            raise UnsupportedActionError(e.args, action)
-
-        controller.validate(message)
-        return method
-
     @tornado.gen.coroutine
     def _on_message(self, data):
+        logging.info("MESSAGE RECEIVED 2 %s", data)
         try:
             message = self.parse(data)
             request = Request(message)
@@ -136,7 +130,7 @@ class Connection(sockjs.tornado.SockJSConnection):
 
         try:
             controller = self.controllers[request.root]
-            controller.validate(message)
+            controller.validate(request)
         except KeyError as e:
             raise MessageProcessError("INVALID_ROUTE", e)
         except webterm.component.request_schema.ValidationError as e:
@@ -145,6 +139,7 @@ class Connection(sockjs.tornado.SockJSConnection):
         response = Response(self, request)
 
         try:
+            logging.info("DISPATCHING %s", data)
             yield controller.dispatch(request, response)
         except webterm.security.SessionExpiredError as e:
             raise MessageProcessError("SESSION_TERMINATED", e)
@@ -155,20 +150,22 @@ class Connection(sockjs.tornado.SockJSConnection):
 
     @tornado.gen.coroutine
     def on_message(self, data):
+        logging.info("MESSAGE RECEIVED %s", data)
         try:
             yield self._on_message(data)
         except MessageProcessError as e:
             self.write_error(e.error_type, data, e.exception)
         except Exception as e:
             self.write_error("UNCAUGHT_SERVER_ERROR", data, e)
+        # raise tornado.gen.Return(result)
 
     def write_error(self, error_type, message, exception=None):
         logging.error(
-            "CONN ERROR \n\t type:%s \n\t message%s \n\t exception:%s",
-            error_type, message, traceback.format_exc(exception, 10))
+            "CONN ERROR \n\t type: %s \n\t message %s \n\t exception: %s",
+            error_type, message, ("%s (%s)" % (exception.__class__.__name__, exception)))
 
         self.write_json(
-            webterm.component.ResponseSchema().Error(error_type, message))
+            component.ResponseSchema().Error(error_type, message))
 
     def write_json(self, data):
         msg = json.dumps(data)

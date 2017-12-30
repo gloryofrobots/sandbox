@@ -70,14 +70,6 @@ class Terminal extends React.Component {
 
   setupAuth(){
       var interpreter = new Interpreter({
-            "ping" :(term, command) => {
-                this.props.session.sendSync(
-                    (msg) => {
-                        console.log("PING", msg);
-                    },
-                    "BASIC/PING"
-                );
-            },
             "users" :(term, command) => {
                 this.props.session.sendSync(
                     (msg) => {
@@ -99,6 +91,15 @@ class Terminal extends React.Component {
 
   setup(){
       var interpreter = new Interpreter({
+            "ping" :(term, command) => {
+                console.log("SENDING PIG");
+                this.props.session.sendSync(
+                    (msg) => {
+                        console.log("RECEIVED PONG", msg);
+                    },
+                    "BASIC/PING"
+                );
+            },
             "math":{
                 "+":{
                     eval:(term, command, x, y) => {

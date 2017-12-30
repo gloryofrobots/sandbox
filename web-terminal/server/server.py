@@ -14,7 +14,7 @@ def make_connection(config, db):
         from webterm.component.basic import basic
         import webterm.connection
         controllers = [
-            basic.create_controller("basic", config, db)
+            basic.create_controller("BASIC", config, db)
         ]
 
         connection = webterm.connection.Connection(*args, **kwargs)

@@ -1,6 +1,6 @@
 import momoko
 import tornado.gen
-import query_library
+import webterm.db.query_library
 from tornado.gen import Return
 
 
@@ -10,10 +10,10 @@ class DBMapper(object):
         self.db = db
         self.queries = self._fetch_queries(library)
 
-    def _return(result):
+    def _return(self, result):
         raise Return(result)
 
-    def _fetch_library(self, library):
+    def _fetch_queries(self, library):
         # return library.get(self.__class__.__name__)
         raise RuntimeError("Abstract method")
 
@@ -70,7 +70,7 @@ def create_db(config, ioloop):
     if config.DB_TYPE != "postgresql":
         raise Exception("Only postgresql db supported!")
 
-    library = query_library.get_library(config.DB_TYPE)
+    library = webterm.db.query_library.get_library(config.DB_TYPE)
     db = momoko.Pool(
         dsn=config.DB_DSN,
         size=config.DB_POOL_SIZE,

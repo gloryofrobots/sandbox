@@ -9,6 +9,7 @@ COMMON_SCHEMA = {
     "properties": {
         "route": {"type": "string"},
         "sid": {"type":"integer", "required":False},
+        "rid": {"type":"integer", "required":False},
         "token": {"type":"string", "required":False},
         # "jwt": {"type": "string"},
         "data": {"type": "object", "properties": None},
@@ -44,12 +45,7 @@ class Validator(object):
     def add_schema(self, action, data_properties):
         self.message_schemas[action] = data_properties
 
-    def validate(self, msg_data):
-        if "action" not in msg_data:
-            raise ValidationError("action")
-
-        action = msg_data["action"]
-
+    def validate(self, action, msg_data):
         if action not in self.message_schemas:
             raise ValidationError("Unknown Action" + str(action))
 
