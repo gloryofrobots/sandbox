@@ -17,16 +17,16 @@ class UnauthorizedAccessError(Exception):
 
 # must be used only on actions
 def authenticate(fn):
-    def wrapper(self, response, request):
-        token = response.token
+    def wrapper(self, request):
+        token = request.token
         payload = decode_payload(
             token,
             self.config.cfg.JWT_SECRET,
             self.config.cfg.JWT_ALGO,
         )
 
-        response.set_auth_data(payload)
-        return fn(self, response, request)
+        request.set_auth_data(payload)
+        return fn(self, request)
     return wrapper
 
 

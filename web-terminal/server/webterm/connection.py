@@ -44,8 +44,9 @@ def split_route(action):
 
 class Request(object):
 
-    def __init__(self, message):
+    def __init__(self, conn, message):
         super(Request, self).__init__()
+        self.conn = conn
         self.message = message
         self.data = message.get("data", {})
         self.route = message.get("route")
@@ -54,6 +55,20 @@ class Request(object):
         self.sid = message.get("sid", None)
         self.rid = message.get("rid", None)
         self.token = message.get("token", None)
+        self.auth_data = None
+
+    def reply(self, message):
+        if self.sid is not None:
+            message["sid"] = self.sid
+        if self.token is not None:
+            message["token"] = self.token
+        if self.rid is not None:
+            message["rid"] = self.rid
+
+        self.conn.write_json(message)
+
+    def set_auth_data(data):
+        self.auth_data = data
 
     def __repr__(self):
         return "<Request %s %s>" % (self.route, self.message)
@@ -61,23 +76,6 @@ class Request(object):
     def __str__(self):
         return self.__repr__()
 
-
-class Response(object):
-
-    def __init__(self, conn, request):
-        super(Response, self).__init__()
-        self.conn = conn
-        self.request = request
-
-    def send(self, message):
-        if self.request.sid is not None:
-            message["sid"] = self.request.sid
-        if self.request.token is not None:
-            message["token"] = self.request.token
-        if self.request.rid is not None:
-            message["rid"] = self.request.rid
-
-        self.conn.write_json(message)
 
 
 class Connection(sockjs.tornado.SockJSConnection):
@@ -124,7 +122,7 @@ class Connection(sockjs.tornado.SockJSConnection):
         logging.info("MESSAGE RECEIVED 2 %s", data)
         try:
             message = self.parse(data)
-            request = Request(message)
+            request = Request(self, message)
         except MessageParseError as e:
             raise MessageProcessError("INVALID_SCHEMA", e)
 
@@ -136,11 +134,9 @@ class Connection(sockjs.tornado.SockJSConnection):
         except webterm.component.request_schema.ValidationError as e:
             raise MessageProcessError("INVALID_SCHEMA",  e)
 
-        response = Response(self, request)
-
         try:
             logging.info("DISPATCHING %s", data)
-            yield controller.dispatch(request, response)
+            yield controller.dispatch(request)
         except webterm.security.SessionExpiredError as e:
             raise MessageProcessError("SESSION_TERMINATED", e)
         except webterm.security.UnauthorizedAccessError as e:

@@ -30,12 +30,12 @@ class Controller(component.Controller):
         }
 
     @tornado.gen.coroutine
-    def on_ping(self, request, response):
+    def on_ping(self, request):
         logging.info("ping received %s", request)
         # raise RuntimeError("d1111111")
         # ping = yield self.db.connection.ping()
         # logging.info("DB PING %s", ping)
-        response.send(self.schema.Pong())
+        request.reply(self.schema.Pong())
         # raise tornad.gen.Return(None)
 
 ##########################################

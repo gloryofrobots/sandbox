@@ -55,12 +55,12 @@ class Controller(object):
         self.validator.validate(request.action, request.message)
 
     @tornado.gen.coroutine
-    def dispatch(self, request, response):
+    def dispatch(self, request):
         try:
             handler = self.actions[request.action]
         except KeyError:
             raise InvalidActionError(request.action)
-        result = yield handler(request, response)
+        result = yield handler(request)
         raise tornado.gen.Return(result)
 
     def _actions(self):
