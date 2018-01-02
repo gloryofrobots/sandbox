@@ -11,14 +11,29 @@ import webterm.db
 
 def make_connection(config, db):
     def _constructor(*args, **kwargs):
-        from webterm.component.basic import basic
         import webterm.connection
-        controllers = [
-            basic.create_controller("BASIC", config, db)
-        ]
+        from webterm.component import component
 
-        connection = webterm.connection.Connection(*args, **kwargs)
-        for controller in controllers:
+        from webterm.component.basic import basic
+        from webterm.component.error import error
+
+        schemas = component.ResponseSchemaCollection()
+
+        error.init_component("ERROR", config, schemas, db)
+
+        components = [("BASIC", basic)]
+        for (route, component) in components:
+            component.init_component(route, config, schemas, db)
+
+        response_schema = schemas.pack()
+
+        connection = webterm.connection.Connection(
+            response_schema, *args, **kwargs)
+
+        for (route, component) in components:
+            controller = component.create_controller(
+                route, config, response_schema, db)
+
             connection.add_controller(controller)
 
         return connection
@@ -27,6 +42,7 @@ def make_connection(config, db):
 ######################################################
 ######################################################
 ######################################################
+
 
 def main(config):
     # initialize file logging

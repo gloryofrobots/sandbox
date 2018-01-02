@@ -1,5 +1,5 @@
 
-class InvalidConfigurationError(Exception):
+class ConfigurationError(Exception):
     pass
 
 class InvalidActionError(Exception):

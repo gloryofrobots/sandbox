@@ -4,17 +4,29 @@ import logging
 import tornado.ioloop
 import webterm.component.request_schema
 import webterm.security
-from webterm.component.error import (
-    InvalidConfigurationError, InvalidActionError)
+from webterm.component.exception import (
+    ConfigurationError, InvalidActionError)
+
+from webterm.collection import Collection
+
+######################################################
+######################################################
+######################################################
+
+
+class ResponseSchemaCollection(Collection):
+    def __init__(self):
+        super(ResponseSchemaCollection, self).__init__("ResponseSchema")
 
 
 class ResponseSchema(object):
+
     def __init__(self, root=""):
         super(ResponseSchema, self).__init__()
         self.root = root
 
     def create(self, action, payload=None, root=""):
-        if root ==  "":
+        if root == "":
             root = self.root
 
         if payload is None:
@@ -23,8 +35,10 @@ class ResponseSchema(object):
         route = "/".join([root, action])
         return dict(route=route, data=payload)
 
-    def Error(self, error_type, message):
-        return self.create(error_type, {"message": message}, "ERROR")
+
+######################################################
+######################################################
+######################################################
 
 
 class Controller(object):
@@ -36,20 +50,50 @@ class Controller(object):
             self.options = options
             self.config = options["config"]
             self.db = options["db"]
-            self.schema = options["response_schema"]
-            self.request_schema = options["request_schema"]
+            self.schema = options["response_schemas"]
         except KeyError as e:
-            raise InvalidConfigurationError(
-                "Controller demands param %s" % e.args)
+            raise ConfigurationError(
+                "Missing Controller argument %s" % e.args)
 
+        self.request_schema = self._declare_request_schema()
         self.validator = webterm.component.request_schema.create_validator(
             self.request_schema)
+
         self.loops = []
 
-        self.actions = self._actions()
-        for action in self.request_schema:
-            if action["action"] not in self.actions:
-                raise InvalidConfigurationError("Action %s not set" % action)
+        ######################################
+        ######################################
+
+        actions = self._declare_actions()
+        if actions is not None:
+            self.actions = actions
+        else:
+            self.actions = {}
+            for action_schema in self.request_schema:
+                action_name = action_schema["action"]
+                handler_name = self.create_handler_name(action_name)
+                try:
+                    self.actions[action_name] = getattr(self, handler_name)
+                except AttributeError as e:
+                    raise ConfigurationError("Specify handler %s "
+                                             "for action %s or provide "
+                                             "custom _declare_actions method" % (handler_name, action_name))
+
+    def create_handler_name(self, action):
+        action_name = action.replace("/", "_").lower()
+        return "on_message_%s" % action_name
+
+    def _declare_request_schema(self):
+        try:
+            return getattr(self, "_REQUEST_SCHEMA")
+        except AttributeError:
+            raise ConfigurationError("You need to create _REQUEST_SCHEMA "
+                                     " property in your class,  "
+                                     "or implement your own "
+                                     " _declare_request_schema method")
+
+    def _declare_actions(self):
+        pass
 
     def validate(self, request):
         self.validator.validate(request.action, request.message)
@@ -62,9 +106,6 @@ class Controller(object):
             raise InvalidActionError(request.action)
         result = yield handler(request)
         raise tornado.gen.Return(result)
-
-    def _actions(self):
-        raise RuntimeError("Abstract method")
 
     def add_loop(self, cb, interval):
         # tornado.ioloop.IOLoop.current().spawn_callback(self.echo_loop)

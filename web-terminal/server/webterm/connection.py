@@ -5,9 +5,6 @@ import webterm.security
 import webterm.component.request_schema
 import logging
 import sockjs.tornado
-from webterm.component import component
-import traceback
-
 
 class MessageParseError(Exception):
     pass
@@ -67,7 +64,7 @@ class Request(object):
 
         self.conn.write_json(message)
 
-    def set_auth_data(data):
+    def set_auth_data(self, data):
         self.auth_data = data
 
     def __repr__(self):
@@ -80,8 +77,9 @@ class Request(object):
 
 class Connection(sockjs.tornado.SockJSConnection):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, response_schema, *args, **kwargs):
         super(Connection, self).__init__(*args, **kwargs)
+        self.response_schema = response_schema
         self.actions = {}
         self.loops = []
         self.controllers = {}
@@ -161,7 +159,7 @@ class Connection(sockjs.tornado.SockJSConnection):
             error_type, message, ("%s (%s)" % (exception.__class__.__name__, exception)))
 
         self.write_json(
-            component.ResponseSchema().Error(error_type, message))
+            self.response_schema.error.Error(error_type, message))
 
     def write_json(self, data):
         msg = json.dumps(data)

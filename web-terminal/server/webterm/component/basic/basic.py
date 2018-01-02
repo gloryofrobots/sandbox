@@ -4,19 +4,12 @@ import logging
 
 from webterm.component import component
 
-RequestSchema = [
-            {
-                "action": "PING",
-                "schema": {
-                }
-            },
-        ]
+__NAME = "basic"
 
 ##########################################
 ##########################################
 
 class ResponseSchema(component.ResponseSchema):
-
     def Pong(self):
         return self.create("PONG")
 
@@ -24,29 +17,31 @@ class ResponseSchema(component.ResponseSchema):
 ##########################################
 
 class Controller(component.Controller):
-    def _actions(self):
-        return {
-            "PING": self.on_ping,
-        }
+    _REQUEST_SCHEMA = [
+            {
+                "action": "PING",
+                "schema": {
+                }
+            },
+    ]
 
     @tornado.gen.coroutine
-    def on_ping(self, request):
+    def on_message_ping(self, request):
         logging.info("ping received %s", request)
-        # raise RuntimeError("d1111111")
-        # ping = yield self.db.connection.ping()
-        # logging.info("DB PING %s", ping)
-        request.reply(self.schema.Pong())
-        # raise tornad.gen.Return(None)
+        request.reply(self.schema.basic.Pong())
 
 ##########################################
 ##########################################
 
-def create_controller(route, config, db):
+
+def init_component(route, config, schemas, db):
+    schemas.add(__NAME, ResponseSchema(route))
+
+
+def create_controller(route, config, schemas, db):
     return Controller(dict(
         route=route,
         config=config,
         db=db,
-        request_schema=RequestSchema,
-        response_schema=ResponseSchema(route)
-        
+        response_schemas=schemas
     ))
