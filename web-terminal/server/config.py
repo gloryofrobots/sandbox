@@ -14,4 +14,4 @@ CORS_DOMAINS = "*"
 JWT_SECRET = "TOP_SECRET"
 JWT_ALGO = "HS256"
 # jwt lifetime in seconds
-JWT_DURATION = 20
+JWT_DURATION = 1800

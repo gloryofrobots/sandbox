@@ -64,8 +64,11 @@ class Request(object):
 
         self.conn.write_json(message)
 
-    def set_auth_data(self, data):
+    def authenticate(self, data):
         self.auth_data = data
+
+    def is_authenticated(self):
+        return self.auth_data is not None
 
     def __repr__(self):
         return "<Request %s %s>" % (self.route, self.message)
@@ -74,12 +77,11 @@ class Request(object):
         return self.__repr__()
 
 
-
 class Connection(sockjs.tornado.SockJSConnection):
 
-    def __init__(self, response_schema, *args, **kwargs):
+    def __init__(self, ctx, *args, **kwargs):
         super(Connection, self).__init__(*args, **kwargs)
-        self.response_schema = response_schema
+        self.ctx = ctx
         self.actions = {}
         self.loops = []
         self.controllers = {}
@@ -134,6 +136,7 @@ class Connection(sockjs.tornado.SockJSConnection):
 
         try:
             logging.info("DISPATCHING %s", data)
+            controller.authenticate(request)
             yield controller.dispatch(request)
         except webterm.security.SessionExpiredError as e:
             raise MessageProcessError("SESSION_TERMINATED", e)
@@ -159,8 +162,26 @@ class Connection(sockjs.tornado.SockJSConnection):
             error_type, message, ("%s (%s)" % (exception.__class__.__name__, exception)))
 
         self.write_json(
-            self.response_schema.error.Error(error_type, message))
+            self.ctx.response_schema.error.Error(error_type, message))
 
     def write_json(self, data):
         msg = json.dumps(data)
         self.send(msg)
+
+
+def make_connection(components, ctx):
+    def _constructor(*args, **kwargs):
+
+        connection = webterm.connection.Connection(
+            ctx, *args, **kwargs)
+
+        for (route, component) in components:
+            if hasattr(component, "create_controller"):
+                controller = component.create_controller(route, ctx)
+                connection.add_controller(controller)
+            else:
+                logging.info("Component %s doesnt provide a Controller", route)
+
+
+        return connection
+    return _constructor

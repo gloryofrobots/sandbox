@@ -24,31 +24,36 @@ class ResponseSchema(component.ResponseSchema):
 class Controller(component.Controller):
     _REQUEST_SCHEMA = [
         {
-            "action": "GET_USERS",
+            "action": "ALL",
             "schema": {
             }
         },
     ]
 
     @tornado.gen.coroutine
-    def on_message_get_users(self, request):
+    def on_message_all(self, request):
         logging.info("users req received %s", request)
-        request.reply(self.schema.Users())
+        users = yield self.mapper.get_users()
+        request.reply(self.schema.Users(users))
 
 ##########################################
 ##########################################
 
 
-def init_component(route, config, schemas, db):
+def init_response_schema(route, schemas):
     schemas.add(__NAME, ResponseSchema(route))
+
+
+def init_database(db):
     db_user.init_database(__NAME, db)
+    
 
-
-def create_controller(route, config, schemas, db):
+def create_controller(route, ctx):
     return Controller(
         name=__NAME,
         route=route,
-        config=config,
-        db=db,
-        response_schemas=schemas
+        config=ctx.config,
+        db=ctx.db,
+        response_schemas=ctx.response_schema,
+        auth=ctx.auth
     )

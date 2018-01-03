@@ -60,5 +60,3 @@ class DB(object):
 
     def get_mapper(self, name):
         return self.mappers.get(name, None)
-
-

@@ -4,55 +4,34 @@ import tornado.options
 import tornado.ioloop
 import tornado.web
 import sockjs.tornado
-import webterm.db
 import webterm.connection
 import webterm.component
+import webterm.context
 
-from webterm.component.error import error
 
 
 ######################################################
-def init_components(components, config):
-    db = webterm.db.create_db(config, tornado.ioloop.IOLoop.current())
-    schemas = webterm.component.component.ResponseSchemaCollection()
 
-    error.init_component("ERROR", config, schemas, db)
-    for (route, component) in components:
-        component.init_component(route, config, schemas, db)
 
-    response_schema = schemas.pack()
 
-    return db, response_schema
-
-def make_connection(components, config, db, response_schema):
-    def _constructor(*args, **kwargs):
-
-        connection = webterm.connection.Connection(
-            response_schema, *args, **kwargs)
-
-        for (route, component) in components:
-            controller = component.create_controller(
-                route, config, response_schema, db)
-
-            connection.add_controller(controller)
-
-        return connection
-    return _constructor
-
-import tornado.gen
-@tornado.gen.coroutine
-def test_db(db):
-    users = yield db.get_mapper("user").get_users()
-    print users
+# import tornado.gen
+# @tornado.gen.coroutine
+# def test_db(db):
+#     users = yield db.get_mapper("user").get_users()
+#     print users
 ######################################################
 ######################################################
 ######################################################
 
-def main(config):
+def __get_components():
     from webterm.component.user import user
+    from webterm.component.error import error
     from webterm.component.basic import basic
-    components = [("BASIC", basic), ("USER", user)]
-
+    return [("BASIC", basic),
+            ("USER", user),
+            ("ERROR", error)]
+    
+def main(config):
     # initialize file logging
     if config.DEBUG:
         tornado.options.options['logging'] = "debug"
@@ -62,21 +41,22 @@ def main(config):
         # this will enable logging options
         tornado.options.parse_command_line()
     # print protocol.base.PingProtocol
+    components = __get_components()
 
-    db, response_schema = init_components(components, config)
+    ioloop = tornado.ioloop.IOLoop.current()
+    ctx = webterm.context.create_context(components, config, ioloop)
 
-    tornado.ioloop.IOLoop.current().spawn_callback(test_db, db)
-
+    # tornado.ioloop.IOLoop.current().spawn_callback(test_db, db)
     router = sockjs.tornado.SockJSRouter(
-        make_connection(components, config, db, response_schema), '/entry')
+        webterm.connection.make_connection(components, ctx), '/entry')
 
     application = tornado.web.Application(router.urls,
                                           debug=config.DEBUG,
                                           config=config,
-                                          db=db)
+                                          ctx=ctx)
 
     application.listen(config.PORT)
-    tornado.ioloop.IOLoop.current().start()
+    ioloop.start()
 
 
 if __name__ == "__main__":

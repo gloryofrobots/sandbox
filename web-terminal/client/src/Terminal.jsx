@@ -16,6 +16,11 @@ class Interpreter{
     this.evaluate = this.evaluate.bind(this);
   }
 
+  help(){
+      var result = `Available commands: `;
+      result += _.keys(this.commands).join(', ');
+      return result;
+  }
 
   addCommands(commands) {
       this.commands = {...this.commands, ...commands};
@@ -68,19 +73,57 @@ class Terminal extends React.Component {
     this.state = {greetings:"", interpreter:""};
   }
 
+  //////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
+    
   setupAuth(){
       var interpreter = new Interpreter({
-            "users" :(term, command) => {
+            help :(term, command) => {
+                term.echo(interpreter.help());
+            },
+            ping :(term, command) => {
+                console.log("SENDING PIG");
                 this.props.session.sendSync(
                     (msg) => {
-                        console.log("USERS", msg);
+                        console.log("RECEIVED PONG", msg);
                     },
-                    "GET_USERS"
+                    "BASIC/PING"
                 );
             },
-            "login" :(term, command, username, password) => {
+            users :(term, command) => {
+                this.props.session.sendSync(
+                    (msg) => {
+                        console.log("ALL_USERS", msg);
+                    },
+                    "USER/ALL"
+                );
+            },
+            auth :(term, command, username, password) => {
                     console.log("LOGIN", username, password);
-                    this.setup();
+                    this.props.session.authenticate(
+                        (msg) => {
+                            if (this.props.session.isError(msg)) {
+                                term.echo("Authentication failed:" + msg.data.message);
+                                return false;
+                            }
+                            if (msg.route != "BASIC/AUTH_SUCCESS") {
+                                term.echo("Authentication failed:" + msg.data.message);
+                                return false;
+                            }
+
+                            console.log("AUTH_SUCCESS", msg);
+                            term.echo("Successfull authentication! Session will expire at [" +
+                                      new Date(parseInt(msg.data.exp, 10)) + "]");
+                            this.setup();
+                            return true;
+                        },
+                        "BASIC/AUTH",
+                        {
+                            username:username,
+                            password:password
+                        }
+                    );
             }
       });
       this.setState({
@@ -89,16 +132,18 @@ class Terminal extends React.Component {
       });
   }
 
+  //////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
+
   setup(){
+      var session = this.props.session;
       var interpreter = new Interpreter({
-            "ping" :(term, command) => {
-                console.log("SENDING PIG");
-                this.props.session.sendSync(
-                    (msg) => {
-                        console.log("RECEIVED PONG", msg);
-                    },
-                    "BASIC/PING"
-                );
+            help :(term, command) => {
+                term.echo(interpreter.help());
+            },
+            logout :(term, command) => {
+                session.logout();
+                this.setupAuth();
             },
             "math":{
                 "+":{
@@ -114,10 +159,16 @@ class Terminal extends React.Component {
       });
   }
 
+  //////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////
+
   componentWillMount() {
     if (!this.props.session.exists()){
+        console.log("AUTH REQUIRED");
         this.setupAuth();
     } else {
+        console.log("SESSION AUTHENTICATED");
         this.setup();
     }
   }
@@ -183,18 +234,4 @@ class TerminalWrapper extends React.Component {
 }
 
 
-    // this.interpreter_2 = {
-    //     clear:(command) => {
-    //         this.clear();
-    //     },
-    //     math:{
-    //         "+": (a, b) => { return a + b; }
-    //     },
-    //     login:(user)=>{
-    //         console.log(user);
-    //     },
-    //     log:(...rest) => {
-    //         console.log(rest);
-    //     }
-    // };
 export default Terminal;

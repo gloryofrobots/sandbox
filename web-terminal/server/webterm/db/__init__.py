@@ -1,10 +1,11 @@
 from .db import DB, DBConfigurationError
 from webterm.db import postgresql 
 
-POSGTRESQL = "postgresql"
+class TYPE:
+    POSGTRESQL = "postgresql"
 
 DATABASES = {}
-DATABASES[POSGTRESQL] = postgresql
+DATABASES[TYPE.POSGTRESQL] = postgresql
 
 def create_db(config, ioloop):
     try:

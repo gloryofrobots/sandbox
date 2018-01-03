@@ -49,12 +49,11 @@ class Session{
     }
 
     save(token, exp) {
-        this.cookies.set(this.tokenName, token, {expires:new Date(parseInt(exp, 10) + 1000 * 10), path:"/"});
+        this.cookies.set(this.tokenName, token, {expires:new Date(parseInt(exp, 10)) , path:"/"});
     }
 
     exists(){
-        return true;
-        // return this.getToken() != undefined;
+        return this.getToken() != undefined;
     }
 
     getToken(){
@@ -67,6 +66,10 @@ class Session{
     logout(){
         this.token = null;
         this.cookies.remove(this.tokenName);
+    }
+
+    isError(msg) {
+        return msg.route.startsWith("ERROR");
     }
 
     receive(msg){
@@ -105,27 +108,23 @@ class Session{
         return requestId;
     }
 
-    authenticate(route, payload, callback) {
+    authenticate(callback, route, payload) {
        if (this.exists()) {
-            throw new Error("Session has already authenticated");
+            throw new Error("Session has been already authenticated");
        }
 
        var requestId = this.addResponseHandler(
            (msg) => {
                if(callback(msg) === true) {
-                   this.save(msg.data.token, msg.data.exp);
+                    if (!this.isError(msg)) {
+                        console.log("SAVING", msg.data.token, msg.data.exp);
+                        this.save(msg.data.token, msg.data.exp);
+                    }
                }
            }
        );
 
-       var data = {
-            sid:this.id,
-            rid:requestId,
-            route:route,
-            data:payload
-       }
-
-       return this.connection.send(data);
+       return this.__send(route, payload, requestId);
     }
 
     sendSync(callback, route, payload) {
@@ -133,17 +132,8 @@ class Session{
            console.error("Session:send not active");
             return;
        }
-       payload = payload || {}
        var requestId = this.addResponseHandler(callback);
-       var data = {
-            route:route,
-            sid:this.id,
-            rid:requestId,
-            token:this.getToken(),
-            data:payload
-       }
-      
-       return this.connection.send(data);
+       return this.__send(route, payload, requestId);
     }
 
     send(route, payload) {
@@ -152,13 +142,19 @@ class Session{
             return;
        }
 
+       this.__send(route, payload, undefined)
+    }
+
+    __send(route, payload, rid) {
        var data = {
             route:route,
             sid:this.id,
             token:this.getToken(),
-            data:payload
+            data:payload || {}
        }
-
+       if (!_.isUndefined(rid)) {
+           data.rid = rid
+       }
        return this.connection.send(data);
     }
 }

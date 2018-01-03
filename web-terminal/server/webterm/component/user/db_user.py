@@ -25,7 +25,7 @@ class MapperPostgresql(Mapper):
 
 
 MAPPERS = {}
-MAPPERS[webterm.db.POSGTRESQL] = MapperPostgresql
+MAPPERS[webterm.db.TYPE.POSGTRESQL] = MapperPostgresql
 
 
 def init_database(component_name, db):

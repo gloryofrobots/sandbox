@@ -11,21 +11,19 @@ epoch = datetime.utcfromtimestamp(0)
 class SessionExpiredError(Exception):
     pass
 
+
 class UnauthorizedAccessError(Exception):
     pass
 
 
-# must be used only on actions
-def authenticate(fn):
-    def wrapper(self, request):
-        token = request.token
-        payload = decode_payload(
-            token,
-            self.config.cfg.JWT_SECRET,
-            self.config.cfg.JWT_ALGO,
-        )
+def utc_now():
+    return int(round(time.time() * 1000))
 
-        request.set_auth_data(payload)
+
+# must be used only on actions
+def authenticated_action(fn):
+    def wrapper(self, request):
+        self.auth.authenticate(request)
         return fn(self, request)
     return wrapper
 
@@ -45,7 +43,7 @@ def hash_password(password):
 
 def generate_uuid():
     return uuid.uuid4().hex
-    
+
 
 def create_token(payload, secret, algo, duration):
     exp = datetime.utcnow() + timedelta(seconds=duration)
@@ -63,5 +61,21 @@ def decode_payload(token, secret, algo):
         raise UnauthorizedAccessError(e.args)
 
 
-def utc_now():
-    return int(round(time.time() * 1000))
+class Auth(object):
+    def __init__(self, secret, algo, duration):
+        super(Auth, self).__init__()
+        self.secret = secret
+        self.algo = algo
+        self.duration = duration
+        
+    def create_token(self, payload):
+        return create_token(payload, self.secret, self.algo, self.duration)
+
+    def authenticate(self, request):
+        payload = decode_payload(
+            request.token,
+            self.secret,
+            self.algo
+        )
+
+        request.authenticate(payload)

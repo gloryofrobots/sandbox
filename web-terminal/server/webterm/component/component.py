@@ -14,9 +14,23 @@ from webterm.collection import Collection
 ######################################################
 
 
-class ResponseSchemaCollection(Collection):
+class ResponseSchemas(Collection):
     def __init__(self):
-        super(ResponseSchemaCollection, self).__init__("ResponseSchema")
+        self.schemas = {}
+
+    def add(self, name, schema):
+        if name in self.schemas:
+            raise ConfigurationError("Response schema already exists", name)
+        self.schemas[name] = schema
+
+    def get(self, name):
+        return self.schemas[name]
+
+    def __getattr__(self, name):
+        try:
+            return self.get(name)
+        except KeyError:
+            raise AttributeError(name)
 
 
 class ResponseSchema(object):
@@ -51,6 +65,8 @@ class Controller(object):
             self.config = options["config"]
             self.schemas = options["response_schemas"]
             self.name = options["name"]
+            self.is_public = options.get("public", False)
+            self.auth = options.get("auth", None)
         except KeyError as e:
             raise ConfigurationError(
                 "Missing Controller param %s" % e.args)
@@ -60,7 +76,7 @@ class Controller(object):
             self.mapper = self.db.get_mapper(self.name)
 
         try:
-            self.schema = getattr(self.schemas, self.name)
+            self.schema = self.schemas.get(self.name)
         except KeyError as e:
             raise ConfigurationError(
                 "Response schema for Controller "
@@ -91,6 +107,12 @@ class Controller(object):
                                              "custom _declare_actions method" % (handler_name, action_name))
         self._on_init()
 
+    def authenticate(self, request):
+        if self.is_public:
+            return
+
+        self.auth.authenticate(request)
+
     def _on_init(self):
         pass
 
@@ -113,6 +135,9 @@ class Controller(object):
     def validate(self, request):
         self.validator.validate(request.action, request.message)
 
+    def _return(self, result):
+        raise tornado.gen.Return(result)
+        
     @tornado.gen.coroutine
     def dispatch(self, request):
         try:
@@ -120,7 +145,7 @@ class Controller(object):
         except KeyError:
             raise InvalidActionError(request.action)
         result = yield handler(request)
-        raise tornado.gen.Return(result)
+        self._return(result)
 
     def add_loop(self, cb, interval):
         # tornado.ioloop.IOLoop.current().spawn_callback(self.echo_loop)

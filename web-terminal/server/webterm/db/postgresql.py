@@ -2,7 +2,7 @@ import momoko
 import tornado.gen
 from webterm.db import db
 import logging
-
+import psycopg2
 class Connection(db.Connection):
     def __init__(self, conn):
         super(Connection, self).__init__()
@@ -38,6 +38,7 @@ def create_connection(config, ioloop):
         dsn=config.DB_DSN,
         size=config.DB_POOL_SIZE,
         ioloop=ioloop,
+        cursor_factory=psycopg2.extras.DictCursor,
     )
     future = pool.connect()
     ioloop.add_future(future, lambda f: ioloop.stop())
