@@ -1,17 +1,19 @@
+
 import tornado.gen
 import tornado.web
 import logging
 
 from webterm.component import component
+from . import db_user
 
-__NAME = "basic"
+__NAME = "user"
 
 ##########################################
 ##########################################
 
 class ResponseSchema(component.ResponseSchema):
-    def Pong(self):
-        return self.create("PONG")
+    def Users(self, data):
+        return self.create("USERS", dict(users=data))
 
 ##########################################
 ##########################################
@@ -19,16 +21,16 @@ class ResponseSchema(component.ResponseSchema):
 class Controller(component.Controller):
     _REQUEST_SCHEMA = [
             {
-                "action": "PING",
+                "action": "GET_USERS",
                 "schema": {
                 }
             },
     ]
 
     @tornado.gen.coroutine
-    def on_message_ping(self, request):
-        logging.info("ping received %s", request)
-        request.reply(self.schema.Pong())
+    def on_message_get_users(self, request):
+        logging.info("users req received %s", request)
+        request.reply(self.schema.Users())
 
 ##########################################
 ##########################################
@@ -36,6 +38,7 @@ class Controller(component.Controller):
 
 def init_component(route, config, schemas, db):
     schemas.add(__NAME, ResponseSchema(route))
+    db_user.init_database(__NAME, db)
 
 
 def create_controller(route, config, schemas, db):

@@ -14,14 +14,16 @@ def make_connection(config, db):
         import webterm.connection
         from webterm.component import component
 
-        from webterm.component.basic import basic
         from webterm.component.error import error
+
+        from webterm.component.user import user
+        from webterm.component.basic import basic
 
         schemas = component.ResponseSchemaCollection()
 
         error.init_component("ERROR", config, schemas, db)
 
-        components = [("BASIC", basic)]
+        components = [("BASIC", basic), ("USER", user)]
         for (route, component) in components:
             component.init_component(route, config, schemas, db)
 
@@ -55,6 +57,7 @@ def main(config):
         tornado.options.parse_command_line()
     # print protocol.base.PingProtocol
     db = webterm.db.create_db(config, tornado.ioloop.IOLoop.current())
+    make_connection(config, db)
     router = sockjs.tornado.SockJSRouter(
         make_connection(config, db), '/entry')
 

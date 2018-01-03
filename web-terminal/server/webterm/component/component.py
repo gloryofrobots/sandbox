@@ -50,10 +50,18 @@ class Controller(object):
             self.options = options
             self.config = options["config"]
             self.db = options["db"]
-            self.schema = options["response_schemas"]
+            self.schemas = options["response_schemas"]
+            self.name = options["name"]
         except KeyError as e:
             raise ConfigurationError(
                 "Missing Controller argument %s" % e.args)
+
+        try:
+            self.schema = self.schemas[self.name]
+        except KeyError as e:
+            raise ConfigurationError(
+                "Response schema for Controller "
+                " component is undefined  %s" % e.args)
 
         self.request_schema = self._declare_request_schema()
         self.validator = webterm.component.request_schema.create_validator(

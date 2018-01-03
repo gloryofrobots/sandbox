@@ -1,79 +1,47 @@
-import momoko
 import tornado.gen
-import webterm.db.query_library
+import collections
+import webterm.collection
+import abc
+
 from tornado.gen import Return
 
-
-class DBMapper(object):
-    def __init__(self, db, library):
-        super(DBMapper, self).__init__()
-        self.db = db
-        self.queries = self._fetch_queries(library)
+class DBConnection(object):
+    __metaclass__ = abc.ABCMeta
 
     def _return(self, result):
         raise Return(result)
 
-    def _fetch_queries(self, library):
-        # return library.get(self.__class__.__name__)
-        raise RuntimeError("Abstract method")
-
-    @tornado.gen.coroutine
+    @abc.abstractmethod
     def fetchall(self, query, args):
-        cursor = yield self._execute(query, args)
+        pass
 
-        rows = cursor.fetchall()
-        self._return(rows)
-
-    @tornado.gen.coroutine
+    @abc.abstractmethod
     def fetchone(self, query, args):
-        cursor = yield self._execute(query, args)
+        pass
 
-        result = cursor.fetchone()
-        self._return(result)
-
-    @tornado.gen.coroutine
+    @abc.abstractmethod
     def execute(self, query, args):
-        result = yield self._execute(query, args)
-        self._return(result)
+        pass
+        
 
-    def _execute(self, query, args):
-        return self.db.execute(query, args)
+class DBMapper(object):
+    def __init__(self, conn):
+        super(DBMapper, self).__init__()
+        self.conn = conn
 
-
-class Users(DBMapper):
-
-    @tornado.gen.coroutine
-    def get_user_by_credentials(self, username, password):
-        query = self.queries.GET_USER_BY_CREDENTIALS_QUERY
-        result = yield self.fetchone(query, (username, password))
-        self._return(result)
-
-    @tornado.gen.coroutine
-    def get_users(self):
-        query = self.queries.GET_USERS
-        result = yield self.fetchone(query, [])
-        self._return(result)
-
-    def _fetch_queries(self, library):
-        return library.Users
+    def _return(self, result):
+        raise Return(result)
 
 
 class DB(object):
 
-    def __init__(self, connection, library):
+    def __init__(self, conn):
         super(DB, self).__init__()
-        self.connection = connection
-        self.Users = Users(connection, library)
+        self.conn = conn
+        self.mappers = webterm.collection.Collection("DBMapper")
 
+    def add_mapper(self, name, mapper_type, *args):
+        self.mappers.add(name, mapper_type(self.conn, *args))
 
-def create_db(config, ioloop):
-    if config.DB_TYPE != "postgresql":
-        raise Exception("Only postgresql db supported!")
-
-    library = webterm.db.query_library.get_library(config.DB_TYPE)
-    db = momoko.Pool(
-        dsn=config.DB_DSN,
-        size=config.DB_POOL_SIZE,
-        ioloop=ioloop,
-    )
-    return DB(db, library)
+    def finalize():
+        self.mappers = self.mappers.pack()
