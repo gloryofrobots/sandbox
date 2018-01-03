@@ -43,21 +43,24 @@ class ResponseSchema(object):
 
 class Controller(object):
 
-    def __init__(self, options):
+    def __init__(self, **options):
         super(Controller, self).__init__()
         try:
-            self.route = options["route"]
             self.options = options
+            self.route = options["route"]
             self.config = options["config"]
-            self.db = options["db"]
             self.schemas = options["response_schemas"]
             self.name = options["name"]
         except KeyError as e:
             raise ConfigurationError(
-                "Missing Controller argument %s" % e.args)
+                "Missing Controller param %s" % e.args)
+
+        if "db" in options:
+            self.db = options["db"]
+            self.mapper = self.db.get_mapper(self.name)
 
         try:
-            self.schema = self.schemas[self.name]
+            self.schema = getattr(self.schemas, self.name)
         except KeyError as e:
             raise ConfigurationError(
                 "Response schema for Controller "
@@ -86,6 +89,10 @@ class Controller(object):
                     raise ConfigurationError("Specify handler %s "
                                              "for action %s or provide "
                                              "custom _declare_actions method" % (handler_name, action_name))
+        self._on_init()
+
+    def _on_init(self):
+        pass
 
     def create_handler_name(self, action):
         action_name = action.replace("/", "_").lower()

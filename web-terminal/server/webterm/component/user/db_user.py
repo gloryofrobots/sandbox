@@ -1,6 +1,8 @@
-from webterm.db import db
+import webterm.db
+import tornado.gen
 
-class Mapper(db.DBMapper):
+
+class Mapper(webterm.db.db.Mapper):
     QUERY_GET_USER_BY_CREDENTIALS = ""
     QUERY_GET_USERS = ""
 
@@ -13,13 +15,18 @@ class Mapper(db.DBMapper):
     @tornado.gen.coroutine
     def get_users(self):
         query = self.QUERY_GET_USERS
-        result = yield self.conn.fetchone(query, [])
+        result = yield self.conn.fetchall(query, [])
         self._return(result)
 
-class MapperPG(Mapper):
+
+class MapperPostgresql(Mapper):
     QUERY_GET_USER_BY_CREDENTIALS = "SELECT * FROM USERS WHERE USERNAME = %s and PASSWORD = %s"
     QUERY_GET_USERS = "SELECT * FROM USERS"
 
 
+MAPPERS = {}
+MAPPERS[webterm.db.POSGTRESQL] = MapperPostgresql
+
+
 def init_database(component_name, db):
-    db.add_mapper(component_name, Mapper)
+    db.choose_mapper(component_name, MAPPERS)

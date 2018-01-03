@@ -1,10 +1,11 @@
 import momoko
 import tornado.gen
 from webterm.db import db
+import logging
 
-class DBConnectionPG(db.DBConnection):
+class Connection(db.Connection):
     def __init__(self, conn):
-        super(DBConnectionPG, self).__init__()
+        super(Connection, self).__init__()
         self.conn = conn
 
     @tornado.gen.coroutine
@@ -27,17 +28,20 @@ class DBConnectionPG(db.DBConnection):
         self._return(result)
 
     def _execute(self, query, args):
-        return self.db.execute(query, args)
+        logging.info("EXECUTING %s %s", query, args)
+
+        return self.conn.execute(query, args)
 
 
 def create_connection(config, ioloop):
-    if config.DB_TYPE != "postgresql":
-        raise Exception("Only postgresql db supported!")
-
     pool = momoko.Pool(
         dsn=config.DB_DSN,
         size=config.DB_POOL_SIZE,
         ioloop=ioloop,
     )
-    connection = DBConnectionPG(pool)
+    future = pool.connect()
+    ioloop.add_future(future, lambda f: ioloop.stop())
+    ioloop.start()
+    future.result()  # raises exception on connection error
+    connection = Connection(pool)
     return connection

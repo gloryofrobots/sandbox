@@ -11,20 +11,23 @@ __NAME = "user"
 ##########################################
 ##########################################
 
+
 class ResponseSchema(component.ResponseSchema):
+
     def Users(self, data):
         return self.create("USERS", dict(users=data))
 
 ##########################################
 ##########################################
 
+
 class Controller(component.Controller):
     _REQUEST_SCHEMA = [
-            {
-                "action": "GET_USERS",
-                "schema": {
-                }
-            },
+        {
+            "action": "GET_USERS",
+            "schema": {
+            }
+        },
     ]
 
     @tornado.gen.coroutine

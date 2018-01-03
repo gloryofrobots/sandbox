@@ -5,7 +5,11 @@ import abc
 
 from tornado.gen import Return
 
-class DBConnection(object):
+class DBConfigurationError(Exception):
+    pass
+
+
+class Connection(object):
     __metaclass__ = abc.ABCMeta
 
     def _return(self, result):
@@ -24,9 +28,9 @@ class DBConnection(object):
         pass
         
 
-class DBMapper(object):
+class Mapper(object):
     def __init__(self, conn):
-        super(DBMapper, self).__init__()
+        super(Mapper, self).__init__()
         self.conn = conn
 
     def _return(self, result):
@@ -34,14 +38,27 @@ class DBMapper(object):
 
 
 class DB(object):
-
-    def __init__(self, conn):
+    def __init__(self, dbtype, conn):
         super(DB, self).__init__()
+        self.dbtype = dbtype
         self.conn = conn
-        self.mappers = webterm.collection.Collection("DBMapper")
+        self.mappers = {}
 
-    def add_mapper(self, name, mapper_type, *args):
-        self.mappers.add(name, mapper_type(self.conn, *args))
+    def choose_mapper(self, name, mappers, *args):
+        try:
+            mapper = mappers[self.dbtype]
+        except KeyError:
+            raise DBConfigurationError("Unsupported database type for component %s %s" % (self.dbtype, name))
 
-    def finalize():
-        self.mappers = self.mappers.pack()
+        self._add_mapper(name, mapper, *args)
+
+    def _add_mapper(self, name, mapper_type, *args):
+        if name in self.mappers:
+            raise DBConfigurationError("Mapper is already set", name)
+            
+        self.mappers[name]  = mapper_type(self.conn, *args)
+
+    def get_mapper(self, name):
+        return self.mappers.get(name, None)
+
+
