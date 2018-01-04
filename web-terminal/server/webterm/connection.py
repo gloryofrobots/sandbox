@@ -54,6 +54,10 @@ class Request(object):
         self.token = message.get("token", None)
         self.auth_data = None
 
+    @property
+    def user_id(self):
+        return self.auth_data["id"]
+
     def reply(self, message):
         if self.sid is not None:
             message["sid"] = self.sid
@@ -154,6 +158,7 @@ class Connection(sockjs.tornado.SockJSConnection):
             self.write_error(e.error_type, data, e.exception)
         except Exception as e:
             self.write_error("UNCAUGHT_SERVER_ERROR", data, e)
+            raise e
         # raise tornado.gen.Return(result)
 
     def write_error(self, error_type, message, exception=None):

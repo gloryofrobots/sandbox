@@ -17,6 +17,9 @@ class ResponseSchema(component.ResponseSchema):
     def Users(self, data):
         return self.create("USERS", dict(users=data))
 
+    def User(self, user_id, username,):
+        return self.create("USER", dict(id=user_id, username=username))
+
 ##########################################
 ##########################################
 
@@ -24,14 +27,29 @@ class ResponseSchema(component.ResponseSchema):
 class Controller(component.Controller):
     _REQUEST_SCHEMA = [
         {
-            "action": "ALL",
+            "action": "GET_ALL",
+            "schema": {
+            }
+        },
+        {
+            "action": "GET_AUTHENTICATED",
             "schema": {
             }
         },
     ]
 
     @tornado.gen.coroutine
-    def on_message_all(self, request):
+    def on_message_get_authenticated(self, request):
+        logging.info("users get auth req received %s", request)
+        user = yield self.mapper.get_user_by_id(request.user_id)
+
+        if user is None:
+            request.reply(self.schemas.error.Error("REQUEST_FAILED", "USER IS ABSENT"))
+
+        request.reply(self.schema.User(user["id"], user["username"]))
+
+    @tornado.gen.coroutine
+    def on_message_get_all(self, request):
         logging.info("users req received %s", request)
         users = yield self.mapper.get_users()
         request.reply(self.schema.Users(users))

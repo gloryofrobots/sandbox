@@ -64,6 +64,7 @@ class SockJSConnection {
     onOpen(){
         this.opened = true;
         console.log('SOCKET OPEN');
+        _.each(this.sessions, (session) => session.onOpen());
     }
 
     close(){

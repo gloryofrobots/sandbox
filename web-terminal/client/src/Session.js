@@ -21,6 +21,8 @@ class Session{
         this.handlers = {};
 
         this.token = null;
+        this.onOpenCallback = null;
+        this.onAuthenticateCallback = null;
     }
 
     __observe(key, observer) {
@@ -48,12 +50,25 @@ class Session{
         console.log("OBSERVE AFTER", this.observers);
     }
 
+    setOnOpenCallback(callback) {
+        this.onOpenCallback = callback;
+        if (this.connection.opened === true){
+            callback();
+        }
+    }
+
+    onOpen(){
+        if (this.onOpenCallback){
+            this.onOpenCallback();
+        }
+    }
+
     save(token, exp) {
         this.cookies.set(this.tokenName, token, {expires:new Date(parseInt(exp, 10)) , path:"/"});
     }
 
-    exists(){
-        return this.getToken() != undefined;
+    authenticated(){
+        return !_.isUndefined(this.getToken());
     }
 
     getToken(){
@@ -108,8 +123,12 @@ class Session{
         return requestId;
     }
 
+    setOnAuthenticateCallback(cb) {
+        this.onAuthenticateCallback = cb;
+    }
+    
     authenticate(callback, route, payload) {
-       if (this.exists()) {
+       if (this.authenticated()) {
             throw new Error("Session has been already authenticated");
        }
 
@@ -119,6 +138,9 @@ class Session{
                     if (!this.isError(msg)) {
                         console.log("SAVING", msg.data.token, msg.data.exp);
                         this.save(msg.data.token, msg.data.exp);
+                        if (this.onAuthenticateCallback) {
+                            this.onAuthenticateCallback();
+                        }
                     }
                }
            }
@@ -128,19 +150,19 @@ class Session{
     }
 
     sendSync(callback, route, payload) {
-       if(!this.exists()) {
-           console.error("Session:send not active");
-            return;
-       }
+       // if(!this.authenticated()) {
+       //     console.error("Session:send not active");
+       //      return;
+       // }
        var requestId = this.addResponseHandler(callback);
        return this.__send(route, payload, requestId);
     }
 
     send(route, payload) {
-       if(!this.exists()) {
-           console.error("Session:send not active");
-            return;
-       }
+       // if(!this.authenticated()) {
+       //     console.error("Session:send not active");
+       //      return;
+       // }
 
        this.__send(route, payload, undefined)
     }
