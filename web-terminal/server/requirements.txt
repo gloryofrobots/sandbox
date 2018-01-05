@@ -6,3 +6,5 @@ validictory
 passlib
 sockjs-tornado
 momoko
+pyzmq
+bson
