@@ -60,7 +60,6 @@ class Controller(object):
     def __init__(self, **options):
         super(Controller, self).__init__()
         try:
-            self.options = options
             self.route = options["route"]
             self.config = options["config"]
             self.schemas = options["response_schemas"]
@@ -105,7 +104,7 @@ class Controller(object):
                     raise ConfigurationError("Specify handler %s "
                                              "for action %s or provide "
                                              "custom _declare_actions method" % (handler_name, action_name))
-        self._on_init()
+        self._on_init(options)
 
     def authenticate(self, request):
         if self.is_public:
@@ -113,7 +112,7 @@ class Controller(object):
 
         self.auth.authenticate(request)
 
-    def _on_init(self):
+    def _on_init(self, options):
         pass
 
     def create_handler_name(self, action):

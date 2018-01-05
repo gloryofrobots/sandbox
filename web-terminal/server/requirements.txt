@@ -8,3 +8,4 @@ sockjs-tornado
 momoko
 pyzmq
 bson
+zope.interface

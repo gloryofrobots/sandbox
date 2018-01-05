@@ -72,6 +72,7 @@ function PublicInterpreter(session){
     return interpreter;
 }
 
+
 function PrivateInterpreter(session, onLogout){
       var interpreter = new Interpreter({
             help :(interp, term, command) => {
@@ -80,6 +81,27 @@ function PrivateInterpreter(session, onLogout){
             logout :(interp, term, command) => {
                 session.logout();
                 onLogout();
+            },
+            scm: {
+                eval: function(interp, term, command) {
+                    session.sendSync(
+                        (msg) => {
+                            console.log("SCM", msg);
+                            if (session.isError(msg)) {
+                                term.error("Eval server error" + msg.data.message);
+                            } else if (msg.route === "SCM/ERROR") {
+                                term.error("Eval error " + msg.data.error);
+                            } else if (msg.route === "SCM/RESULT") {
+                                term.echo("--> " + msg.data.result);
+                            }
+                        },
+                        "SCM/EVAL",
+                        {
+                            code:command,
+                        }
+                    );
+                },
+                checkArity: false
             },
             "math":{
                 "+":{

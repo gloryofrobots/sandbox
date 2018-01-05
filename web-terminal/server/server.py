@@ -9,10 +9,7 @@ import webterm.component
 import webterm.context
 
 
-
 ######################################################
-
-
 
 # import tornado.gen
 # @tornado.gen.coroutine
@@ -27,10 +24,15 @@ def __get_components():
     from webterm.component.user import user
     from webterm.component.error import error
     from webterm.component.basic import basic
-    return [("BASIC", basic),
-            ("USER", user),
-            ("ERROR", error)]
-    
+    from webterm.component.scm import scm
+    return [
+        ("BASIC", basic),
+        ("USER", user),
+        ("ERROR", error),
+        ("SCM", scm),
+    ]
+
+
 def main(config):
     # initialize file logging
     if config.DEBUG:
@@ -48,18 +50,26 @@ def main(config):
 
     # tornado.ioloop.IOLoop.current().spawn_callback(test_db, db)
     router = sockjs.tornado.SockJSRouter(
-        webterm.connection.make_connection(components, ctx), '/entry')
+        webterm.connection.make_connection(components, ctx), '/api')
 
     application = tornado.web.Application(router.urls,
                                           debug=config.DEBUG,
                                           config=config,
                                           ctx=ctx)
 
-    application.listen(config.PORT)
-    ioloop.start()
+    try:
+        application.listen(config.PORT)
+        ioloop.start()
+    except Exception as e:
+        logging.error("Uncaught Error %s", e)
+        try:
+            ctx.destroy()
+        except Exception as e:
+            logging.error("Error while destroying context %s", e)
+        
+            
 
 
 if __name__ == "__main__":
     import config
     main(config)
-

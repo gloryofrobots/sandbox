@@ -15,3 +15,6 @@ JWT_SECRET = "TOP_SECRET"
 JWT_ALGO = "HS256"
 # jwt lifetime in seconds
 JWT_DURATION = 1800
+
+
+SCM_SOCKET = "tcp://localhost:5555"

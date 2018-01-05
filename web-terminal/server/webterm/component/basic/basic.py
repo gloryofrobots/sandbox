@@ -47,7 +47,7 @@ class Controller(component.Controller):
             },
     ]
 
-    def _on_init(self):
+    def _on_init(self, options):
         self.user_mapper = self.db.get_mapper("user")
 
     @tornado.gen.coroutine

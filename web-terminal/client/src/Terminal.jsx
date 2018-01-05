@@ -4,7 +4,7 @@ import _ from "underscore";
 import {sprintf} from 'sprintf-js';
 
 import TerminalWrapper from "./TerminalWrapper";
-import {PublicInterpreter, PrivateInterpreter} from "./interpreters";
+import {PublicInterpreter, PrivateInterpreter} from "./command";
 
 
 class Terminal extends React.Component {
