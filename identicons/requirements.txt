@@ -1,5 +1,0 @@
-Tornado == 4.5.2
-Pillow
-pydenticon
-futures
-motor == 0.7
