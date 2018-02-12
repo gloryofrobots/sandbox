@@ -84,9 +84,14 @@ def add_globals(env):
         'last': last,
         })
     from repl import repl
-    p = os.path.join(*os.path.split(__file__)[:-2]+('stdlib',))
-    for scm in os.listdir(p):
-        repl(open(os.path.join(p,scm)), '', None)
+    parts = __file__.split(os.sep)
+    stdlib_folder = parts[:-2]
+    stdlib_folder.append("stdlib")
+    path = os.sep.join(stdlib_folder)
+    # p = os.path.join(*os.path.split(__file__)[:-2]+('stdlib',))
+
+    for scm in os.listdir(path):
+        repl(open(os.path.join(path,scm)), '', None)
     return env
 
 

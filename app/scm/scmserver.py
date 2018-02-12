@@ -17,7 +17,6 @@ def decode(string):
     return bson.loads(string)
 
 def worker(worker_url, context):
-    print "WORKER CREATED"
     """Worker routine"""
     # Socket to talk to dispatcher
     socket = context.socket(zmq.REP)
@@ -61,8 +60,6 @@ def main(url):
         thread = threading.Thread(target=worker, args=(url_worker, context))
         threads.append(thread)
         thread.start()
-        # process = multiprocessing.Process(target=worker, args=(url_worker,context))
-        # process.start()
 
     try:
         zmq.proxy(clients, workers)
