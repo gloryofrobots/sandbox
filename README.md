@@ -9,14 +9,14 @@ This is web terminal for evaluation of scheme code.
 How to run
 
 * install or init PostgreSql
-* create database ```webterm```
+* create database for application. I used name ```webterm``` in default configs
 * inside app/server/sql there is file create.sql with needed database structure. You can run it in psql with ```\i path_to_sql_file```
 
-* init if you need virtual env in root directory
-* init if you need nvm 
+* init virtual env in root directory, if you need 
+* init nvm, if you need  
 * ```pip install -r app/requirements.txt```
+* edit configs in ```app/server/config.py``` and ```app/client/src/CONF.js``` for your needs
 * create ```log``` directory in the project root or edit ```app/server/config.py```
-* edit configs in ```app/server/config.py``` and ```app/client/src/CONF.js```
 * run ZeroMQ endpoint with ```python app/scm/scmserver.py```
 * run Tornado middleware with ```python app/server/server.py```
 * inside app/client
