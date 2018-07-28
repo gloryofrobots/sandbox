@@ -16,7 +16,7 @@ def gethash(key, size):
     return h % size
     
 
-class HashTableChain(object):
+class HashTable(object):
     CAPACITY = 1
     def __init__(self):
         self.size = 0
@@ -120,22 +120,25 @@ class HashTableChain(object):
     def __repr__(self):
         return self.__str__()
         
-    @staticmethod
-    def test():
-        h = HashTableChain()
-        h.put("a", 1)
-        h.put("a", 2)
-        h.put("b", 3)
-        h.put("c", 4)
-        h.put("a", 3)
-        h.put("b", 5)
-        print(h)
-        print(h.get("a"))
-        print(h.get("b"))
-        print(h.get("c"))
-        h.delete("b")
-        print(h)
-        h.put("b", 10)
-        h.delete("a")
-        print(h)
 
+def test():
+    h = HashTable()
+    h.put("a", 1)
+    h.put("a", 2)
+    h.put("b", 3)
+    h.put("c", 4)
+    h.put("a", 3)
+    h.put("b", 5)
+    print(h)
+    print(h.get("a"))
+    print(h.get("b"))
+    print(h.get("c"))
+    h.delete("b")
+    print(h)
+    h.put("b", 10)
+    h.delete("a")
+    print(h)
+
+if __name__ == "__main__":
+    test()
+test()
