@@ -64,7 +64,7 @@ class BF:
                         self.cp += 1
                     
                 else:
-                    # print("ENTER LOOP")
+                    print("ENTER LOOP")
                     self.cp += 1
                     goto = self._eval(self.cp)
 
