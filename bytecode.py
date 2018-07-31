@@ -38,4 +38,8 @@ code = pack(op, arg)
 op2 = unpack_op(code)
 arg2 = unpack_arg(code)
 
+# for i in range(31, -1, -1):
+#     mask = 1 << i
+#     print_bin(mask)
+
 print op, op2, arg, arg2
