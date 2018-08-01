@@ -32,7 +32,7 @@ def unpack_arg(code):
     return code & ARG_MASK
 
 
-op = 3
+op = 60
 arg = 42
 code = pack(op, arg)
 op2 = unpack_op(code)

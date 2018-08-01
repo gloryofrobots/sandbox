@@ -4,7 +4,7 @@ import sys
 " ++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++."
 "++++++++++[>+++++++>++++++++++>+++<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+."
 PROG = """
-" ++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++."
+"++++++++++[>+++++++>++++++++++>+++<<<-]>++.>+.+++++++..+++.>++.<<+++++++++++++++.>.+++.------.--------.>+."
 """
 
 RIGHT = 0
@@ -50,14 +50,22 @@ class BF:
         self.eval()
 
     def compile(self, txt):
-        txt = list(filter(lambda c: c in SYNTAX, [c for c in txt]))
+        self.txt = list(filter(lambda c: c in SYNTAX, [c for c in txt]))
 
-        self.size = len(txt)
+        self.size = len(self.txt)
         self.code = [0] * self.size
+        self._compile(0, -1)
 
-        jumps = []
-        for i in range(self.size):
-            ch = txt[i]
+    def pack(self, index, op, arg):
+        print("P", index, op, arg, pack(op, arg))
+        self.code[index] = pack(op, arg)
+
+    def _compile(self, start, jump):
+        i = start
+        while i < self.size:
+            skip = False
+            # print (i, start, jump)
+            ch = self.txt[i]
             arg = 0
             if ch == ">":
                 op = RIGHT
@@ -73,17 +81,25 @@ class BF:
                 op = GETC
             elif ch == "[":
                 op = LOOP_OPEN
-                jump = i
-                # print("LO", jump)
-                jumps.append(jump)
-
+                print("LO", i)
+                i = self._compile(i + 1, i)
+                skip = True
             elif ch == "]":
+                if jump < 0:
+                    raise SyntaxError("Unmatched jump")
+
                 op = LOOP_CLOSE
-                arg = jumps.pop()
-                # print("LC",  arg, i)
-                self.code[arg] = pack(LOOP_OPEN, i)
+                arg = jump
+                print("LC",  arg, i)
+                self.pack(arg, LOOP_OPEN, i)
+                self.pack(i, op, arg)
+                return i
                 
-            self.code[i] = pack(op, arg)
+            if not skip:
+                self.pack(i, op, arg)
+            else:
+                print ("skip")
+            i += 1
         # sys.exit(-1)
 
     def eval(self):
@@ -92,7 +108,7 @@ class BF:
             op = unpack_op(code)
             arg = unpack_arg(code)
             
-            # print("op", self.cp, op, arg)
+            print("op", self.cp, op, arg, self.get())
 
             if op == RIGHT:
                 self.dp += 1
