@@ -129,8 +129,6 @@ class Board:
 
     def get_mine(self, x, y):
         cell = self.get(x, y)
-        if cell:
-            print("GET MINE", x, y, cell.is_mine())
         if not cell or not cell.is_mine():
             return 0
         return 1
@@ -149,7 +147,6 @@ class Board:
         count += self.get_mine(x + 1, y - 1)
         count += self.get_mine(x - 1, y - 1)
 
-        print("FIND NEARBY", x, y, count)
         return count
 
     def get_index(self, x, y):
@@ -255,7 +252,6 @@ class Board:
 
     def cell_view(self, x, y, debug=False):
         cell = self.get(x, y)
-        print("CELL_VIEW", x, y, cell.x, cell.y, cell.mines_nearby)
         if not debug:
             if cell.is_open():
                 if cell.is_mine():
@@ -311,13 +307,6 @@ class Board:
             builder.nl()
 
         add_cols()
-        for cell in self.grid:
-            print("cell", cell.x, cell.y, cell.mines_nearby)
-        print("---------")
-        for y in range(self.height):
-            for x in range(self.width):
-                cell = self.get(x, y)
-                print("cell", cell.x, cell.y, cell.mines_nearby)
         return str(builder)
 
     def __str__(self):
