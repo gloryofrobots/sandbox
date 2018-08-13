@@ -1,4 +1,3 @@
-.venv/*
-.venv3_6/*
-*.pyc
-*.log
+node_modules/*
+.venv
+.venv3_6
