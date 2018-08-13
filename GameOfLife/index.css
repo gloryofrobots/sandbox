@@ -14,6 +14,11 @@
     margin-left:15%
 }
 
+.center {
+    width: 60%;
+    margin: auto;
+}
+
 .title {
     text-align: center;
     margin: auto;
