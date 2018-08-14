@@ -3,6 +3,8 @@ import React from 'react';
 import TextField from '@material-ui/core/TextField';
 import Button from '@material-ui/core/Button';
 import { withStyles } from '@material-ui/core/styles';
+import _ from "underscore";
+
 const styles = theme => ({
   container: {
     display: 'flex',
@@ -13,6 +15,7 @@ const styles = theme => ({
     marginRight: 100,
   },
 });
+
 
 class Settings extends React.Component {
     constructor(props){
@@ -30,7 +33,8 @@ class Settings extends React.Component {
         };
     }
     submitSettings() {
-        this.onSubmit(this.state);
+        var settings = _.mapObject(this.state, (val, key) => parseInt(val));
+        this.onSubmit(settings);
     }
     render() {
         return (
@@ -41,6 +45,7 @@ class Settings extends React.Component {
                     value={this.state.canvasWidth}
                     onChange={this.handleChange("canvasWidth")}
                     margin="normal"
+                    type="number"
                     style={{
                         width:50
                     }}
@@ -51,6 +56,7 @@ class Settings extends React.Component {
                     value={this.state.canvasHeight}
                     onChange={this.handleChange("canvasHeight")}
                     margin="normal"
+                    type="number"
                     style={{
                         marginLeft:10,
                         width:50
@@ -62,6 +68,7 @@ class Settings extends React.Component {
                     value={this.state.gridWidth}
                     onChange={this.handleChange("gridWidth")}
                     margin="normal"
+                    type="number"
                     style={{
                         marginLeft:10,
                         width:50
@@ -73,6 +80,7 @@ class Settings extends React.Component {
                     value={this.state.gridHeight}
                     onChange={this.handleChange("gridHeight")}
                     margin="normal"
+                    type="number"
                     style={{
                         marginLeft:10,
                         width:50
@@ -82,7 +90,7 @@ class Settings extends React.Component {
                         style={{
                             marginLeft:10
                         }}
-                       onClick={this.submitSettings} >New Simulation</Button>
+                       onClick={this.submitSettings} >Create</Button>
             </div>
             );
         }

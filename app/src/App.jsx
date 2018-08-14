@@ -15,16 +15,13 @@ import Button from '@material-ui/core/Button';
 import Settings from "./Settings";
 
 import {
-  Switch,
   Route,
   withRouter,
- NavLink,
-    Link,
-    BrowserRouter as Router,
+  Link,
+  BrowserRouter as Router,
 } from 'react-router-dom';
 
-import GOLScreen from './GOLScreen';
-import BBScreen from './BBScreen';
+import Simulation from './Simulation';
 import CONF from "./CONF";
 
 import './App.css';
@@ -43,7 +40,10 @@ class App extends React.Component {
                 canvasWidth:CONF.CANVAS_WIDTH,
                 canvasHeight:CONF.CANVAS_HEIGHT,
                 gridWidth:CONF.GRID_WIDTH,
-                gridHeight:CONF.GRID_HEIGHT
+                gridHeight:CONF.GRID_HEIGHT,
+                countSteps:CONF.COUNT_STEPS,
+                interval:CONF.INTERVAL,
+                cellMargin:CONF.CELL_MARGIN
            }
         };
     }
@@ -54,12 +54,14 @@ class App extends React.Component {
     componentWillUnmount(){
     }
     onSubmitSettings(settings){
+        console.log("SETTINGS" , settings);
         this.setState({
             settings:settings
         });
     }
                 // <MuiThemeProvider muiTheme={getMuiTheme(lightBaseTheme)}>
     render() {
+        console.log("RENDER SETTINGS", this.state.settings);
         return (
           <MuiThemeProvider theme={getTheme()}>
               <AppBar position="static" className="app-bar">
@@ -71,35 +73,13 @@ class App extends React.Component {
               </AppBar>
                 <Router>
                     <div>
-                    <ul>
-                        <li>
-                            <Link to="gol">Game Of Life</Link>
-                        </li>
-                        <li>
-                            <Link to="bb">Brians Brain</Link>
-                        </li>
-                    </ul>
+                        <Settings settings={this.state.settings}
+                                onSubmit={this.onSubmitSettings} />
 
-                    <div>
-                      <Settings settings={{this.settings}}
-                        onSubmit={this.onSubmitSettings}
-                        />
+                        <hr />
+                        <Simulation settings={this.state.settings} />
 
-                        <p className="center">
-                            <Button variant="outlined" id="start">Start</Button>
-                            <Button variant="outlined"  id="next">Next</Button>
-                            <Button variant="outlined"  id="loop">Loop</Button>
-                            <Button variant="outlined"  id="stop">Stop</Button>
-                        </p>
-                        <div id="grid-wrapper"> 
-                        <canvas id="grid" className="grid-view"> </canvas>
-                        </div>
-                    </div>
-                    <hr />
-
-                        <Route path="/" render={(props)=> (<GOLScreen />)}/>
-                        <Route path="/gol" render={(props)=> (<GOLScreen />)}/>
-                        <Route path="/bb" render={(props)=> (<BBScreen />)}/>
+                        <Route path="/" render={(props)=> (<div></div>)}/>
                     </div>
                 </Router>
          </MuiThemeProvider>
