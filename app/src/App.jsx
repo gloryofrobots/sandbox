@@ -26,17 +26,14 @@ import CONF from "./CONF";
 
 import './App.css';
 
+import _ from "underscore";
 
 injectTapEventPlugin();
 
-
-class App extends React.Component {
-    constructor(props){
-        super(props);
-        this.history = props.history;
-        this.onSubmitSettings = this.onSubmitSettings.bind(this);
-        this.state = {
-            settings:{
+function loadOptions() {
+    // localStorage.clear();
+    var canvasWidth = localStorage.getItem("canvasWidth");
+    var settings = {
                 canvasWidth:CONF.CANVAS_WIDTH,
                 canvasHeight:CONF.CANVAS_HEIGHT,
                 gridWidth:CONF.GRID_WIDTH,
@@ -44,7 +41,38 @@ class App extends React.Component {
                 countSteps:CONF.COUNT_STEPS,
                 interval:CONF.INTERVAL,
                 cellMargin:CONF.CELL_MARGIN
-           }
+    };
+    // console.log("LEN", localStorage.length);
+    settings =
+        _.mapObject(settings, function(val, key) {
+            // console.log("##", val, key);
+        var cache = parseInt(localStorage.getItem(key));
+        if(!cache) {
+            return val;
+        }
+        return cache;
+    });
+    return settings;
+}
+
+function saveOptions(settings) {
+    localStorage.clear();
+    _.each(settings, function(val, key) {
+        if(val === undefined) {
+            return;
+        }
+        // console.log("!!",key, val);
+        localStorage.setItem(key, val);
+    });
+}
+
+class App extends React.Component {
+    constructor(props){
+        super(props);
+        this.history = props.history;
+        this.onSubmitSettings = this.onSubmitSettings.bind(this);
+        this.state = {
+            settings:loadOptions()
         };
     }
 
@@ -55,6 +83,8 @@ class App extends React.Component {
     }
 
     onSubmitSettings(settings){
+        console.log("onSublmit", settings);
+        saveOptions(settings);
         this.setState({
             settings:settings
         });
