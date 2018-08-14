@@ -12,7 +12,7 @@ import {
   withRouter
 } from 'react-router-dom';
 
-import MainScreen from './MainScreen';
+import GameOfLifeScreen from './GameOfLifeScreen';
 import CONF from "./CONF";
 
 import './App.css';
@@ -30,17 +30,25 @@ class App extends React.Component {
     }
 
     componentWillUnmount(){
-        this.connection.close();
     }
 
                 // <MuiThemeProvider muiTheme={getMuiTheme(lightBaseTheme)}>
     render() {
         return (
+            <div>
+              <AppBar position="static" className="app-bar">
+                <Toolbar>
+                  <Typography variant="title" color="inherit" className="app-bar" >
+                    Cellular Automatons
+                  </Typography>
+                </Toolbar>
+              </AppBar>
                 <MuiThemeProvider theme={getTheme()}>
                     <Switch>
-                        <Route path="/" render={(props)=> (<MainScreen />)}/>
+                        <Route path="/" render={(props)=> (<GameOfLifeScreen />)}/>
                     </Switch>
                 </MuiThemeProvider>
+            </div>
         );
     }
 }
