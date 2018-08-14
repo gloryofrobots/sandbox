@@ -58,7 +58,7 @@ class Game {
                 
                 this.renderer.drawCell(x, y, cell);
                 var count = this.calculate(x, y);
-                this.renderer.drawText(x, y, count.toString());
+                // this.renderer.drawText(x, y, count.toString());
             }
         }
         this.renderer.end();

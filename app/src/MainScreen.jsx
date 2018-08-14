@@ -23,8 +23,8 @@ class MainScreen extends Component {
     componentDidMount() {
         const GRID_WIDTH = 10;
         const GRID_HEIGHT= 10;
-        const VIEW_WIDTH = 800;
-        const VIEW_HEIGHT = 800;
+        const VIEW_WIDTH = 600;
+        const VIEW_HEIGHT = 600;
         const INTERVAL = 100;
         const STEPS = -1;
         // const cell_width = 30;
