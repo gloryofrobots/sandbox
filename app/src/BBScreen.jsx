@@ -1,9 +1,9 @@
 
 
 import React, { Component } from 'react';
-import Grid from '@material-ui/core/Grid';
 import {withRouter} from 'react-router-dom'; // 
 
+import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import Game from "./GameOfLife";
 import Renderer from "./Renderer";
@@ -79,6 +79,7 @@ class BBScreen extends Component {
                 //    />
     render() {
         return (
+            <div/>
         );
     }
 }

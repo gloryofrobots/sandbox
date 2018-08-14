@@ -24,7 +24,7 @@ body {
   text-align: right;
 }
 
-.center, .center-align {
+.center, .settings, .center-align {
   text-align: center;
 }
 
@@ -51,12 +51,14 @@ body {
     font-size: 1em;
     font-weight: bold;
 }
+
 #grid-wrapper {
     margin-top:20px;
 	/* display: flex; */
 	/* justify-content: center; /\* center horizontally *\/ */
 	/* align-items: center; /\* center vertically *\/ */
 }
+
 #grid {
     padding-left: 0;
     padding-right: 0;
@@ -68,4 +70,12 @@ body {
 .center-block {
     width: 60%;
     margin: auto;
+}
+
+.settings-input {
+    padding-left: 100px;
+
+}
+.spacer {
+    min-width:10px;
 }

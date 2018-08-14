@@ -82,12 +82,9 @@ class GOLScreen extends Component {
         startGame();
     }
 
-                // <AppBar
-                //    title="GameOfLife"
-                //    className="app-bar"
-                //    />
     render() {
         return (
+            <div> </div>
         );
     }
 }

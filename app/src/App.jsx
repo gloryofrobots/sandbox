@@ -9,6 +9,10 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import {getTheme} from "./Theme";
 import Drawer from '@material-ui/core/Drawer';
+import Grid from '@material-ui/core/Grid';
+import Button from '@material-ui/core/Button';
+
+import Settings from "./Settings";
 
 import {
   Switch,
@@ -28,51 +32,20 @@ import './App.css';
 
 injectTapEventPlugin();
 
-const Home = () => (
-  <div>
-    <h2>Home</h2>
-  </div>
-);
-
-const About = () => (
-  <div>
-    <h2>About</h2>
-  </div>
-);
-
-const Topics = ({ match }) => (
-  <div>
-    <h2>Topics</h2>
-    <ul>
-      <li>
-        <Link to={`${match.url}/rendering`}>Rendering with React</Link>
-      </li>
-      <li>
-        <Link to={`${match.url}/components`}>Components</Link>
-      </li>
-      <li>
-        <Link to={`${match.url}/props-v-state`}>Props v. State</Link>
-      </li>
-    </ul>
-
-    <Route path={`${match.url}/:topicId`} component={Topic} />
-    <Route
-      exact
-      path={match.url}
-      render={() => <h3>Please select a topic.</h3>}
-    />
-  </div>
-);
-
-const Topic = ({ match }) => (
-  <div>
-    <h3>{match.params.topicId}</h3>
-  </div>
-);
 
 class App extends React.Component {
     constructor(props){
         super(props);
+        this.history = props.history;
+        this.onSubmitSettings = this.onSubmitSettings.bind(this);
+        this.state = {
+            settings:{
+                canvasWidth:CONF.CANVAS_WIDTH,
+                canvasHeight:CONF.CANVAS_HEIGHT,
+                gridWidth:CONF.GRID_WIDTH,
+                gridHeight:CONF.GRID_HEIGHT
+           }
+        };
     }
 
     componentWillMount(){
@@ -80,7 +53,11 @@ class App extends React.Component {
 
     componentWillUnmount(){
     }
-
+    onSubmitSettings(settings){
+        this.setState({
+            settings:settings
+        });
+    }
                 // <MuiThemeProvider muiTheme={getMuiTheme(lightBaseTheme)}>
     render() {
         return (
@@ -104,19 +81,16 @@ class App extends React.Component {
                     </ul>
 
                     <div>
-                        <Grid container  justify="center">
-                            <Grid item xs={12}>
-                                <p className="center">
-                                    <Button variant="outlined" id="start">Start</Button>
-                                    <Button variant="outlined"  id="next">Next</Button>
-                                    <Button variant="outlined"  id="loop">Loop</Button>
-                                    <Button variant="outlined"  id="stop">Stop</Button>
-                                </p>
+                      <Settings settings={{this.settings}}
+                        onSubmit={this.onSubmitSettings}
+                        />
 
-                            </Grid>
-                            <Grid item xs={12}>
-                            </Grid>
-                        </Grid>
+                        <p className="center">
+                            <Button variant="outlined" id="start">Start</Button>
+                            <Button variant="outlined"  id="next">Next</Button>
+                            <Button variant="outlined"  id="loop">Loop</Button>
+                            <Button variant="outlined"  id="stop">Stop</Button>
+                        </p>
                         <div id="grid-wrapper"> 
                         <canvas id="grid" className="grid-view"> </canvas>
                         </div>
