@@ -53,15 +53,14 @@ class App extends React.Component {
 
     componentWillUnmount(){
     }
+
     onSubmitSettings(settings){
-        console.log("SETTINGS" , settings);
         this.setState({
             settings:settings
         });
     }
                 // <MuiThemeProvider muiTheme={getMuiTheme(lightBaseTheme)}>
     render() {
-        console.log("RENDER SETTINGS", this.state.settings);
         return (
           <MuiThemeProvider theme={getTheme()}>
               <AppBar position="static" className="app-bar">
@@ -77,6 +76,7 @@ class App extends React.Component {
                                 onSubmit={this.onSubmitSettings} />
 
                         <hr />
+
                         <Simulation settings={this.state.settings} />
 
                         <Route path="/" render={(props)=> (<div></div>)}/>

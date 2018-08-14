@@ -12,8 +12,13 @@ class Game {
             (val, index, arr) => {
                 return Math.round(Math.random());
         });
+        this.initialCells = this.cells.slice();
     }
 
+    rewind(){
+        this.finished = false;
+        this.cells = this.initialCells.slice();
+    }
 
     index(x, y){
         if (x < 0 || x >= this.width || y < 0 || y > this.height) {

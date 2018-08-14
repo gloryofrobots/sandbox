@@ -3,70 +3,93 @@ import React from 'react';
 import Game from "./GameOfLife";
 import Renderer from "./Renderer";
 import Button from '@material-ui/core/Button';
-import {withRouter} from 'react-router-dom'; // 
 
 var game;
+
 class Simulation extends React.Component {
     constructor(props){
         super(props);
         this.onSubmit = props.onSubmit;
         console.log("SETTINGS", this.props.settings);
+        this.onRewind = this.onRewind.bind(this);
+        this.onStep = this.onStep.bind(this);
+        this.onRun = this.onRun.bind(this);
+        this.onStop = this.onStop.bind(this);
+        this.game=undefined;
+    }
+
+    onStep() {
+        if (this.game == undefined){
+            console.log("GAME UNDEF");
+            return;
+        }
+        if (this.game.isRunning()) {
+            alert("Still running");
+            return;
+        }
+        if (this.game.interval) {
+            return;
+        }
+        this.game.update();
+    }
+
+    onRun() {
+        if (this.game == undefined){
+            console.log("GAME UNDEF");
+            return;
+        }
+        if (this.game.isRunning()) {
+            alert("Still running");
+            return;
+        }
+        var settings = this.props.settings;
+        this.game.loop(settings.countSteps, settings.interval);
+    }
+
+    onStop() {
+        if (this.game == undefined){
+            console.log("GAME UNDEF");
+            return;
+        }
+        this.game.stop();
+    }
+
+    onRewind() {
+        if (this.game == undefined){
+            console.log("GAME UNDEF");
+            return;
+        }
+        if (this.game.isRunning()) {
+            alert("Still running");
+            return;
+        }
+        this.game.rewind();
+        this.game.update();
     }
 
     startSimulation() {
         var settings = this.props.settings;
-
-        const GRID_WIDTH = settings.gridWidth;
-        const GRID_HEIGHT= settings.gridHeight;
-        const VIEW_WIDTH = settings.canvasWidth;
-        const VIEW_HEIGHT = settings.canvasHeight;
-        const INTERVAL = settings.interval;
-        const STEPS = settings.countSteps;
-        // const cell_width = 30;
-        // const cell_height = 30;
-        const CELL_MARGIN = settings.cellMargin;
-
         var canvas = document.getElementById("grid");
         var ctx = canvas.getContext("2d");
 
         ctx.strokeStyle = "rgb(0, 0, 0)";
 
-        ctx.canvas.width = VIEW_WIDTH;
-        ctx.canvas.height = VIEW_HEIGHT;
+        ctx.canvas.width = settings.canvasWidth;
+        ctx.canvas.height = settings.canvasHeight;
 
-        var cellwidth = (VIEW_WIDTH / GRID_WIDTH) - CELL_MARGIN;
-        var cellheight = (VIEW_HEIGHT / GRID_HEIGHT) - CELL_MARGIN;
-        var render = new Renderer(ctx, VIEW_WIDTH, VIEW_HEIGHT, cellwidth, cellheight, CELL_MARGIN);
-        var self = this;
+        var cellwidth = (settings.canvasWidth/ settings.gridWidth) - settings.cellMargin;
+        var cellheight = (settings.canvasHeight / settings.gridHeight) - settings.cellMargin;
 
-        function startGame(){
-            if (game != undefined){
-                game.stop();
-            }
+        var render = new Renderer(ctx,
+                                  settings.canvasWidth,
+                                  settings.canvasHeight ,
+                                  cellwidth,
+                                  cellheight,
+                                  settings.cellMargin
+        );
 
-            game = new Game(render, GRID_WIDTH, GRID_HEIGHT);
-            game.update();
-            document.getElementById("next").onclick = function() {
-                if (game.interval) {
-                    return;
-                }
-                game.update();
-            };
-
-            document.getElementById("loop").onclick = function() {
-                game.loop(STEPS, INTERVAL);
-            };
-
-            document.getElementById("stop").onclick = function() {
-                console.log("stop");
-                game.stop();
-            };
-        }
-        document.getElementById("start").onclick = function() {
-            startGame();
-        };
-
-        startGame();
+        this.game = new Game(render, settings.gridWidth, settings.gridHeight);
+        this.game.update();
     }
 
     componentDidUpdate(prevProps) {
@@ -84,10 +107,10 @@ class Simulation extends React.Component {
         return (
             <div>
                 <p className="center">
-                    <Button variant="outlined" id="start">Start</Button>
-                    <Button variant="outlined"  id="next">Next</Button>
-                    <Button variant="outlined"  id="loop">Loop</Button>
-                    <Button variant="outlined"  id="stop">Stop</Button>
+                    <Button variant="outlined" onClick={this.onRun}>Run</Button>
+                    <Button variant="outlined" onClick={this.onStop}>Stop</Button>
+                    <Button variant="outlined" onClick={this.onStep}>Step</Button>
+                    <Button variant="outlined" onClick={this.onRewind}>Rewind</Button>
                 </p>
                 <div id="grid-wrapper"> 
                 <canvas id="grid" className="grid-view"> </canvas>
@@ -97,4 +120,4 @@ class Simulation extends React.Component {
     }
 }
 
-export default withRouter(Simulation);
+export default Simulation;

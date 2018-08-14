@@ -36,22 +36,23 @@ class Settings extends React.Component {
         var settings = _.mapObject(this.state, (val, key) => parseInt(val));
         this.onSubmit(settings);
     }
+
+              // <p>Use -1 steps for infinite loop </p>
     render() {
+        var inputWidth = 50;
         return (
             <div className="center">
                 <TextField
-                    id="width"
                     label="Width"
                     value={this.state.canvasWidth}
                     onChange={this.handleChange("canvasWidth")}
                     margin="normal"
                     type="number"
                     style={{
-                        width:50
+                        width:inputWidth
                     }}
                     />
                 <TextField
-                    id="height"
                     label="Height"
                     value={this.state.canvasHeight}
                     onChange={this.handleChange("canvasHeight")}
@@ -59,11 +60,10 @@ class Settings extends React.Component {
                     type="number"
                     style={{
                         marginLeft:10,
-                        width:50
+                        width:inputWidth
                     }}
                     />
                 <TextField
-                    id="width"
                     label="Cols"
                     value={this.state.gridWidth}
                     onChange={this.handleChange("gridWidth")}
@@ -71,11 +71,10 @@ class Settings extends React.Component {
                     type="number"
                     style={{
                         marginLeft:10,
-                        width:50
+                        width:inputWidth
                     }}
                     />
                 <TextField
-                    id="height"
                     label="Rows"
                     value={this.state.gridHeight}
                     onChange={this.handleChange("gridHeight")}
@@ -83,7 +82,40 @@ class Settings extends React.Component {
                     type="number"
                     style={{
                         marginLeft:10,
-                        width:50
+                        width:inputWidth
+                    }}
+                    />
+                <TextField
+                    label="Steps (-1 == infinite)"
+                    value={this.state.countSteps}
+                    onChange={this.handleChange("countSteps")}
+                    margin="normal"
+                    type="number"
+                    style={{
+                        marginLeft:10,
+                        width:150
+                    }}
+                    />
+                <TextField
+                    label="Interval (ms)"
+                    value={this.state.interval}
+                    onChange={this.handleChange("interval")}
+                    margin="normal"
+                    type="number"
+                    style={{
+                        marginLeft:10,
+                        width:100
+                    }}
+                    />
+                <TextField
+                    label="Cell margin"
+                    value={this.state.cellMargin}
+                    onChange={this.handleChange("cellMargin")}
+                    margin="normal"
+                    type="number"
+                    style={{
+                        marginLeft:10,
+                        width:100
                     }}
                     />
                <Button variant="outlined"
