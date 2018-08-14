@@ -3,19 +3,26 @@ import React, { Component } from 'react';
 import Grid from '@material-ui/core/Grid';
 import {withRouter} from 'react-router-dom'; // 
 
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import Game from "./GameOfLife";
 import Renderer from "./Renderer";
 
 import _ from "underscore";
 
+import AppBar from '@material-ui/core/AppBar';
+import Toolbar from '@material-ui/core/Toolbar';
+import Typography from '@material-ui/core/Typography';
+import {getTheme} from "./Theme";
+import {
+  Switch,
+  Route,
+ NavLink,
+    Link,
+} from 'react-router-dom';
 
 var game;
 
-class GameOfLifeScreen extends Component {
+class GOLScreen extends Component {
     constructor(props){
         super(props);
         this.state={
@@ -81,32 +88,9 @@ class GameOfLifeScreen extends Component {
                 //    />
     render() {
         return (
-            <div>
-              <AppBar position="static" className="app-bar">
-                <Toolbar>
-                  <Typography variant="title" color="inherit" className="app-bar" >
-                    Cellular Automatons
-                  </Typography>
-                </Toolbar>
-              </AppBar>
-                <Grid container  justify="center">
-                    <Grid item xs={12}>
-                        <p className="center">
-                            <Button variant="outlined" id="start">Start</Button>
-                            <Button variant="outlined"  id="next">Next</Button>
-                            <Button variant="outlined"  id="loop">Loop</Button>
-                            <Button variant="outlined"  id="stop">Stop</Button>
-                        </p>
-
-                    </Grid>
-                    <Grid item xs={12}>
-                    </Grid>
-                </Grid>
-                 <canvas id="grid" className="grid-view"> </canvas>
-            </div>
         );
     }
 }
 
 
-export default withRouter(GameOfLifeScreen);
+export default withRouter(GOLScreen);
