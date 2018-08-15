@@ -1,7 +1,5 @@
-const COLOR_ALIVE = "#669999";
 const COLOR_BLACK = "#000";
-const COLOR_DEAD = "#ccc";
-
+var COLORS = ["#ccc", "#669999", "#000", "#3ca"];
 
 class Renderer {
     constructor(ctx, width, height, cellwidth, cellheight, cellmargin){
@@ -31,17 +29,12 @@ class Renderer {
         var yp = y * this.marginY + this.cellHeight/2;
         this.ctx.fillStyle = COLOR_BLACK;
         this.ctx.font = "20px Arial";
-        this.ctx.fillText(txt, xp, yp) 
+        this.ctx.fillText(txt, xp, yp);
     }
 
     drawCell(x, y, cell) {
         // console.log("DRAW", x, y, cell);
-        var color;
-        if (cell === 1) {
-            color = COLOR_ALIVE;
-        } else {
-            color = COLOR_DEAD;
-        }
+        var color = COLORS[cell];
 
         var xp = x * this.marginX;
         var yp = y * this.marginY;

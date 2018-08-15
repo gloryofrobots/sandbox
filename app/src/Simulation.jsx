@@ -3,8 +3,6 @@ import React from 'react';
 import Game from "./Game";
 import Renderer from "./Renderer";
 import Button from '@material-ui/core/Button';
-import Canvas from "./Canvas";
-import Controls from "./Controls";
 import $ from "jquery";
 // var $ = require("jquery");
 
@@ -45,24 +43,13 @@ class Simulation extends React.Component {
         this.game.update();
     }
 
-    generationCounter() {
-        return $("#generation-counter");
-    }
-
     setControls(controls){
         this.setState({controls:controls});
         this.needToRestart = false;
     }
+
     onUpdate(game) {
-        if(game.finished) {
-            this.setControls({
-                step:false,
-                stop:false,
-                run:false,
-                rewind:true
-            });
-        } 
-        this.generationCounter().html(game.generation);
+        $("#generation-counter").html(game.generation);
     }
 
     onRun() {
