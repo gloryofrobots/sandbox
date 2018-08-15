@@ -8,16 +8,16 @@ import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import {getTheme} from "./Theme";
-import Drawer from '@material-ui/core/Drawer';
-import Grid from '@material-ui/core/Grid';
-import Button from '@material-ui/core/Button';
+// import Drawer from '@material-ui/core/Drawer';
+// import Grid from '@material-ui/core/Grid';
+// import Button from '@material-ui/core/Button';
 
 import Settings from "./Settings";
 
 import {
   Route,
   withRouter,
-  Link,
+  // Link,
   BrowserRouter as Router,
 } from 'react-router-dom';
 
@@ -32,7 +32,6 @@ injectTapEventPlugin();
 
 function loadOptions() {
     // localStorage.clear();
-    var canvasWidth = localStorage.getItem("canvasWidth");
     var settings = {
                 canvasWidth:CONF.CANVAS_WIDTH,
                 canvasHeight:CONF.CANVAS_HEIGHT,
@@ -46,7 +45,7 @@ function loadOptions() {
     settings =
         _.mapObject(settings, function(val, key) {
             // console.log("##", val, key);
-        var cache = parseInt(localStorage.getItem(key));
+        var cache = parseInt(localStorage.getItem(key), 10);
         if(!cache) {
             return val;
         }

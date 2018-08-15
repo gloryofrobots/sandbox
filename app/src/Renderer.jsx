@@ -36,7 +36,7 @@ class Renderer {
 
     drawCell(x, y, cell) {
         var color;
-        if (cell == 1) {
+        if (cell === 1) {
             color = COLOR_ALIVE;
         } else {
             color = COLOR_DEAD;

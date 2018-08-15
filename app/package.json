@@ -15,6 +15,7 @@
     "react-router-dom": "^4.2.2",
     "react-scripts": "1.0.17",
     "react-tap-event-plugin": "^3.0.2",
+    "jquery": "latest",
     "redux": "^3.7.2",
     "sockjs-client": "^1.1.4",
     "sprintf-js": "^1.1.1",

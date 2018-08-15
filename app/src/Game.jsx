@@ -1,12 +1,13 @@
 
 class Game {
-    constructor(renderer, width, height) {
+    constructor(renderer, width, height, onUpdate) {
         this.renderer = renderer;
         this.width = width;
         this.height = height;
         this.size = this.width * this.height;
         this.finished = false;
-        
+        this.onUpdate = onUpdate;
+        this._generation = 0;
         this.cells = new Array(this.size);
         this.cells = this.cells.fill(0, 0, this.size).map(
             (val, index, arr) => {
@@ -14,10 +15,15 @@ class Game {
         });
         this.initialCells = this.cells.slice();
     }
+    get generation(){
+        return this._generation;
+    }
 
     rewind(){
         this.finished = false;
+        this._generation = 0;
         this.cells = this.initialCells.slice();
+        this.onUpdate(this);
     }
 
     index(x, y){
@@ -29,7 +35,7 @@ class Game {
 
     get(x, y) {
         var index = this.index(x, y);
-        if (index == -1){
+        if (index === -1){
             return undefined;
         }
 
@@ -38,20 +44,7 @@ class Game {
     }
 
     judge(cell, count) {
-
-        if(cell == 0) {
-            if (count == 3) {
-                return 1;
-            }
-            return 0;
-        }
-        if(count < 2) {
-            return 0;
-        } else if (count < 4) {
-            return 1;
-        } else {
-            return 0;
-        }
+        throw new Error("abstract");
     }
 
     render(){
@@ -62,7 +55,7 @@ class Game {
                 var cell = this.cells[index];
                 
                 this.renderer.drawCell(x, y, cell);
-                var count = this.calculate(x, y);
+                this.calculate(x, y);
                 // this.renderer.drawText(x, y, count.toString());
             }
         }
@@ -76,7 +69,6 @@ class Game {
             
             return;
         }
-
         this.render();
         var newCells = new Array(this.size);
         var finished = true;
@@ -86,26 +78,27 @@ class Game {
                 var cell = this.cells[index];
                 var count = this.calculate(x, y);
                 var newCell = this.judge(cell, count);
-                if (newCell != 0){
+                if (newCell !== 0){
                     finished = false;
                 }
                 newCells[index] = newCell;
             }
         }
+        this._generation += 1;
+        this.onUpdate(this);
         this.finished = finished;
         this.cells = newCells;
     }
 
     countNeighbors(x, y) {
         var cell = this.get(x, y);
-        if (cell == 1) {
+        if (cell === 1) {
             return 1;
         }
         return 0;
     }
 
     calculate(x, y){
-        var index = this.index(x, y);
         var count = 0;
         count += this.countNeighbors(x, y + 1);
         count += this.countNeighbors(x, y - 1);
@@ -123,7 +116,7 @@ class Game {
     }
 
     isRunning(){
-        return this.interval != undefined;
+        return this.interval !== undefined;
     }
 
     stop() {
@@ -137,7 +130,7 @@ class Game {
         this.interval = undefined;
     }
 
-    loop(count, interval) {
+    run(count, interval) {
         if (this.isRunning()) {
             console.log("ALREADY RUNNING");
             return;
@@ -148,7 +141,7 @@ class Game {
         }
 
         // this.update();
-        var infinite = count == -1;
+        var infinite = count === -1;
         var self = this;
 
         self.interval = setInterval(
@@ -158,7 +151,7 @@ class Game {
                     return
                 }
 
-                if(count == 0){
+                if(count === 0){
                     self.stop();
                     return;
                 }
@@ -173,4 +166,23 @@ class Game {
     }
 }
 
-export default Game;
+class GameOfLife extends Game {
+
+    judge(cell, count) {
+        if(cell === 0) {
+            if (count === 3) {
+                return 1;
+            }
+            return 0;
+        }
+        if(count < 2) {
+            return 0;
+        } else if (count < 4) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+}
+
+export default GameOfLife;

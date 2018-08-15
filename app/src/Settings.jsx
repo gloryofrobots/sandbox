@@ -33,7 +33,7 @@ class Settings extends React.Component {
         };
     }
     submitSettings() {
-        var settings = _.mapObject(this.state, (val, key) => parseInt(val));
+        var settings = _.mapObject(this.state, (val, key) => parseInt(val, 10));
         this.onSubmit(settings);
     }
 

@@ -1,10 +1,10 @@
 
 import React from 'react';
-import Game from "./GameOfLife";
+import Game from "./Game";
 import Renderer from "./Renderer";
 import Button from '@material-ui/core/Button';
-
-var game;
+import $ from "jquery";
+// var $ = require("jquery");
 
 class Simulation extends React.Component {
     constructor(props){
@@ -15,11 +15,12 @@ class Simulation extends React.Component {
         this.onStep = this.onStep.bind(this);
         this.onRun = this.onRun.bind(this);
         this.onStop = this.onStop.bind(this);
+        this.onUpdate = this.onUpdate.bind(this);
         this.game=undefined;
     }
 
     onStep() {
-        if (this.game == undefined){
+        if (this.game === undefined){
             console.log("GAME UNDEF");
             return;
         }
@@ -33,8 +34,16 @@ class Simulation extends React.Component {
         this.game.update();
     }
 
+    generationCounter() {
+        return $("#generation-counter");
+    }
+
+    onUpdate(game) {
+        this.generationCounter().html(game.generation);
+    }
+
     onRun() {
-        if (this.game == undefined){
+        if (this.game === undefined){
             console.log("GAME UNDEF");
             return;
         }
@@ -42,12 +51,13 @@ class Simulation extends React.Component {
             alert("Still running");
             return;
         }
+
         var settings = this.props.settings;
-        this.game.loop(settings.countSteps, settings.interval);
+        this.game.run(settings.countSteps, settings.interval);
     }
 
     onStop() {
-        if (this.game == undefined){
+        if (this.game === undefined){
             console.log("GAME UNDEF");
             return;
         }
@@ -55,7 +65,7 @@ class Simulation extends React.Component {
     }
 
     onRewind() {
-        if (this.game == undefined){
+        if (this.game === undefined){
             console.log("GAME UNDEF");
             return;
         }
@@ -88,7 +98,11 @@ class Simulation extends React.Component {
                                   settings.cellMargin
         );
 
-        this.game = new Game(render, settings.gridWidth, settings.gridHeight);
+        if (this.game !== undefined) {
+            this.game.stop();
+        }
+
+        this.game = new Game(render, settings.gridWidth, settings.gridHeight, this.onUpdate);
         this.game.update();
     }
 
@@ -107,6 +121,7 @@ class Simulation extends React.Component {
         return (
             <div>
                 <p className="center">
+                    <span  id ="generation-counter">0</span>
                     <Button variant="outlined" onClick={this.onRun}>Run</Button>
                     <Button variant="outlined" onClick={this.onStop}>Stop</Button>
                     <Button variant="outlined" onClick={this.onStep}>Step</Button>
