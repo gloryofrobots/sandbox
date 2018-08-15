@@ -35,6 +35,7 @@ class Renderer {
     }
 
     drawCell(x, y, cell) {
+        // console.log("DRAW", x, y, cell);
         var color;
         if (cell === 1) {
             color = COLOR_ALIVE;

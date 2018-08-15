@@ -3,12 +3,23 @@ import React from 'react';
 import Game from "./Game";
 import Renderer from "./Renderer";
 import Button from '@material-ui/core/Button';
+import Canvas from "./Canvas";
+import Controls from "./Controls";
 import $ from "jquery";
 // var $ = require("jquery");
 
 class Simulation extends React.Component {
     constructor(props){
         super(props);
+        this.state={
+            controls:{
+                step:true,
+                stop:false,
+                run:true,
+                rewind:false
+            }
+        };
+        this.needToRestart = true;
         this.onSubmit = props.onSubmit;
         console.log("SETTINGS", this.props.settings);
         this.onRewind = this.onRewind.bind(this);
@@ -38,7 +49,19 @@ class Simulation extends React.Component {
         return $("#generation-counter");
     }
 
+    setControls(controls){
+        this.setState({controls:controls});
+        this.needToRestart = false;
+    }
     onUpdate(game) {
+        if(game.finished) {
+            this.setControls({
+                step:false,
+                stop:false,
+                run:false,
+                rewind:true
+            });
+        } 
         this.generationCounter().html(game.generation);
     }
 
@@ -54,6 +77,12 @@ class Simulation extends React.Component {
 
         var settings = this.props.settings;
         this.game.run(settings.countSteps, settings.interval);
+        this.setControls({
+            step:false,
+            stop:true,
+            run:false,
+            rewind:false
+        });
     }
 
     onStop() {
@@ -62,6 +91,12 @@ class Simulation extends React.Component {
             return;
         }
         this.game.stop();
+        this.setControls({
+            step:true,
+            stop:false,
+            run:true,
+            rewind:true
+        });
     }
 
     onRewind() {
@@ -74,6 +109,12 @@ class Simulation extends React.Component {
             return;
         }
         this.game.rewind();
+        this.setControls({
+            step:true,
+            stop:false,
+            run:true,
+            rewind:true
+        });
         this.game.update();
     }
 
@@ -108,7 +149,12 @@ class Simulation extends React.Component {
 
     componentDidUpdate(prevProps) {
         console.log("SIM UP", this.props);
-        this.startSimulation();
+        if(this.needToRestart == true) {
+            this.startSimulation();
+        } else {
+            this.needToRestart = true;
+        }
+
     }
 
     componentDidMount() {
@@ -122,14 +168,14 @@ class Simulation extends React.Component {
             <div>
                 <p className="center">
                     <span  id ="generation-counter">0</span>
-                    <Button variant="outlined" onClick={this.onRun}>Run</Button>
-                    <Button variant="outlined" onClick={this.onStop}>Stop</Button>
-                    <Button variant="outlined" onClick={this.onStep}>Step</Button>
-                    <Button variant="outlined" onClick={this.onRewind}>Rewind</Button>
+                    <Button variant="outlined" onClick={this.onRun} disabled={!this.state.controls.run}>Run</Button>
+                    <Button variant="outlined" onClick={this.onStop} disabled={!this.state.controls.stop}>Stop</Button>
+                    <Button variant="outlined" onClick={this.onStep} disabled={!this.state.controls.step}>Step</Button>
+                    <Button variant="outlined" onClick={this.onRewind} disabled={!this.state.controls.rewind} >Rewind</Button>
                 </p>
-                <div id="grid-wrapper"> 
-                <canvas id="grid" className="grid-view"> </canvas>
-                </div>
+                 <div id="grid-wrapper"> 
+                 <canvas id="grid" className="grid-view"> </canvas>
+                 </div>
             </div>
         );
     }

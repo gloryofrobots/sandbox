@@ -131,6 +131,7 @@ class Game {
     }
 
     run(count, interval) {
+        console.log("RUN", count, interval, this.isRunning(), this.finished);
         if (this.isRunning()) {
             console.log("ALREADY RUNNING");
             return;
