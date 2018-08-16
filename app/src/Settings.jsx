@@ -94,7 +94,8 @@ class Settings extends React.Component {
         var inputWidth = 50;
         var marginLeft = 10;
 
-        var RuleSelect = (<span />);
+        var RuleSelect = (<Button disabled>None</Button>);
+
         if(this.state.rule !== undefined) {
             RuleSelect = (
                 <FormControl
@@ -134,7 +135,7 @@ class Settings extends React.Component {
                 </FormControl>
                 {RuleSelect}
                 <TextField
-                    label="Params"
+                    label="Edit rule"
                     value={this.state.params}
                     onChange={this.handleChange("params")}
                     margin="normal"

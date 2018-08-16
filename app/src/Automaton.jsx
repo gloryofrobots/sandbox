@@ -36,7 +36,7 @@ class Automaton {
         return _.map(params.split("/"), function(_param){
             var param = _param.trim();
             if (param === "") {
-                return 0;
+                return [0];
             }
             var res =  _.map(Array.from(param), (val) =>{
                 var intVal = parseInt(val, 10);
@@ -204,6 +204,20 @@ class GameOfLife extends Automaton {
     }
 
     judge(cell, count) {
+        if (cell == 1) {
+            if (this.params[0].includes(count)) {
+                return 1;
+            }
+            return 0;
+        } else {
+            if (this.params[1].includes(count)) {
+                return 1;
+            }
+            return 0;
+        }
+    }
+
+    judge2(cell, count) {
         if(cell === 0) {
             if (count === 3) {
                 return 1;
