@@ -1,9 +1,16 @@
+import * as Errors from "./Errors";
+
+import _ from "underscore";
+
 function randi(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-class Game {
-    constructor(renderer, width, height, onUpdate, props) {
+
+class Automaton {
+    constructor(renderer, params, width, height, onUpdate) {
+        this.params = this.parseParams(params);
+        this.validate();
         this.renderer = renderer;
 
         this.width = width;
@@ -11,13 +18,36 @@ class Game {
         this.size = this.width * this.height;
         this.onUpdate = onUpdate;
         this._generation = 0;
-        this.props = props;
+        console.log("PARAMS", params, this.params);
         this.cells = new Array(this.size);
         this.cells = this.cells.fill(0, 0, this.size).map(
             (val, index, arr) => {
                 return this.genCell();
         });
         this.initialCells = this.cells.slice();
+    }
+
+    validate(){
+        throw new Error("abstract");
+    }
+
+    parseParams(params) {
+        var result = [];
+        return _.map(params.split("/"), function(_param){
+            var param = _param.trim();
+            if (param === "") {
+                return 0;
+            }
+            var res =  _.map(Array.from(param), (val) =>{
+                var intVal = parseInt(val, 10);
+                if(isNaN(intVal)) {
+                    throw new Errors.InvalidParamsError();
+                }
+                return intVal;
+            });
+            return res;
+            console.log("P", param, Array.from(param), _.map(Array.from(param), (val) => parseInt(val, 10)));
+        });
     }
 
     get generation(){
@@ -31,7 +61,7 @@ class Game {
     rewind(){
         this._generation = 0;
         this.cells = this.initialCells.slice();
-        this.onUpdate(this);
+        this.update();
     }
 
     index(x, y){
@@ -140,13 +170,20 @@ class Game {
     }
 }
 
-class GameOfLife extends Game {
+class GameOfLife extends Automaton {
     countNeighbors(x, y) {
         var cell = this.get(x, y);
         if (cell === 1) {
             return 1;
         }
         return 0;
+    }
+
+    validate(){
+        if (this.params.length != 2) {
+            console.log("INVALID params", this.params);
+            throw new Error("Invalid params");
+        }
     }
 
     calculate(cell, index, x, y){
@@ -219,7 +256,7 @@ class BriansBrain extends GameOfLife {
     }
 }
 
-class Cyclic2D extends Game {
+class Cyclic2D extends Automaton {
     genCell(){
         var maxValue = 2;
         var cell = randi(0, maxValue);
@@ -257,4 +294,13 @@ class Cyclic2D extends Game {
     }
 }
 
-export default Cyclic2D;
+const TYPES = {
+    "gl":GameOfLife,
+    "bb":BriansBrain
+};
+
+function automaton(type) {
+    return TYPES[type];
+}
+
+export default automaton;

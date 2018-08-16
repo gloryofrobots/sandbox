@@ -1,9 +1,10 @@
 
 import React from 'react';
-import Game from "./Game";
+import automaton from "./Automaton";
 import Renderer from "./Renderer";
 import Button from '@material-ui/core/Button';
 import $ from "jquery";
+import * as Errors from "./Errors";
 // var $ = require("jquery");
 
 class Simulation extends React.Component {
@@ -102,11 +103,11 @@ class Simulation extends React.Component {
             run:true,
             rewind:true
         });
-        this.game.update();
     }
 
     startSimulation() {
         var settings = this.props.settings;
+        console.log("--------------------------SIM", settings);
         var canvas = document.getElementById("grid");
         var ctx = canvas.getContext("2d");
 
@@ -127,11 +128,40 @@ class Simulation extends React.Component {
                                   settings.cellMargin
         );
 
-        if (this.game !== undefined) {
-            this.game.stop();
+        var automatonType = automaton(settings.family);
+        if (!automatonType){
+            alert("Error wrong type");
+            return;
         }
 
-        this.game = new Game(render, settings.gridWidth, settings.gridHeight, this.onUpdate);
+        var newGame;
+        try {
+            newGame = new automatonType(
+                render, settings.params, settings.gridWidth,
+                settings.gridHeight, this.onUpdate,
+            );
+
+       } catch(e) {
+           console.log(e instanceof Errors.InvalidParamsError, Errors, e.prototype, e.constructor.prototype);
+           if(e instanceof Errors.InvalidParamsError) {
+               alert("Invalid automaton params");
+               if(this.game) {
+                   this.game.rewind();
+               }
+
+               return;
+           } else {
+               console.log(e);
+           }
+       }
+
+        if (this.game !== undefined) {
+            this.game.stop();
+            this.game = undefined;
+        }
+        console.log("!!!!!!!!!!!!!!!!!");
+        this.game = newGame;
+
         this.game.update();
     }
 

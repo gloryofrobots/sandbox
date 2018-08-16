@@ -30,27 +30,35 @@ import _ from "underscore";
 
 injectTapEventPlugin();
 
+
 function loadOptions() {
     // localStorage.clear();
     var settings = {
-                canvasWidth:CONF.CANVAS_WIDTH,
-                canvasHeight:CONF.CANVAS_HEIGHT,
-                gridWidth:CONF.GRID_WIDTH,
-                gridHeight:CONF.GRID_HEIGHT,
-                countSteps:CONF.COUNT_STEPS,
-                interval:CONF.INTERVAL,
-                cellMargin:CONF.CELL_MARGIN
+        family:CONF.FAMILY,
+        params:CONF.PARAMS,
+        canvasWidth:CONF.CANVAS_WIDTH,
+        canvasHeight:CONF.CANVAS_HEIGHT,
+        gridWidth:CONF.GRID_WIDTH,
+        gridHeight:CONF.GRID_HEIGHT,
+        countSteps:CONF.COUNT_STEPS,
+        interval:CONF.INTERVAL,
+        cellMargin:CONF.CELL_MARGIN
     };
     // console.log("LEN", localStorage.length);
     settings =
         _.mapObject(settings, function(val, key) {
             // console.log("##", val, key);
-        var cache = parseInt(localStorage.getItem(key), 10);
-        if(!cache) {
-            return val;
-        }
-        return cache;
+            if(!(Settings.STR_SETTINGS.includes(key))) {
+                var cache = parseInt(localStorage.getItem(key), 10);
+                if(!cache) {
+                    return val;
+                }
+                return cache;
+            } else {
+                return val;
+            }
     });
+    console.log("SETTINGS", settings);
     return settings;
 }
 
@@ -60,7 +68,7 @@ function saveOptions(settings) {
         if(val === undefined) {
             return;
         }
-        // console.log("!!",key, val);
+        console.log("!!",key, val);
         localStorage.setItem(key, val);
     });
 }
