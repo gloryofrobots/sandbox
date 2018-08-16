@@ -47,13 +47,14 @@ function loadOptions() {
     // console.log("LEN", localStorage.length);
     settings =
         _.mapObject(settings, function(val, key) {
-            // console.log("##", val, key);
+            console.log("##", val, key);
             if(!(Settings.STR_SETTINGS.includes(key))) {
-                var cache = parseInt(localStorage.getItem(key), 10);
-                if(!cache) {
+                var cache = localStorage.getItem(key);
+                var cacheInt = parseInt(cache, 10);
+                if(cacheInt === undefined) {
                     return val;
                 }
-                return cache;
+                return cacheInt;
             } else {
                 return val;
             }

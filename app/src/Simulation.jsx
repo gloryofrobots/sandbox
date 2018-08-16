@@ -25,7 +25,6 @@ class Simulation extends React.Component {
         this.onStep = this.onStep.bind(this);
         this.onRun = this.onRun.bind(this);
         this.onStop = this.onStop.bind(this);
-        this.onUpdate = this.onUpdate.bind(this);
         this.game=undefined;
     }
 
@@ -47,10 +46,6 @@ class Simulation extends React.Component {
     setControls(controls){
         this.setState({controls:controls});
         this.needToRestart = false;
-    }
-
-    onUpdate(game) {
-        $("#generation-counter").html(game.generation);
     }
 
     onRun() {
@@ -136,9 +131,15 @@ class Simulation extends React.Component {
 
         var newGame;
         try {
+
+            var counter = $("#generation-counter");
+            const onUpdate = (game) => {
+                counter.html(" GEN: " + game.generation + "");
+            };
+
             newGame = new automatonType(
                 render, settings.params, settings.gridWidth,
-                settings.gridHeight, this.onUpdate,
+                settings.gridHeight, onUpdate,
             );
 
        } catch(e) {
