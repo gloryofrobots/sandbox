@@ -1,12 +1,17 @@
+function randi(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 class Game {
-    constructor(renderer, width, height, onUpdate) {
+    constructor(renderer, width, height, onUpdate, props) {
         this.renderer = renderer;
+
         this.width = width;
         this.height = height;
         this.size = this.width * this.height;
         this.onUpdate = onUpdate;
         this._generation = 0;
+        this.props = props;
         this.cells = new Array(this.size);
         this.cells = this.cells.fill(0, 0, this.size).map(
             (val, index, arr) => {
@@ -73,8 +78,7 @@ class Game {
             for(var y = 0; y < this.height; y++) {
                 var index = this.index(x, y);
                 var cell = this.cells[index];
-                var count = this.calculate(x, y);
-                var newCell = this.judge(cell, count);
+                var newCell = this.calculate(cell, index, x, y);
                 newCells[index] = newCell;
             }
         }
@@ -83,30 +87,10 @@ class Game {
         this.cells = newCells;
     }
 
-    countNeighbors(x, y) {
-        var cell = this.get(x, y);
-        if (cell === 1) {
-            return 1;
-        }
-        return 0;
+    calculate(cell, index, x, y){
+        throw new Error("abstract!");
     }
 
-    calculate(x, y){
-        var count = 0;
-        count += this.countNeighbors(x, y + 1);
-        count += this.countNeighbors(x, y - 1);
-
-        count += this.countNeighbors(x + 1, y);
-        count += this.countNeighbors(x - 1, y);
-
-        count += this.countNeighbors(x - 1, y + 1);
-        count += this.countNeighbors(x - 1, y - 1);
-
-        count += this.countNeighbors(x + 1, y - 1);
-        count += this.countNeighbors(x + 1, y + 1);
-
-        return count;
-    }
 
     isRunning(){
         return this.interval !== undefined;
@@ -157,6 +141,30 @@ class Game {
 }
 
 class GameOfLife extends Game {
+    countNeighbors(x, y) {
+        var cell = this.get(x, y);
+        if (cell === 1) {
+            return 1;
+        }
+        return 0;
+    }
+
+    calculate(cell, index, x, y){
+        var count = 0;
+        count += this.countNeighbors(x, y + 1);
+        count += this.countNeighbors(x, y - 1);
+
+        count += this.countNeighbors(x + 1, y);
+        count += this.countNeighbors(x - 1, y);
+
+        count += this.countNeighbors(x - 1, y + 1);
+        count += this.countNeighbors(x - 1, y - 1);
+
+        count += this.countNeighbors(x + 1, y - 1);
+        count += this.countNeighbors(x + 1, y + 1);
+
+        return this.judge(cell, count);
+    }
 
     judge(cell, count) {
         if(cell === 0) {
@@ -175,26 +183,22 @@ class GameOfLife extends Game {
     }
 }
 
-class Seeds extends Game {
+// class Seeds extends GameOfLife {
 
-    judge(cell, count) {
-        if(cell === 1) {
-            return 0;
-        }
+//     judge(cell, count) {
+//         if(cell === 1) {
+//             return 0;
+//         }
 
-        if (count === 2) {
-            return 1;
-        }
+//         if (count === 2) {
+//             return 1;
+//         }
 
-        return 0;
-    }
-}
+//         return 0;
+//     }
+// }
 
-function randi(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-class BriansBrain extends Game {
+class BriansBrain extends GameOfLife {
     genCell(){
         var cell =  randi(0, 2);
         return cell;
@@ -215,4 +219,42 @@ class BriansBrain extends Game {
     }
 }
 
-export default BriansBrain;
+class Cyclic2D extends Game {
+    genCell(){
+        var maxValue = 2;
+        var cell = randi(0, maxValue);
+        return cell;
+    }
+
+    calculate(cell, index, x, y){
+        // var threshold = this.props.threshold;
+        // var maxValue = this.props.maxValue;
+        var threshold = 1;
+        var maxValue = 2;
+        var next;
+        if(cell === maxValue) {
+            next = 0;
+        } else {
+            next = cell + 1;
+        }
+        
+        for (var x1 = x - 1; x1 < x + 1; x1++){
+            for (var y1 = y - 1; y1 < y + 1; y1++){
+                if(x1 === x && y1 === y) {
+                    continue;
+                }
+
+                var neighbor = this.get(x1, y1);
+                if(neighbor === next) {
+                    threshold--;
+                    if (threshold === 0){
+                        return next;
+                    }
+                }
+            }
+        }
+        return cell;
+    }
+}
+
+export default Cyclic2D;

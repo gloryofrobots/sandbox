@@ -119,6 +119,7 @@ class Simulation extends React.Component {
         var cellheight = (settings.canvasHeight / settings.gridHeight) - settings.cellMargin;
 
         var render = new Renderer(ctx,
+                                  ["#ccc", "#669999", "#000", "#f0f", "#f00", "#0ff", "#ff0", "#00f", "#0f0"],
                                   settings.canvasWidth,
                                   settings.canvasHeight ,
                                   cellwidth,

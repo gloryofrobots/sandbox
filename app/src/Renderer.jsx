@@ -2,11 +2,11 @@ const COLOR_BLACK = "#000";
 var COLORS = ["#ccc", "#669999", "#000", "#3ca"];
 
 class Renderer {
-    constructor(ctx, width, height, cellwidth, cellheight, cellmargin){
+    constructor(ctx, colors, width, height, cellwidth, cellheight, cellmargin){
         this.ctx = ctx;
         this.width = width;
         this.height = height;
-
+        this.colors = colors;
         this.cellRectRadius = 5;
         this.cellWidth = cellwidth;
         this.cellHeight = cellheight;
@@ -16,6 +16,9 @@ class Renderer {
         console.log(this);
     }
 
+    setColors(c){
+        this.colors = c;
+    }
     begin(){
         this.ctx.beginPath();
     }
@@ -34,7 +37,7 @@ class Renderer {
 
     drawCell(x, y, cell) {
         // console.log("DRAW", x, y, cell);
-        var color = COLORS[cell];
+        var color = this.colors[cell];
 
         var xp = x * this.marginX;
         var yp = y * this.marginY;
