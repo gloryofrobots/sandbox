@@ -1,7 +1,8 @@
 import React from 'react';
 import reactCSS from 'reactcss';
-import { SketchPicker } from 'react-color';
+import { SketchPicker,  ChromePicker, Swatches} from 'react-color';
 import _ from "underscore";
+import Button from '@material-ui/core/Button';
 
 class Picker extends React.Component {
     constructor(props){
@@ -31,6 +32,13 @@ class Picker extends React.Component {
     // console.log("PICKER", this.state);
     const styles = reactCSS({
       'default': {
+        button: {
+            color: "#fff",
+            backgroundColor: `${this.state.color}`,
+            '&:hover': {
+                backgroundColor: "#ccc"
+            },
+        },
         color: {
           width: '36px',
           height: '14px',
@@ -61,12 +69,10 @@ class Picker extends React.Component {
 
     return (
       <div>
-        <div style={ styles.swatch } onClick={ this.handleClick }>
-          <div style={ styles.color } />
-        </div>
+        <Button style={ styles.button } onClick={ this.handleClick } />
         { this.state.displayColorPicker ? <div style={ styles.popover }>
           <div style={ styles.cover } onClick={ this.handleClose }/>
-          <SketchPicker color={ this.state.color } onChange={ this.handleChange } />
+          <ChromePicker color={ this.state.color } onChange={ this.handleChange } />
         </div> : null }
 
       </div>
@@ -74,4 +80,7 @@ class Picker extends React.Component {
   }
 }
 
+        // <div style={ styles.swatch } onClick={ this.handleClick }>
+        //   <div style={ styles.color } />
+        // </div>
 export default Picker;

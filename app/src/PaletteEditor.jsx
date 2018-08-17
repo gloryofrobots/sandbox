@@ -60,6 +60,10 @@ class PaletteEditor extends React.Component {
                         direction="row"
                         justify="space-evenly"
                         alignItems="center">
+                        <Picker key={"picker-"+pair[0]} color={pair[1]}
+                                onChange={this.onChangeColor(pair[0])}
+                                style={{marginRight:10}}
+                                />
                         <Button
                           variant="outlined"
                           key={"button-"+pair[0]}
@@ -67,10 +71,6 @@ class PaletteEditor extends React.Component {
                           >
                           {pair[0]}
                         </Button>
-                        <Picker key={"picker-"+pair[0]} color={pair[1]}
-                                onChange={this.onChangeColor(pair[0])}
-                                style={{marginRight:10}}
-                                />
                     </Grid>
 
                 );
