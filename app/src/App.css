@@ -87,3 +87,7 @@ body {
     margin-left:10pt;
     margin-right:10pt;
 }
+
+.footer{
+    min-height: 50pt;
+}

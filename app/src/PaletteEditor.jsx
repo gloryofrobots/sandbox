@@ -20,6 +20,8 @@ var COLORS = [
     '#0C797D', '#0062B1', '#653294', '#AB149E'
 ];
 
+COLORS = ["#f44336", "#e91e63", "#9c27b0", "#673ab7", "#3f51b5", "#2196f3", "#03a9f4", "#00bcd4", "#009688", "#4caf50", "#8bc34a", "#cddc39", "#ffeb3b", "#ffc107", "#ff9800", "#ff5722", "#795548", "#607d8b"]
+
 class PaletteEditor extends React.Component {
     constructor(props){
         super(props);
@@ -48,13 +50,14 @@ class PaletteEditor extends React.Component {
     this.setState({ color: color.hex });
   };
 
+
   render() {
     var pairs = _.zip(_.range(this.state.colors.length), this.state.colors);
     return (
       <Grid
         container
-        spacing={24}
-        justify="space-evenly" >
+        spacing={0}
+        justify="flex-start" >
         {
             _.map(pairs, (pair) => {
                 return (
@@ -62,22 +65,22 @@ class PaletteEditor extends React.Component {
                       key={"g0-"+pair[0]}
                       item xs={1}>
                         <Grid
-                            key={"g1-"+pair[0]}
-                            container
-                            direction="row"
-                            justify="space-evenly"
-                            alignItems="center">
-                            <Picker key={"picker-"+pair[0]} color={pair[1]}
-                                    onChange={this.onChangeColor(pair[0])}
-                                    style={{marginRight:10}}
-                                    />
-                            <Button
-                            variant="outlined"
+                          key={"g1-"+pair[0]}
+                          container
+                          spacing={0}
+                          direction="row"
+                          justify="flex-start"
+                          alignItems="center">
+                          <Picker key={"picker-"+pair[0]} color={pair[1]}
+                                  onChange={this.onChangeColor(pair[0])}
+                                  />
+                          <Button
+                              variant="outlined"
                             key={"button-"+pair[0]}
-                            style={{marginRight:10}}
+                            style={{marginRight:10, minWidth:50, minHeight:36}}
                             >
                             {pair[0]}
-                            </Button>
+                          </Button>
                         </Grid>
                     </Grid>
 

@@ -86,18 +86,20 @@ class App extends React.Component {
                 </Toolbar>
               </AppBar>
                 <Router>
-                      <div>
+                      <main>
+                       <SettingsScreen settings={this.settings}/>
                         {
                             this.state.editEnabled ?
-                              <PaletteEditor /> :
-                                  <SettingsScreen settings={this.settings}/>
+                              <PaletteEditor /> :null
                               
                         }
                         <hr />
                         <SimulationScreen settings={this.state.settings} />
                         <Route path="/" render={(props)=> (<div></div>)}/>
-                    </div>
+                    </main>
                 </Router>
+                <footer className="footer">
+                </footer>
          </MuiThemeProvider>
         );
     }

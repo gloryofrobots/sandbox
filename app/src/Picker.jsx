@@ -38,6 +38,8 @@ class Picker extends React.Component {
             '&:hover': {
                 backgroundColor: "#ccc"
             },
+            minWidth:36,
+            minHeight:36
         },
         color: {
           width: '36px',
