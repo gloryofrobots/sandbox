@@ -1,4 +1,7 @@
 import React from 'react';
+
+import _ from "underscore";
+
 // Needed for onTouchTap
 // // http://stackoverflow.com/a/34015469/988941
 import injectTapEventPlugin from 'react-tap-event-plugin';
@@ -11,6 +14,10 @@ import {getTheme} from "./Theme";
 // import Drawer from '@material-ui/core/Drawer';
 // import Grid from '@material-ui/core/Grid';
 // import Button from '@material-ui/core/Button';
+import PaletteEditor from "./PaletteEditor";
+import Drawer from '@material-ui/core/Drawer';
+import ClippedDrawer from './ClippedDrawer';
+import Button from '@material-ui/core/Button';
 
 import Settings from "./Settings";
 
@@ -21,66 +28,27 @@ import {
   BrowserRouter as Router,
 } from 'react-router-dom';
 
-import Simulation from './Simulation';
-import CONF from "./CONF";
+import SettingsScreen from "./SettingsScreen";
+import SimulationScreen from './SimulationScreen';
 
 import './App.css';
 
-import _ from "underscore";
 
 injectTapEventPlugin();
 
-
-function loadOptions() {
-    // localStorage.clear();
-    var settings = {
-        family:CONF.FAMILY,
-        params:CONF.PARAMS,
-        canvasWidth:CONF.CANVAS_WIDTH,
-        canvasHeight:CONF.CANVAS_HEIGHT,
-        gridWidth:CONF.GRID_WIDTH,
-        gridHeight:CONF.GRID_HEIGHT,
-        countSteps:CONF.COUNT_STEPS,
-        interval:CONF.INTERVAL,
-        cellMargin:CONF.CELL_MARGIN
-    };
-    // console.log("LEN", localStorage.length);
-    settings =
-        _.mapObject(settings, function(val, key) {
-            console.log("##", val, key);
-            if(!(Settings.STR_SETTINGS.includes(key))) {
-                var cache = localStorage.getItem(key);
-                var cacheInt = parseInt(cache, 10);
-                if(cacheInt === undefined) {
-                    return val;
-                }
-                return cacheInt;
-            } else {
-                return val;
-            }
-    });
-    console.log("SETTINGS", settings);
-    return settings;
-}
-
-function saveOptions(settings) {
-    localStorage.clear();
-    _.each(settings, function(val, key) {
-        if(val === undefined) {
-            return;
-        }
-        console.log("!!",key, val);
-        localStorage.setItem(key, val);
-    });
-}
 
 class App extends React.Component {
     constructor(props){
         super(props);
         this.history = props.history;
-        this.onSubmitSettings = this.onSubmitSettings.bind(this);
+
+        this.onChangeSettings = this.onChangeSettings.bind(this);
+        this.onToggleEditor = this.onToggleEditor.bind(this);
+
+        this.settings = new Settings(this.onChangeSettings);
         this.state = {
-            settings:loadOptions()
+            editEnabled:true,
+            settings:this.settings.toObject()
         };
     }
 
@@ -90,14 +58,18 @@ class App extends React.Component {
     componentWillUnmount(){
     }
 
-    onSubmitSettings(settings){
-        console.log("onSublmit", settings);
-        saveOptions(settings);
+    onToggleEditor() {
         this.setState({
-            settings:settings
+            editEnabled:!this.state.editEnabled
+        });
+    }
+    onChangeSettings(){
+        this.setState({
+            settings:this.settings.toObject()
         });
     }
                 // <MuiThemeProvider muiTheme={getMuiTheme(lightBaseTheme)}>
+
     render() {
         return (
           <MuiThemeProvider theme={getTheme()}>
@@ -106,17 +78,22 @@ class App extends React.Component {
                   <Typography variant="title" color="inherit" className="app-bar" >
                     Cellular Automatons
                   </Typography>
+                  <Button
+                    variant="outlined"
+                    onClick={this.onToggleEditor}
+                    style={{marginLeft:30}}
+                    >Toggle editor</Button>
                 </Toolbar>
               </AppBar>
                 <Router>
-                    <div>
-                        <Settings settings={this.state.settings}
-                                onSubmit={this.onSubmitSettings} />
-
+                      <div>
+                        <Drawer open={this.state.editEnabled}
+                                variant="persistent" anchor="left">
+                          <PaletteEditor />
+                        </Drawer>
+                        <SettingsScreen settings={this.settings}/>
                         <hr />
-
-                        <Simulation settings={this.state.settings} />
-
+                        <SimulationScreen settings={this.state.settings} />
                         <Route path="/" render={(props)=> (<div></div>)}/>
                     </div>
                 </Router>

@@ -3,11 +3,13 @@ import React from 'react';
 import automaton from "./Automaton";
 import Renderer from "./Renderer";
 import Button from '@material-ui/core/Button';
+import Grid from '@material-ui/core/Grid';
 import $ from "jquery";
 import * as Errors from "./Errors";
 // var $ = require("jquery");
+import PaletteEditor from "./PaletteEditor";
 
-class Simulation extends React.Component {
+class SimulationScreen extends React.Component {
     constructor(props){
         super(props);
         this.state={
@@ -167,7 +169,7 @@ class Simulation extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        console.log("SIM UP", this.props);
+        console.log("SIM UP", prevProps, this.props);
         if(this.needToRestart == true) {
             this.startSimulation();
         } else {
@@ -193,11 +195,18 @@ class Simulation extends React.Component {
                     <Button variant="outlined" onClick={this.onRewind} disabled={!this.state.controls.rewind} >Rewind</Button>
                 </p>
                  <div id="grid-wrapper"> 
+                    <Grid
+                    container
+                    direction="row"
+                    justify="center"
+                    alignItems="flex-start"
+                    >
                  <canvas id="grid" className="grid-view"> </canvas>
+                 </Grid>
                  </div>
             </div>
         );
     }
 }
 
-export default Simulation;
+export default SimulationScreen;
