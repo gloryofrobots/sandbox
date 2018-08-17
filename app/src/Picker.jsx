@@ -69,7 +69,7 @@ class Picker extends React.Component {
 
     return (
       <div>
-        <Button style={ styles.button } onClick={ this.handleClick } />
+        <Button style={ styles.button } onClick={ this.handleClick } > &nbsp;</Button>
         { this.state.displayColorPicker ? <div style={ styles.popover }>
           <div style={ styles.cover } onClick={ this.handleClose }/>
           <ChromePicker color={ this.state.color } onChange={ this.handleChange } />

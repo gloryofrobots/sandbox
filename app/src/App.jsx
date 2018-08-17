@@ -87,11 +87,12 @@ class App extends React.Component {
               </AppBar>
                 <Router>
                       <div>
-                        <Drawer open={this.state.editEnabled}
-                                variant="persistent" anchor="left">
-                          <PaletteEditor />
-                        </Drawer>
-                        <SettingsScreen settings={this.settings}/>
+                        {
+                            this.state.editEnabled ?
+                              <PaletteEditor /> :
+                                  <SettingsScreen settings={this.settings}/>
+                              
+                        }
                         <hr />
                         <SimulationScreen settings={this.state.settings} />
                         <Route path="/" render={(props)=> (<div></div>)}/>

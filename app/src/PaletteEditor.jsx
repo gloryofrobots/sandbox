@@ -51,32 +51,40 @@ class PaletteEditor extends React.Component {
   render() {
     var pairs = _.zip(_.range(this.state.colors.length), this.state.colors);
     return (
-      <div>
+      <Grid
+        container
+        spacing={24}
+        justify="space-evenly" >
         {
             _.map(pairs, (pair) => {
                 return (
                     <Grid
-                        container
-                        direction="row"
-                        justify="space-evenly"
-                        alignItems="center">
-                        <Picker key={"picker-"+pair[0]} color={pair[1]}
-                                onChange={this.onChangeColor(pair[0])}
-                                style={{marginRight:10}}
-                                />
-                        <Button
-                          variant="outlined"
-                          key={"button-"+pair[0]}
-                          style={{marginRight:10}}
-                          >
-                          {pair[0]}
-                        </Button>
+                      key={"g0-"+pair[0]}
+                      item xs={1}>
+                        <Grid
+                            key={"g1-"+pair[0]}
+                            container
+                            direction="row"
+                            justify="space-evenly"
+                            alignItems="center">
+                            <Picker key={"picker-"+pair[0]} color={pair[1]}
+                                    onChange={this.onChangeColor(pair[0])}
+                                    style={{marginRight:10}}
+                                    />
+                            <Button
+                            variant="outlined"
+                            key={"button-"+pair[0]}
+                            style={{marginRight:10}}
+                            >
+                            {pair[0]}
+                            </Button>
+                        </Grid>
                     </Grid>
 
                 );
             })
         }
-      </div>
+      </Grid>
     )
   }
 }
