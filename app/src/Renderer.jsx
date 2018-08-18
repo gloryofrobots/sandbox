@@ -1,5 +1,3 @@
-const COLOR_BLACK = "#000";
-var COLORS = ["#ccc", "#669999", "#000", "#3ca"];
 
 class Renderer {
     constructor(ctx, colors, width, height, cellwidth, cellheight, cellmargin){
@@ -30,7 +28,7 @@ class Renderer {
     drawText(x, y, txt) {
         var xp = x * this.marginX + this.cellWidth/2;
         var yp = y * this.marginY + this.cellHeight/2;
-        this.ctx.fillStyle = COLOR_BLACK;
+        this.ctx.fillStyle = "#000";
         this.ctx.font = "20px Arial";
         this.ctx.fillText(txt, xp, yp);
     }

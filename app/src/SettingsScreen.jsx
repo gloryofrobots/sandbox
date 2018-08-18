@@ -122,8 +122,8 @@ class SettingsScreen extends React.Component {
             );
         }
         return (
-            <div>
-            <div className="center">
+        <div>
+            <Grid container spacing={0} justify="center" alignItems="center">
                 <FormControl>
                     <InputLabel shrink>
                         Automaton
@@ -169,13 +169,8 @@ class SettingsScreen extends React.Component {
                     }}
                     />
 
-               <Button variant="outlined"
-                        style={{
-                            marginLeft:marginLeft
-                        }}
-                       onClick={this.submitSettings} >Apply</Button>
-            </div>
-            <div className="center">
+            </Grid>
+            <Grid container spacing={0} justify="center" alignItems="center">
                 <TextField
                     label="Canvas width"
                     value={this.state.settings.canvasWidth}
@@ -220,44 +215,66 @@ class SettingsScreen extends React.Component {
                         width:100
                     }}
                     />
-            </div>
+            </Grid>
 
-            <div className="center">
+            <Grid container spacing={0} justify="center" alignItems="center">
                <Button variant="outlined"
                         style={{
                             marginLeft:marginLeft
                         }}
-                       onClick={this.handleAction("randomize")} >Randomize</Button>
-               <Button variant="outlined"
-                        style={{
-                            marginLeft:marginLeft
-                        }}
-                       onClick={this.handleAction("clear")} >Clear</Button>
-               <Button variant="outlined"
-                        style={{
-                            marginLeft:marginLeft
-                        }}
-                       onClick={this.handleAction("load")} >Load</Button>
-               <Button variant="outlined"
-                        style={{
-                            marginLeft:marginLeft
-                        }}
-                       onClick={this.handleAction("save")} >Save</Button>
-               <Button
-                 variant="outlined"
-                 onClick={this.onToggleEditor}
-                 style={{marginLeft:30}}>
-                 Palette
-               </Button>
-            </div>
-            <div className="center" style={{marginTop:10}}>
+                       onClick={this.submitSettings} >Apply</Button>
+                <Button
+                    variant="outlined"
+                    onClick={this.onToggleEditor}
+                    style={{marginLeft:30}}>
+                    Toggle Editor
+                </Button>
+            </Grid>
             {
                 this.state.editEnabled ?
-                    <PaletteEditor /> :null
+            (<Grid
+                container
+                spacing={0}
+                justify="center"
+                style={{marginTop:10}} >
+                <Grid
+                    container
+                    spacing={0}
+                    justify="center" >
+                <Button variant="outlined"
+                            style={{
+                                marginLeft:marginLeft
+                            }}
+                        onClick={this.handleAction("randomize")} >Randomize</Button>
+                <Button variant="outlined"
+                            style={{
+                                marginLeft:marginLeft
+                            }}
+                        onClick={this.handleAction("clear")} >Clear</Button>
+                <Button variant="outlined"
+                            style={{
+                                marginLeft:marginLeft
+                            }}
+                        onClick={this.handleAction("load")} >Load</Button>
+                <Button variant="outlined"
+                            style={{
+                                marginLeft:marginLeft
+                            }}
+                        onClick={this.handleAction("save")} >Save</Button>
 
+                </Grid>
+                <Grid
+                container
+                spacing={0}
+                justify="center"
+                style={{marginTop:10}}
+                      >
+                      <PaletteEditor settings={this.props.settings}/>
+
+                </Grid>
+            </Grid> ) :null
             }
-            </div>
-            </div>
+        </div>
             );
         }
 }

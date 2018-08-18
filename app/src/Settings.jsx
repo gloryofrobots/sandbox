@@ -3,7 +3,7 @@ import _ from "underscore";
 function rule(name, rule) {
     return {name:name, rule:rule};
 }
-
+// ["#ccc", "#669999", "#000", "#f0f", "#f00", "#0ff", "#ff0", "#00f", "#0f0"]
 var DEFAULT = {
     gridWidth:10,
     gridHeight:10,
@@ -13,17 +13,11 @@ var DEFAULT = {
     cellMargin:1,
     family:"gl",
     params:"23/3",
-    palette: JSON.stringify([
-        '#4D4D4D', '#999999', '#FFFFFF', '#F44E3B',
-        '#FE9200', '#FCDC00', '#DBDF00', '#A4DD00',
-        '#68CCCA', '#73D8FF', '#AEA1FF', '#FDA1FF',
-        '#333333', '#808080', '#cccccc', '#D33115',
-        '#E27300', '#FCC400', '#B0BC00', '#68BC00',
-        '#16A5A5', '#009CE0', '#7B64FF', '#FA28FF',
-        '#000000', '#666666', '#B3B3B3', '#9F0500',
-        '#C45100', '#FB9E00', '#808900', '#194D33',
-        '#0C797D', '#0062B1', '#653294', '#AB149E'
-    ])
+    palette: [
+        "#ccc", "#669999", "#9c27b0", "#673ab7", "#3f51b5",
+        "#2196f3", "#03a9f4", "#00bcd4", "#009688", "#4caf50",
+        "#f00", "#0ff"
+    ]
 };
 
 const RULES = {
@@ -53,19 +47,27 @@ class Settings {
 
     load() {
         // console.log("LEN", localStorage.length);
+        // localStorage.clear();
         this.settings =
             _.mapObject(this.default, function(val, key) {
                 var cache = localStorage.getItem(key);
                 console.log("<<", key, val, cache);
-                if(cache === undefined) {
+                if(_.isUndefined(cache) || _.isNull(cache)) {
                     return val;
                 }
 
-                if (typeof val === "number"){
+                if (_.isNumber(val)){
                     cache = parseInt(cache, 10);
                     if (_.isNaN(cache)) {
                         console.error("Invalid number in storage");
                         return 0;
+                    }
+                    return cache;
+                } else if(_.isArray(val)) {
+                    cache = JSON.parse(cache);
+                    if (_.isUndefined(cache)) {
+                        console.error("Invalid array in storage");
+                        return [];
                     }
                     return cache;
                 } else {
@@ -87,15 +89,28 @@ class Settings {
     //                 return cache;
 
     // }
+    isArray(key) {
+        var old = this.default[key];
+        if (_.isUndefined(old)){
+            console.error("Invalid key");
+            return false;
+        }
+        return _.isArray(old);
+
+    }
+
     isNumber(key) {
         var old = this.default[key];
         if (_.isUndefined(old)){
             console.error("Invalid key");
             return false;
         }
-        return typeof old === "number";
+        return _.isNumber(old);
     }
 
+    modify(key, val) {
+        
+    }
     update(settings) {
         this.settings = _.mapObject(this.default, (val, key) => {
             var newVal = settings[key];
@@ -136,8 +151,11 @@ class Settings {
 
     save() {
         localStorage.clear();
-        _.each(this.settings, function(val, key) {
+        _.each(this.settings, (val, key) => {
             console.log("!!",key, val);
+            if(this.isArray(key)) {
+                val = JSON.stringify(val);
+            }
             localStorage.setItem(key, val);
         });
     }
