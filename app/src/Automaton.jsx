@@ -157,36 +157,19 @@ class Automaton {
         this.interval = undefined;
     }
 
-    run(count, interval) {
-        console.log("RUN", count, interval, "Runing", this.isRunning());
+    run(interval) {
+        console.log("RUN", interval, "Runing", this.isRunning());
         if (this.isRunning()) {
             console.log("ALREADY RUNNING");
             return;
         }
 
-        // this.update();
-        var infinite = count === -1;
-        var self = this;
-
-        self.interval = setInterval(
-            function() {
-                if(infinite){
-                    self.update();
-                    return
-                }
-
-                if(count === 0){
-                    self.stop();
-                    return;
-                }
-
-                count -= 1;
-                // console.log("COUTN", count);
-                self.update();
+        this.interval = setInterval(
+            () => {
+                this.update();
             },
             interval
        );
-        // calculate();
     }
 }
 

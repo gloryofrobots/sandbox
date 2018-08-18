@@ -10,7 +10,6 @@ var DEFAULT = {
     canvasWidth:600,
     canvasHeight:600,
     interval:100,
-    countSteps:-1,
     cellMargin:1,
     family:"gl",
     params:"23/3",

@@ -9,6 +9,8 @@ import InputLabel from '@material-ui/core/InputLabel';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import FormControl from '@material-ui/core/FormControl';
 import PaletteEditor from "./PaletteEditor";
+import Tooltip from '@material-ui/core/Tooltip';
+import Grid from '@material-ui/core/Grid';
 
 import _ from "underscore";
 
@@ -144,56 +146,6 @@ class SettingsScreen extends React.Component {
                         width:200
                     }}
                     />
-
-               <Button variant="outlined"
-                        style={{
-                            marginLeft:marginLeft
-                        }}
-                       onClick={this.submitSettings} >Apply</Button>
-               <Button variant="outlined"
-                        style={{
-                            marginLeft:marginLeft
-                        }}
-                       onClick={this.handleAction("randomize")} >Randomize</Button>
-               <Button variant="outlined"
-                        style={{
-                            marginLeft:marginLeft
-                        }}
-                       onClick={this.handleAction("clear")} >Clear</Button>
-               <Button variant="outlined"
-                        style={{
-                            marginLeft:marginLeft
-                        }}
-                       onClick={this.handleAction("load")} >Load</Button>
-               <Button variant="outlined"
-                        style={{
-                            marginLeft:marginLeft
-                        }}
-                       onClick={this.handleAction("save")} >Save</Button>
-            </div>
-            <div className="center">
-                <TextField
-                    label="Width"
-                    value={this.state.settings.canvasWidth}
-                    onChange={this.handleChange("canvasWidth")}
-                    margin="normal"
-                    type="number"
-                    style={{
-                        marginLeft:marginLeft,
-                        width:inputWidth
-                    }}
-                    />
-                <TextField
-                    label="Height"
-                    value={this.state.settings.canvasHeight}
-                    onChange={this.handleChange("canvasHeight")}
-                    margin="normal"
-                    type="number"
-                    style={{
-                        marginLeft:marginLeft,
-                        width:inputWidth
-                    }}
-                    />
                 <TextField
                     label="Cols"
                     value={this.state.settings.gridWidth}
@@ -216,26 +168,45 @@ class SettingsScreen extends React.Component {
                         width:inputWidth
                     }}
                     />
+
+               <Button variant="outlined"
+                        style={{
+                            marginLeft:marginLeft
+                        }}
+                       onClick={this.submitSettings} >Apply</Button>
+            </div>
+            <div className="center">
                 <TextField
-                    label="Steps (-1 == infinite)"
-                    value={this.state.settings.countSteps}
-                    onChange={this.handleChange("countSteps")}
+                    label="Canvas width"
+                    value={this.state.settings.canvasWidth}
+                    onChange={this.handleChange("canvasWidth")}
                     margin="normal"
                     type="number"
                     style={{
                         marginLeft:marginLeft,
-                        width:150
+                        width:120
                     }}
                     />
                 <TextField
-                    label="Interval (ms)"
+                    label="Canvas height"
+                    value={this.state.settings.canvasHeight}
+                    onChange={this.handleChange("canvasHeight")}
+                    margin="normal"
+                    type="number"
+                    style={{
+                        marginLeft:marginLeft,
+                        width:120
+                    }}
+                    />
+                <TextField
+                    label="Animation delay (ms)"
                     value={this.state.settings.interval}
                     onChange={this.handleChange("interval")}
                     margin="normal"
                     type="number"
                     style={{
                         marginLeft:marginLeft,
-                        width:100
+                        width:120
                     }}
                     />
                 <TextField
@@ -251,17 +222,41 @@ class SettingsScreen extends React.Component {
                     />
             </div>
 
-            <Button
-                variant="outlined"
-                onClick={this.onToggleEditor}
-                style={{marginLeft:30}}>
-              Toggle editor
-            </Button>
+            <div className="center">
+               <Button variant="outlined"
+                        style={{
+                            marginLeft:marginLeft
+                        }}
+                       onClick={this.handleAction("randomize")} >Randomize</Button>
+               <Button variant="outlined"
+                        style={{
+                            marginLeft:marginLeft
+                        }}
+                       onClick={this.handleAction("clear")} >Clear</Button>
+               <Button variant="outlined"
+                        style={{
+                            marginLeft:marginLeft
+                        }}
+                       onClick={this.handleAction("load")} >Load</Button>
+               <Button variant="outlined"
+                        style={{
+                            marginLeft:marginLeft
+                        }}
+                       onClick={this.handleAction("save")} >Save</Button>
+               <Button
+                 variant="outlined"
+                 onClick={this.onToggleEditor}
+                 style={{marginLeft:30}}>
+                 Palette
+               </Button>
+            </div>
+            <div className="center" style={{marginTop:10}}>
             {
                 this.state.editEnabled ?
                     <PaletteEditor /> :null
 
             }
+            </div>
             </div>
             );
         }

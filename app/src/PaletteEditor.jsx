@@ -20,7 +20,10 @@ var COLORS = [
     '#0C797D', '#0062B1', '#653294', '#AB149E'
 ];
 
-COLORS = ["#f44336", "#e91e63", "#9c27b0", "#673ab7", "#3f51b5", "#2196f3", "#03a9f4", "#00bcd4", "#009688", "#4caf50", "#8bc34a", "#cddc39", "#ffeb3b", "#ffc107", "#ff9800", "#ff5722", "#795548", "#607d8b"]
+COLORS = ["#f44336", "#e91e63", "#9c27b0", "#673ab7", "#3f51b5",
+          "#2196f3", "#03a9f4", "#00bcd4", "#009688", "#4caf50",
+          // "#8bc34a", "#cddc39", "#ffeb3b", "#ffc107", "#ff9800", "#ff5722", "#795548", "#607d8b"
+         ]
 
 class PaletteEditor extends React.Component {
     constructor(props){

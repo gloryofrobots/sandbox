@@ -61,7 +61,7 @@ class SimulationScreen extends React.Component {
         }
 
         var settings = this.props.settings;
-        this.game.run(settings.countSteps, settings.interval);
+        this.game.run(settings.interval);
         this.setControls({
             step:false,
             stop:true,
@@ -179,6 +179,7 @@ class SimulationScreen extends React.Component {
         }
         console.log("!!!!!!!!!!!!!!!!!");
         this.game = newGame;
+        this.game.randomize();
         this.game.update();
     }
 
