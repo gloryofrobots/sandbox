@@ -8,6 +8,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import InputLabel from '@material-ui/core/InputLabel';
 import FormHelperText from '@material-ui/core/FormHelperText';
 import FormControl from '@material-ui/core/FormControl';
+import PaletteEditor from "./PaletteEditor";
 
 import _ from "underscore";
 
@@ -18,17 +19,33 @@ class SettingsScreen extends React.Component {
 
         var family = settings.param("family");
         this.state = {
+            editEnabled:true,
             settings: settings.toObject(),
             rules: settings.getRules(family),
             rule: settings.getRule(family)
         };
 
         console.log("SETATE SETTINGS", this.state);
+        this.onActionCallback = props.onAction;
+        this.onToggleEditor = this.onToggleEditor.bind(this);
         this.submitSettings = this.submitSettings.bind(this);
         this.handleChangeRule = this.handleChangeRule.bind(this);
         this.handleChangeFamily = this.handleChangeFamily.bind(this);
     }
 
+    onToggleEditor() {
+        this.setState({
+            editEnabled:!this.state.editEnabled
+        });
+    }
+
+    handleAction(name) {
+        return () => {
+            this.onActionCallback(name);
+            this.submitSettings();
+        };
+    }
+    
     handleChangeFamily(event) {
         var family = event.target.value;
         var rules = this.props.settings.getRules(family);
@@ -127,6 +144,32 @@ class SettingsScreen extends React.Component {
                         width:200
                     }}
                     />
+
+               <Button variant="outlined"
+                        style={{
+                            marginLeft:marginLeft
+                        }}
+                       onClick={this.submitSettings} >Apply</Button>
+               <Button variant="outlined"
+                        style={{
+                            marginLeft:marginLeft
+                        }}
+                       onClick={this.handleAction("randomize")} >Randomize</Button>
+               <Button variant="outlined"
+                        style={{
+                            marginLeft:marginLeft
+                        }}
+                       onClick={this.handleAction("clear")} >Clear</Button>
+               <Button variant="outlined"
+                        style={{
+                            marginLeft:marginLeft
+                        }}
+                       onClick={this.handleAction("load")} >Load</Button>
+               <Button variant="outlined"
+                        style={{
+                            marginLeft:marginLeft
+                        }}
+                       onClick={this.handleAction("save")} >Save</Button>
             </div>
             <div className="center">
                 <TextField
@@ -206,12 +249,19 @@ class SettingsScreen extends React.Component {
                         width:100
                     }}
                     />
-               <Button variant="outlined"
-                        style={{
-                            marginLeft:marginLeft
-                        }}
-                       onClick={this.submitSettings} >Create</Button>
             </div>
+
+            <Button
+                variant="outlined"
+                onClick={this.onToggleEditor}
+                style={{marginLeft:30}}>
+              Toggle editor
+            </Button>
+            {
+                this.state.editEnabled ?
+                    <PaletteEditor /> :null
+
+            }
             </div>
             );
         }

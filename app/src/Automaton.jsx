@@ -19,11 +19,31 @@ class Automaton {
         this.onUpdate = onUpdate;
         this._generation = 0;
         console.log("PARAMS", params, this.params);
+        this.clear();
+    }
+
+    clear() {
+        if(this.isRunning()){
+            console.error("Still running");
+            return;
+        }
+        this._generation = 0;
         this.cells = new Array(this.size);
-        this.cells = this.cells.fill(0, 0, this.size).map(
+        this.cells = this.cells.fill(0, 0, this.size);
+        this.initialCells = this.cells.slice();
+    }
+
+    randomize() {
+        if(this.isRunning()){
+            console.error("Still running");
+            return;
+        }
+        this._generation = 0;
+            this.cells = this.cells.map(
             (val, index, arr) => {
                 return this.genCell();
         });
+
         this.initialCells = this.cells.slice();
     }
 

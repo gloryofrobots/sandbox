@@ -57,7 +57,7 @@ class PaletteEditor extends React.Component {
       <Grid
         container
         spacing={0}
-        justify="flex-start" >
+        justify="center" >
         {
             _.map(pairs, (pair) => {
                 return (

@@ -14,7 +14,6 @@ import {getTheme} from "./Theme";
 // import Drawer from '@material-ui/core/Drawer';
 // import Grid from '@material-ui/core/Grid';
 // import Button from '@material-ui/core/Button';
-import PaletteEditor from "./PaletteEditor";
 import Drawer from '@material-ui/core/Drawer';
 import ClippedDrawer from './ClippedDrawer';
 import Button from '@material-ui/core/Button';
@@ -43,11 +42,10 @@ class App extends React.Component {
         this.history = props.history;
 
         this.onChangeSettings = this.onChangeSettings.bind(this);
-        this.onToggleEditor = this.onToggleEditor.bind(this);
-
+        this.onAction = this.onAction.bind(this);
         this.settings = new Settings(this.onChangeSettings);
+        this.sim = React.createRef();
         this.state = {
-            editEnabled:true,
             settings:this.settings.toObject()
         };
     }
@@ -58,17 +56,22 @@ class App extends React.Component {
     componentWillUnmount(){
     }
 
-    onToggleEditor() {
-        this.setState({
-            editEnabled:!this.state.editEnabled
-        });
-    }
     onChangeSettings(){
         this.setState({
             settings:this.settings.toObject()
         });
     }
                 // <MuiThemeProvider muiTheme={getMuiTheme(lightBaseTheme)}>
+
+    onAction(action) {
+        // var sim = docum
+        var sim = this.sim.current;
+        if(action === "clear") {
+            sim.clear();
+        } else if(action === "randomize") {
+            sim.randomize();
+        }
+    }
 
     render() {
         return (
@@ -78,23 +81,18 @@ class App extends React.Component {
                   <Typography variant="title" color="inherit" className="app-bar" >
                     Cellular Automatons
                   </Typography>
-                  <Button
-                    variant="outlined"
-                    onClick={this.onToggleEditor}
-                    style={{marginLeft:30}}
-                    >Toggle editor</Button>
                 </Toolbar>
               </AppBar>
                 <Router>
                       <main>
-                       <SettingsScreen settings={this.settings}/>
-                        {
-                            this.state.editEnabled ?
-                              <PaletteEditor /> :null
-                              
-                        }
+                       <SettingsScreen settings={this.settings} onAction={this.onAction}/>
                         <hr />
-                        <SimulationScreen settings={this.state.settings} />
+                        <SimulationScreen
+                          ref={this.sim}
+                          action={this.state.action}
+                          settings={this.state.settings} />
+
+
                         <Route path="/" render={(props)=> (<div></div>)}/>
                     </main>
                 </Router>

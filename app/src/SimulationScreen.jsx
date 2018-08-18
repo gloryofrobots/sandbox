@@ -9,6 +9,8 @@ import * as Errors from "./Errors";
 // var $ = require("jquery");
 import PaletteEditor from "./PaletteEditor";
 
+import _ from "underscore";
+
 class SimulationScreen extends React.Component {
     constructor(props){
         super(props);
@@ -17,12 +19,11 @@ class SimulationScreen extends React.Component {
                 step:true,
                 stop:false,
                 run:true,
-                rewind:false
+                rewind:true
             }
         };
-        this.needToRestart = true;
-        this.onSubmit = props.onSubmit;
-        console.log("SETTINGS", this.props.settings);
+
+        console.log("Sim CONST", this.props.settings);
         this.onRewind = this.onRewind.bind(this);
         this.onStep = this.onStep.bind(this);
         this.onRun = this.onRun.bind(this);
@@ -47,7 +48,6 @@ class SimulationScreen extends React.Component {
 
     setControls(controls){
         this.setState({controls:controls});
-        this.needToRestart = false;
     }
 
     onRun() {
@@ -102,7 +102,22 @@ class SimulationScreen extends React.Component {
         });
     }
 
-    startSimulation() {
+    componentDidUpdate(prevProps) {
+        console.log("SIM UP", prevProps, this.props);
+        if (_.isEqual(prevProps, this.props)) {
+            return;
+        }
+
+        console.log("MEKING NEW GAME");
+        this.newGame();
+    }
+
+    componentDidMount() {
+        console.log("SIM MOUNT", this.props);
+        this.newGame();
+    }
+
+    newGame() {
         var settings = this.props.settings;
         console.log("--------------------------SIM", settings);
         var canvas = document.getElementById("grid");
@@ -164,24 +179,49 @@ class SimulationScreen extends React.Component {
         }
         console.log("!!!!!!!!!!!!!!!!!");
         this.game = newGame;
-
         this.game.update();
     }
 
-    componentDidUpdate(prevProps) {
-        console.log("SIM UP", prevProps, this.props);
-        if(this.needToRestart == true) {
-            this.startSimulation();
-        } else {
-            this.needToRestart = true;
+    randomize() {
+        if(this.game.isRunning()) {
+            console.log("GAME IS RUNING", this.game);
+            alert("STOP SIMULATION FIRST");
+            return;
         }
-
+        this.game.randomize();
+        this.game.update();
     }
 
-    componentDidMount() {
-        console.log("SIM MOUNT", this.props);
-        this.startSimulation();
+    clear(){
+        if(this.game.isRunning()) {
+            console.log("GAME IS RUNING", this.game);
+            alert("STOP SIMULATION FIRST");
+            return;
+        }
+        this.game.clear();
+        this.game.update();
     }
+
+    load(filename){
+        if(this.game.isRunning()) {
+            console.log("GAME IS RUNING", this.game);
+            alert("STOP SIMULATION FIRST");
+            return;
+        }
+        this.game.load();
+        this.game.update();
+    }
+
+    save(filename){
+        if(this.game.isRunning()) {
+            console.log("GAME IS RUNING", this.game);
+            alert("STOP SIMULATION FIRST");
+            return;
+        }
+        this.game.save(filename);
+    }
+
+
 
     render() {
         console.log("SIM RENDER", this.props.settings);
