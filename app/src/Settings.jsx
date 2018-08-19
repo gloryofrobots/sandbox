@@ -15,7 +15,17 @@ var DEFAULT = {
     palette: [
         "#ccc", "#669999", "#9c27b0", "#673ab7", "#3f51b5",
         "#2196f3", "#03a9f4", "#00bcd4", "#009688", "#4caf50",
-        "#f00", "#0ff"
+        "#f00", "#0ff", 
+
+        '#4D4D4D', '#999999', '#FFFFFF', '#F44E3B',
+        '#FE9200', '#FCDC00', '#DBDF00', '#A4DD00',
+        '#68CCCA', '#73D8FF', '#AEA1FF', '#FDA1FF',
+        '#333333', '#808080', '#cccccc', '#D33115',
+        '#E27300', '#FCC400', '#B0BC00', '#68BC00',
+        '#16A5A5', '#009CE0', '#7B64FF', '#FA28FF',
+        '#000000', '#666666', '#B3B3B3', '#9F0500',
+        '#C45100', '#FB9E00', '#808900', '#194D33',
+        '#0C797D', '#0062B1', '#653294', '#AB149E'
     ]
 };
 
@@ -61,6 +71,10 @@ class Settings {
         console.log("UPDATED KEYS", arr);
         return arr;
         // return _.toArray(this.updated.values());
+    }
+
+    serialize() {
+        return JSON.stringify(this.settings);
     }
 
     setDefaultValues() {
@@ -125,6 +139,7 @@ class Settings {
 
     setColor(id, val) {
         this.settings.palette[id] = val;
+        this.updated.add("palette");
         this.triggerSave();
     }
     

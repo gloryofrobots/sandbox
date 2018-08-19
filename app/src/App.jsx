@@ -47,7 +47,6 @@ class App extends React.Component {
 
         this.onChangeSettings = this.onChangeSettings.bind(this);
         this.onAction = this.onAction.bind(this);
-        this.onMenuAction = this.onMenuAction.bind(this);
         this.settings = new Settings(this.onChangeSettings);
         this.sim = React.createRef();
         this.state = {
@@ -80,9 +79,6 @@ class App extends React.Component {
         }
     }
 
-    onMenuAction(){
-        this.settings.setDefaultValues();
-    }
 
     render() {
         return (
@@ -90,7 +86,7 @@ class App extends React.Component {
               <AppBar position="static" className="app-bar">
 
                 <Toolbar>
-                  <AppMenu onAction={this.onMenuAction}/>
+                  <AppMenu settings={this.settings} />
                   <Typography variant="title" color="inherit" className="app-bar" >
                     Cellular Automatons
                   </Typography>
