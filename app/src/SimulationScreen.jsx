@@ -216,18 +216,6 @@ class SimulationScreen extends React.Component {
         this.game.randomize();
     }
 
-    // changeInterval(settings) {
-    //     this.game.setInterval(settings.interval);
-    // }
-
-    changePalette(settings) {
-        this.game.setPalette(settings.palette);
-    }
-
-    changeCanvas(settings) {
-        this.game.setRenderSettings(settings);
-    }
-
     clear(){
         if(this.game.isRunning()) {
             console.error("GAME IS RUNING", this.game);
@@ -273,11 +261,14 @@ class SimulationScreen extends React.Component {
             return true;
         }
         if(_.contains(updated, "palette")) {
-            this.changePalette(settings);
+            this.game.setPalette(settings.palette);
             return false;
         } else if(_.contains(updated, "cellMargin") ||
                   _.contains(updated, "cellSize")) {
-            this.changeCanvas(settings);
+            this.game.setRenderSettings(settings);
+            return false;
+        } else if(_.contains(updated, "params")) {
+            this.game.setParams(settings.params);
             return false;
         } else if(_.contains(updated, "interval")) {
             return false;

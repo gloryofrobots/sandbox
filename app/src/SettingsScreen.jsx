@@ -26,7 +26,7 @@ class SettingsScreen extends React.Component {
         var family = settings.get("family");
         this.state = {
             editEnabled:true,
-            activeTab:0,
+            activeTab:1,
             settings: settings.toObject(),
             rules: settings.getRules(family),
             rule: settings.getRule(family)

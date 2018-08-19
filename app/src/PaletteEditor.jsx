@@ -10,6 +10,7 @@ class PaletteEditor extends React.Component {
     constructor(props){
         super(props);
         this.state = {
+            currentButton:null,
             colors: this.props.settings.get("palette")
         };
     }
@@ -22,8 +23,21 @@ class PaletteEditor extends React.Component {
       };
   }
 
+  onButtonClick(id){
+      return () => {
+          this.setState({currentButton:id});
+      };
+  }
+
   render() {
     var pairs = _.zip(_.range(this.state.colors.length), this.state.colors);
+    const styles = {
+        colorButton: {
+            marginRight:10,
+            minWidth:50,
+            minHeight:36,
+        }
+    };
     return (
       <Grid
         container
@@ -46,9 +60,11 @@ class PaletteEditor extends React.Component {
                                   onChange={this.onChangeColor(pair[0])}
                                   />
                           <Button
-                              variant="outlined"
+                            disabled={this.state.currentButton===pair[0]}
+                            variant="outlined"
+                            onClick={this.onButtonClick(pair[0])}
                             key={"button-"+pair[0]}
-                            style={{marginRight:10, minWidth:50, minHeight:36}}
+                            style={styles.colorButton}
                             >
                             {pair[0]}
                           </Button>

@@ -10,8 +10,7 @@ function randi(min, max) {
 
 class Automaton {
     constructor(renderer, params, width, height) {
-        this.params = this.parseParams(params);
-        this.validate();
+        this.setParams(params);
         this.renderer = renderer;
 
         this.width = width;
@@ -19,6 +18,15 @@ class Automaton {
         this.size = this.width * this.height;
         this._generation = 0;
         this._clear();
+    }
+
+    getMaxValue() {
+        throw new Error("Abstract");
+    }
+
+    setParams(params) {
+        this.params = this.parseParams(params);
+        this.validate();
     }
 
     setRenderSettings(settings){
@@ -190,6 +198,10 @@ class GameOfLife extends Automaton {
         return 0;
     }
 
+    getMaxValue() {
+        return 1;
+    }
+
     validate(){
         if (this.params.length != 2) {
             console.error("INVALID params", this.params);
@@ -227,22 +239,6 @@ class GameOfLife extends Automaton {
             return 0;
         }
     }
-
-    judge2(cell, count) {
-        if(cell === 0) {
-            if (count === 3) {
-                return 1;
-            }
-            return 0;
-        }
-        if(count < 2) {
-            return 0;
-        } else if (count < 4) {
-            return 1;
-        } else {
-            return 0;
-        }
-    }
 }
 
 // class Seeds extends GameOfLife {
@@ -264,6 +260,10 @@ class BriansBrain extends GameOfLife {
     genCell(){
         var cell =  randi(0, 2);
         return cell;
+    }
+
+    getMaxValue() {
+        return 3;
     }
 
     judge(cell, count) {
