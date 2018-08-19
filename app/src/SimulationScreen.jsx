@@ -11,19 +11,83 @@ import PaletteEditor from "./PaletteEditor";
 
 import _ from "underscore";
 
+
+class SimControls extends React.Component {
+    constructor(props){
+        super(props);
+        this.state={
+            step:true,
+            stop:false,
+            run:true,
+            rewind:true
+        };
+
+        this.onRewind = this.onRewind.bind(this);
+        this.onStep = this.onStep.bind(this);
+        this.onRun = this.onRun.bind(this);
+        this.onStop = this.onStop.bind(this);
+    }
+
+    stop() {
+        this.onStop();
+    }
+
+    onStep() {
+        this.props.onStep();
+    }
+
+    onRun() {
+        this.setState({
+            step:false,
+            stop:true,
+            run:false,
+            rewind:false
+        });
+        this.props.onRun();
+    }
+
+    onStop() {
+        this.setState({
+            step:true,
+            stop:false,
+            run:true,
+            rewind:true
+        });
+        this.props.onStop();
+    }
+
+    onRewind() {
+        this.setState({
+            step:true,
+            stop:false,
+            run:true,
+            rewind:true
+        });
+        this.props.onRewind();
+    }
+
+    render () {
+        return (
+            <p className="center">
+                <span  id ="generation-counter">0</span>
+                <Button variant="outlined" onClick={this.onRun} disabled={!this.state.run}>Run</Button>
+                <Button variant="outlined" onClick={this.onStop} disabled={!this.state.stop}>Stop</Button>
+                <Button variant="outlined" onClick={this.onStep} disabled={!this.state.step}>Step</Button>
+                <Button variant="outlined" onClick={this.onRewind} disabled={!this.state.rewind} >Rewind</Button>
+            </p>
+        );
+    }
+}
+
 class SimulationScreen extends React.Component {
     constructor(props){
         super(props);
         this.state={
-            controls:{
-                step:true,
-                stop:false,
-                run:true,
-                rewind:true
-            }
         };
 
         console.log("Sim.NEW", this.props.settings);
+
+        this.controls = React.createRef();
         this.onRewind = this.onRewind.bind(this);
         this.onStep = this.onStep.bind(this);
         this.onRun = this.onRun.bind(this);
@@ -46,10 +110,6 @@ class SimulationScreen extends React.Component {
         this.game.update();
     }
 
-    setControls(controls){
-        this.setState({controls:controls});
-    }
-
     onRun() {
         if (this.game === undefined){
             console.log("GAME UNDEF");
@@ -61,12 +121,6 @@ class SimulationScreen extends React.Component {
         }
 
         this.game.run(this.props.settings.interval);
-        this.setControls({
-            step:false,
-            stop:true,
-            run:false,
-            rewind:false
-        });
     }
 
     onStop() {
@@ -75,12 +129,6 @@ class SimulationScreen extends React.Component {
             return;
         }
         this.game.stop();
-        this.setControls({
-            step:true,
-            stop:false,
-            run:true,
-            rewind:true
-        });
     }
 
     onRewind() {
@@ -93,12 +141,6 @@ class SimulationScreen extends React.Component {
             return;
         }
         this.game.rewind();
-        this.setControls({
-            step:true,
-            stop:false,
-            run:true,
-            rewind:true
-        });
     }
 
     componentDidUpdate(prevProps) {
@@ -221,6 +263,11 @@ class SimulationScreen extends React.Component {
             return true;
         }
 
+        if(this.game && this.game.isRunning()) {
+            //emulate stop
+            this.controls.current.stop();
+        }
+
         console.log("SHOULD", updated);
         if(updated.length !== 1) {
             return true;
@@ -244,13 +291,13 @@ class SimulationScreen extends React.Component {
         console.log("SIM RENDER", this.props.settings);
         return (
             <div>
-                <p className="center">
-                    <span  id ="generation-counter">0</span>
-                    <Button variant="outlined" onClick={this.onRun} disabled={!this.state.controls.run}>Run</Button>
-                    <Button variant="outlined" onClick={this.onStop} disabled={!this.state.controls.stop}>Stop</Button>
-                    <Button variant="outlined" onClick={this.onStep} disabled={!this.state.controls.step}>Step</Button>
-                    <Button variant="outlined" onClick={this.onRewind} disabled={!this.state.controls.rewind} >Rewind</Button>
-                </p>
+              <SimControls
+                ref={this.controls}
+                onRun={this.onRun}
+                onStop={this.onStop}
+                onStep={this.onStep}
+                onRewind={this.onRewind}
+                />
                  <div id="grid-wrapper"> 
                     <Grid
                     container

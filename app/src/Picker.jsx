@@ -3,6 +3,7 @@ import reactCSS from 'reactcss';
 import { PhotoshopPicker, SketchPicker,  ChromePicker, Swatches} from 'react-color';
 import _ from "underscore";
 import Button from '@material-ui/core/Button';
+import {IF} from "./Lang";
 
 class Picker extends React.Component {
     constructor(props){
@@ -71,15 +72,16 @@ class Picker extends React.Component {
     return (
       <div>
         <Button style={ styles.button } onClick={ this.handleClick } > &nbsp;</Button>
-        { this.state.displayColorPicker ? <div style={ styles.popover }>
+        <IF isTrue={()=>this.state.displayColorPicker === true}>
+          <div style={ styles.popover }>
           <div style={ styles.cover } onClick={ this.handleClose }/>
           <SketchPicker
                 disabledAlpha={true}
                 color={ this.state.color }
                 onChangeComplete={ this.handleChange }
                 />
-        </div> : null }
-
+          </div>
+        </IF>
       </div>
     );
   }
