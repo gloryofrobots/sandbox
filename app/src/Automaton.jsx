@@ -8,7 +8,7 @@ function randi(min, max) {
 
 
 class Automaton {
-    constructor(renderer, params, width, height, onUpdate) {
+    constructor(renderer, params, width, height, onRender) {
         this.params = this.parseParams(params);
         this.validate();
         this.renderer = renderer;
@@ -16,10 +16,15 @@ class Automaton {
         this.width = width;
         this.height = height;
         this.size = this.width * this.height;
-        this.onUpdate = onUpdate;
+        this.onRender = onRender;
         this._generation = 0;
         console.log("PARAMS", params, this.params);
         this.clear();
+    }
+
+    setPalette(c) {
+        this.renderer.setPalette(c);
+        this.render();
     }
 
     clear() {
@@ -31,6 +36,7 @@ class Automaton {
         this.cells = new Array(this.size);
         this.cells = this.cells.fill(0, 0, this.size);
         this.initialCells = this.cells.slice();
+        this.render();
     }
 
     randomize() {
@@ -45,6 +51,7 @@ class Automaton {
         });
 
         this.initialCells = this.cells.slice();
+        this.render();
     }
 
     validate(){
@@ -81,7 +88,7 @@ class Automaton {
     rewind(){
         this._generation = 0;
         this.cells = this.initialCells.slice();
-        this.update();
+        this.render();
     }
 
     index(x, y){
@@ -111,18 +118,15 @@ class Automaton {
             for(var y = 0; y < this.height; y++) {
                 var index = this.index(x, y);
                 var cell = this.cells[index];
-                
                 this.renderer.drawCell(x, y, cell);
-                this.calculate(x, y);
-                // this.renderer.drawText(x, y, count.toString());
             }
         }
         this.renderer.end();
-
+        this.onRender(this);
     }
 
     update() {
-        this.render();
+        console.log("UPDATE", this._generation);
         var newCells = new Array(this.size);
         for(var x = 0; x < this.width; x++ ){
             for(var y = 0; y < this.height; y++) {
@@ -133,8 +137,8 @@ class Automaton {
             }
         }
         this._generation += 1;
-        this.onUpdate(this);
         this.cells = newCells;
+        this.render();
     }
 
     calculate(cell, index, x, y){

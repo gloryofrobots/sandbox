@@ -41,8 +41,15 @@ class Settings {
     constructor(onUpdate){
         this.default = _.clone(DEFAULT);
         this.settings = undefined;
-        this.onUpdate = onUpdate;
+        this._onUpdate = onUpdate;
+        this.onUpdate = this.onUpdate.bind(this);
+        this.updated = new Set();
         this.load();
+    }
+
+    onUpdate() {
+        this._onUpdate();
+        this.updated.clear();
     }
 
     load() {
@@ -74,6 +81,7 @@ class Settings {
                     return cache;
                 }
         });
+        console.log("LOAD SETTINGS", this.settings);
     }
 
     toObject() {
@@ -108,10 +116,33 @@ class Settings {
         return _.isNumber(old);
     }
 
-    modify(key, val) {
-        
+    setColor(id, val) {
+        this.settings.palette[id] = val;
+        this.triggerSave();
     }
-    update(settings) {
+    
+    set(key, val) {
+        this.settings[key] = val;
+        this.updated.add(key);
+        this.triggerSave();
+    }
+
+
+    triggerSave() {
+        if(!_.isUndefined(this.saveInterval)) {
+            clearTimeout(this.saveInterval);
+        }
+        this.saveInterval = setTimeout(
+            () => {
+                this.save();
+                this.load();
+                this.onUpdate();
+            },
+            500
+        );
+    }
+
+    setStrings(settings) {
         this.settings = _.mapObject(this.default, (val, key) => {
             var newVal = settings[key];
             if (_.isUndefined(newVal)){
@@ -145,6 +176,7 @@ class Settings {
         return rules[0].rule;
     }
     
+
     param(key) {
         return this.settings[key];
     }

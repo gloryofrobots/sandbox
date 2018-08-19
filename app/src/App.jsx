@@ -57,9 +57,15 @@ class App extends React.Component {
     }
 
     onChangeSettings(){
-        this.setState({
-            settings:this.settings.toObject()
-        });
+        var sim = this.sim.current;
+        var updated = this.settings.updated;
+        if (updated.size === 1 && updated.has("palette")) {
+            sim.changePalette(this.settings.param("palette"));
+        } else {
+            this.setState({
+                settings:this.settings.toObject()
+            });
+        }
     }
                 // <MuiThemeProvider muiTheme={getMuiTheme(lightBaseTheme)}>
 

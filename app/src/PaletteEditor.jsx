@@ -17,6 +17,7 @@ class PaletteEditor extends React.Component {
   onChangeColor(id) {
       return (color) => {
           this.state.colors[id] = color;
+          this.props.settings.set("palette", this.state.colors);
           this.setState({});
       };
   }

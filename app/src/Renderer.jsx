@@ -14,7 +14,7 @@ class Renderer {
         console.log(this);
     }
 
-    setColors(c){
+    setPalette(c){
         this.colors = c;
     }
     begin(){

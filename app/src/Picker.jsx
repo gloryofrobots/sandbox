@@ -1,6 +1,6 @@
 import React from 'react';
 import reactCSS from 'reactcss';
-import { SketchPicker,  ChromePicker, Swatches} from 'react-color';
+import { PhotoshopPicker, SketchPicker,  ChromePicker, Swatches} from 'react-color';
 import _ from "underscore";
 import Button from '@material-ui/core/Button';
 
@@ -74,7 +74,10 @@ class Picker extends React.Component {
         <Button style={ styles.button } onClick={ this.handleClick } > &nbsp;</Button>
         { this.state.displayColorPicker ? <div style={ styles.popover }>
           <div style={ styles.cover } onClick={ this.handleClose }/>
-          <ChromePicker color={ this.state.color } onChange={ this.handleChange } />
+          <ChromePicker
+                color={ this.state.color }
+                onChange={ this.handleChange }
+                />
         </div> : null }
 
       </div>

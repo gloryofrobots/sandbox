@@ -110,6 +110,7 @@ class SimulationScreen extends React.Component {
 
         console.log("MEKING NEW GAME");
         this.newGame();
+        this.game.render();
     }
 
     componentDidMount() {
@@ -119,7 +120,7 @@ class SimulationScreen extends React.Component {
 
     newGame() {
         var settings = this.props.settings;
-        console.log("--------------------------SIM", settings);
+        console.log("--------------------------SIM NEW GAME", settings);
         var canvas = document.getElementById("grid");
         var ctx = canvas.getContext("2d");
 
@@ -132,7 +133,7 @@ class SimulationScreen extends React.Component {
         var cellheight = (settings.canvasHeight / settings.gridHeight) - settings.cellMargin;
 
         var render = new Renderer(ctx,
-                                  ["#ccc", "#669999", "#000", "#f0f", "#f00", "#0ff", "#ff0", "#00f", "#0f0"],
+                                  settings.palette,
                                   settings.canvasWidth,
                                   settings.canvasHeight ,
                                   cellwidth,
@@ -150,13 +151,13 @@ class SimulationScreen extends React.Component {
         try {
 
             var counter = $("#generation-counter");
-            const onUpdate = (game) => {
+            const onRender = (game) => {
                 counter.html(" GEN: " + game.generation + "");
             };
 
             newGame = new automatonType(
                 render, settings.params, settings.gridWidth,
-                settings.gridHeight, onUpdate,
+                settings.gridHeight, onRender,
             );
 
        } catch(e) {
@@ -180,7 +181,6 @@ class SimulationScreen extends React.Component {
         console.log("!!!!!!!!!!!!!!!!!");
         this.game = newGame;
         this.game.randomize();
-        this.game.update();
     }
 
     randomize() {
@@ -190,7 +190,10 @@ class SimulationScreen extends React.Component {
             return;
         }
         this.game.randomize();
-        this.game.update();
+    }
+
+    changePalette(palette) {
+        this.game.setPalette(palette);
     }
 
     clear(){
@@ -200,7 +203,6 @@ class SimulationScreen extends React.Component {
             return;
         }
         this.game.clear();
-        this.game.update();
     }
 
     load(filename){
@@ -210,7 +212,6 @@ class SimulationScreen extends React.Component {
             return;
         }
         this.game.load();
-        this.game.update();
     }
 
     save(filename){

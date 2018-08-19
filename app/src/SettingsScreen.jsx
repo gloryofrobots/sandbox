@@ -84,7 +84,7 @@ class SettingsScreen extends React.Component {
     }
 
     submitSettings() {
-        this.props.settings.update(this.state.settings);
+        this.props.settings.setStrings(this.state.settings);
         console.log("SUBMIT", this.state, this.props.settings.toObject());
         this.setState({
             settings:this.props.settings.toObject()
@@ -92,7 +92,7 @@ class SettingsScreen extends React.Component {
     }
 
     render() {
-        console.log("SETTEDIT STATE", this.state);
+        console.log("SETTEDIT RENDER", this.state);
         var inputWidth = 50;
         var marginLeft = 10;
 
