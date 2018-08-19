@@ -276,8 +276,7 @@ class SimulationScreen extends React.Component {
             this.changePalette(settings);
             return false;
         } else if(_.contains(updated, "cellMargin") ||
-                  _.contains(updated, "canvasWidth") ||
-                  _.contains(updated, "canvasHeight")) {
+                  _.contains(updated, "cellSize")) {
             this.changeCanvas(settings);
             return false;
         } else if(_.contains(updated, "interval")) {

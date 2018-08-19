@@ -7,10 +7,9 @@ function rule(name, rule) {
 var DEFAULT = {
     gridWidth:10,
     gridHeight:10,
-    canvasWidth:600,
-    canvasHeight:600,
-    interval:100,
+    cellSize:50,
     cellMargin:1,
+    interval:100,
     family:"gl",
     params:"23/3",
     palette: [
@@ -62,6 +61,12 @@ class Settings {
         console.log("UPDATED KEYS", arr);
         return arr;
         // return _.toArray(this.updated.values());
+    }
+
+    setDefaultValues() {
+        localStorage.clear();
+        this.load();
+        this.onUpdate();
     }
 
     load() {

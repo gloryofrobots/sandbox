@@ -22,6 +22,7 @@ class SettingsScreen extends React.Component {
         super(props);
         var settings = props.settings;
 
+
         var family = settings.get("family");
         this.state = {
             editEnabled:true,
@@ -30,12 +31,12 @@ class SettingsScreen extends React.Component {
             rules: settings.getRules(family),
             rule: settings.getRule(family)
         };
-
         // console.log("SETATE SETTINGS", this.state);
         this.onActionCallback = props.onAction;
+
         this.onTabChanged = this.onTabChanged.bind(this);
+        this.onSetDefaults = this.onSetDefaults.bind(this);
         this.onToggleEditor = this.onToggleEditor.bind(this);
-        this.submitSettings = this.submitSettings.bind(this);
         this.handleChangeRule = this.handleChangeRule.bind(this);
         this.handleChangeFamily = this.handleChangeFamily.bind(this);
     }
@@ -49,7 +50,6 @@ class SettingsScreen extends React.Component {
     handleAction(name) {
         return () => {
             this.onActionCallback(name);
-            this.submitSettings();
         };
     }
     
@@ -90,18 +90,21 @@ class SettingsScreen extends React.Component {
         };
     }
 
-    submitSettings() {
-        this.props.settings.setStrings(this.state.settings);
-        this.setState({
-            settings:this.props.settings.toObject()
-        });
-    }
-
-
     onTabChanged(event, value) {
         console.log("TAB", value);
         this.setState({
             activeTab:value
+        });
+    }
+
+    onSetDefaults(){
+        var settings = this.props.settings;
+        settings.setDefaultValues();
+        var family = settings.get("family");
+        this.setState({
+            settings: settings.toObject(),
+            rules: settings.getRules(family),
+            rule: settings.getRule(family)
         });
     }
 
@@ -165,6 +168,31 @@ class SettingsScreen extends React.Component {
                             width:200
                         }}
                         />
+                </Grid>
+
+                <Grid container spacing={0} justify="center" alignItems="center">
+                    <TextField
+                        label="Cell side"
+                        value={this.state.settings.cellSize}
+                        onChange={this.handleChange("cellSize")}
+                        margin="normal"
+                        type="number"
+                        style={{
+                            marginLeft:marginLeft,
+                            width:120
+                        }}
+                        />
+                    <TextField
+                        label="Cell margin"
+                        value={this.state.settings.cellMargin}
+                        onChange={this.handleChange("cellMargin")}
+                        margin="normal"
+                        type="number"
+                        style={{
+                            marginLeft:marginLeft,
+                            width:100
+                        }}
+                        />
                     <TextField
                         label="Cols"
                         value={this.state.settings.gridWidth}
@@ -187,31 +215,6 @@ class SettingsScreen extends React.Component {
                             width:inputWidth
                         }}
                         />
-                </Grid>
-
-                <Grid container spacing={0} justify="center" alignItems="center">
-                    <TextField
-                        label="Canvas width"
-                        value={this.state.settings.canvasWidth}
-                        onChange={this.handleChange("canvasWidth")}
-                        margin="normal"
-                        type="number"
-                        style={{
-                            marginLeft:marginLeft,
-                            width:120
-                        }}
-                        />
-                    <TextField
-                        label="Canvas height"
-                        value={this.state.settings.canvasHeight}
-                        onChange={this.handleChange("canvasHeight")}
-                        margin="normal"
-                        type="number"
-                        style={{
-                            marginLeft:marginLeft,
-                            width:120
-                        }}
-                        />
                     <TextField
                         label="Animation delay (ms)"
                         value={this.state.settings.interval}
@@ -221,17 +224,6 @@ class SettingsScreen extends React.Component {
                         style={{
                             marginLeft:marginLeft,
                             width:120
-                        }}
-                        />
-                    <TextField
-                        label="Cell margin"
-                        value={this.state.settings.cellMargin}
-                        onChange={this.handleChange("cellMargin")}
-                        margin="normal"
-                        type="number"
-                        style={{
-                            marginLeft:marginLeft,
-                            width:100
                         }}
                         />
                 </Grid>

@@ -17,8 +17,15 @@ import {getTheme} from "./Theme";
 import Drawer from '@material-ui/core/Drawer';
 import ClippedDrawer from './ClippedDrawer';
 import Button from '@material-ui/core/Button';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+import Grid from '@material-ui/core/Grid';
+
 
 import Settings from "./Settings";
+import SettingsScreen from "./SettingsScreen";
+import SimulationScreen from './SimulationScreen';
+import AppMenu from "./AppMenu";
 
 import {
   Route,
@@ -26,9 +33,6 @@ import {
   // Link,
   BrowserRouter as Router,
 } from 'react-router-dom';
-
-import SettingsScreen from "./SettingsScreen";
-import SimulationScreen from './SimulationScreen';
 
 import './App.css';
 
@@ -43,6 +47,7 @@ class App extends React.Component {
 
         this.onChangeSettings = this.onChangeSettings.bind(this);
         this.onAction = this.onAction.bind(this);
+        this.onMenuAction = this.onMenuAction.bind(this);
         this.settings = new Settings(this.onChangeSettings);
         this.sim = React.createRef();
         this.state = {
@@ -64,31 +69,6 @@ class App extends React.Component {
             updatedSettings:this.settings.updatedKeys()
         });
     }
-    // onChangeSettings(){
-    //     var sim = this.sim.current;
-    //     var settings = this.settings.toObject();
-    //     var updated = this.settings.updated;
-    //     if (updated.size === 1) {
-    //         if(updated.has("palette")) {
-    //             sim.changePalette(settings);
-    //         } else if(updated.has("cellMargin") || updated.has("canvasWidth") || updated.has("canvasHeight")) {
-    //             sim.changeCanvas(settings);
-    //         } else if(updated.has("interval")) {
-    //             this.updateFromSettings(settings);
-    //             // sim.changeInterval(settings);
-    //         } else {
-    //             this.updateFromSettings(settings);
-    //         }
-    //     } else {
-    //         this.updateFromSettings(settings);
-    //     }
-    // }
-
-    // updateFromSettings(settings) {
-    //     this.setState({
-    //         settings:settings
-    //     });
-    // }
 
     onAction(action) {
         // var sim = docum
@@ -100,11 +80,17 @@ class App extends React.Component {
         }
     }
 
+    onMenuAction(){
+        this.settings.setDefaultValues();
+    }
+
     render() {
         return (
           <MuiThemeProvider theme={getTheme()}>
               <AppBar position="static" className="app-bar">
+
                 <Toolbar>
+                  <AppMenu onAction={this.onMenuAction}/>
                   <Typography variant="title" color="inherit" className="app-bar" >
                     Cellular Automatons
                   </Typography>
