@@ -11,6 +11,8 @@ import FormControl from '@material-ui/core/FormControl';
 import PaletteEditor from "./PaletteEditor";
 import Tooltip from '@material-ui/core/Tooltip';
 import Grid from '@material-ui/core/Grid';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
 import {IF} from "./Lang";
 
 import _ from "underscore";
@@ -23,6 +25,7 @@ class SettingsScreen extends React.Component {
         var family = settings.get("family");
         this.state = {
             editEnabled:true,
+            activeTab:0,
             settings: settings.toObject(),
             rules: settings.getRules(family),
             rule: settings.getRule(family)
@@ -30,6 +33,7 @@ class SettingsScreen extends React.Component {
 
         // console.log("SETATE SETTINGS", this.state);
         this.onActionCallback = props.onAction;
+        this.onTabChanged = this.onTabChanged.bind(this);
         this.onToggleEditor = this.onToggleEditor.bind(this);
         this.submitSettings = this.submitSettings.bind(this);
         this.handleChangeRule = this.handleChangeRule.bind(this);
@@ -59,14 +63,15 @@ class SettingsScreen extends React.Component {
             rule:rule,
             settings: this.updatedSettings("family", event.target.value)
         });
+        this.props.settings.setString("family", event.target.value);
     }
 
     handleChangeRule(event) {
-        // console.log("CHANGE RULE", event.target.value);
         this.setState({
             rule: event.target.value,
             settings: this.updatedSettings("params", event.target.value)
         });
+        this.props.settings.setString("params", event.target.value);
     }
 
     updatedSettings(key, val) {
@@ -89,6 +94,14 @@ class SettingsScreen extends React.Component {
         this.props.settings.setStrings(this.state.settings);
         this.setState({
             settings:this.props.settings.toObject()
+        });
+    }
+
+
+    onTabChanged(event, value) {
+        console.log("TAB", value);
+        this.setState({
+            activeTab:value
         });
     }
 
@@ -123,114 +136,105 @@ class SettingsScreen extends React.Component {
         }
         return (
         <div>
-            <Grid container spacing={0} justify="center" alignItems="center">
-                <FormControl>
-                    <InputLabel shrink>
-                        Automaton
-                    </InputLabel>
-                    <Select
-                        value={this.state.settings.family}
-                        onChange={this.handleChangeFamily}>
-                        <MenuItem value={"gl"}>Game Of Life</MenuItem>
-                        <MenuItem value={"bb"}>Brians Brain</MenuItem>
-                    </Select>
-                </FormControl>
-                {RuleSelect}
-                <TextField
-                    label="Edit rule"
-                    value={this.state.settings.params}
-                    onChange={this.handleChange("params")}
-                    margin="normal"
-                    style={{
-                        marginLeft:marginLeft,
-                        width:200
-                    }}
-                    />
-                <TextField
-                    label="Cols"
-                    value={this.state.settings.gridWidth}
-                    onChange={this.handleChange("gridWidth")}
-                    margin="normal"
-                    type="number"
-                    style={{
-                        marginLeft:marginLeft,
-                        width:inputWidth
-                    }}
-                    />
-                <TextField
-                    label="Rows"
-                    value={this.state.settings.gridHeight}
-                    onChange={this.handleChange("gridHeight")}
-                    margin="normal"
-                    type="number"
-                    style={{
-                        marginLeft:marginLeft,
-                        width:inputWidth
-                    }}
-                    />
 
-            </Grid>
-            <Grid container spacing={0} justify="center" alignItems="center">
-                <TextField
-                    label="Canvas width"
-                    value={this.state.settings.canvasWidth}
-                    onChange={this.handleChange("canvasWidth")}
-                    margin="normal"
-                    type="number"
-                    style={{
-                        marginLeft:marginLeft,
-                        width:120
-                    }}
-                    />
-                <TextField
-                    label="Canvas height"
-                    value={this.state.settings.canvasHeight}
-                    onChange={this.handleChange("canvasHeight")}
-                    margin="normal"
-                    type="number"
-                    style={{
-                        marginLeft:marginLeft,
-                        width:120
-                    }}
-                    />
-                <TextField
-                    label="Animation delay (ms)"
-                    value={this.state.settings.interval}
-                    onChange={this.handleChange("interval")}
-                    margin="normal"
-                    type="number"
-                    style={{
-                        marginLeft:marginLeft,
-                        width:120
-                    }}
-                    />
-                <TextField
-                    label="Cell margin"
-                    value={this.state.settings.cellMargin}
-                    onChange={this.handleChange("cellMargin")}
-                    margin="normal"
-                    type="number"
-                    style={{
-                        marginLeft:marginLeft,
-                        width:100
-                    }}
-                    />
-            </Grid>
-
-            <Grid container spacing={0} justify="center" alignItems="center">
-               <Button variant="outlined"
+            <Tabs fullWidth value={this.state.activeTab} onChange={this.onTabChanged}>
+                <Tab style={{minWidth:"50%"}} label="Automaton" />
+                <Tab style={{minWidth:"50%"}} label="Editor" />
+            </Tabs>
+            <IF isTrue={()=>this.state.activeTab===0}>
+                <Grid container spacing={0} justify="center" alignItems="center">
+                    <FormControl>
+                        <InputLabel shrink>
+                            Family
+                        </InputLabel>
+                        <Select
+                            value={this.state.settings.family}
+                            onChange={this.handleChangeFamily}>
+                            <MenuItem value={"gl"}>Game Of Life</MenuItem>
+                            <MenuItem value={"bb"}>Brians Brain</MenuItem>
+                        </Select>
+                    </FormControl>
+                    {RuleSelect}
+                    <TextField
+                        label="Edit rule"
+                        value={this.state.settings.params}
+                        onChange={this.handleChange("params")}
+                        margin="normal"
                         style={{
-                            marginLeft:marginLeft
+                            marginLeft:marginLeft,
+                            width:200
                         }}
-                       onClick={this.submitSettings} >Apply</Button>
-                <Button
-                    variant="outlined"
-                    onClick={this.onToggleEditor}
-                    style={{marginLeft:30}}>
-                    Toggle Editor
-                </Button>
-            </Grid>
-            <IF isTrue={()=>this.state.editEnabled===true}>
+                        />
+                    <TextField
+                        label="Cols"
+                        value={this.state.settings.gridWidth}
+                        onChange={this.handleChange("gridWidth")}
+                        margin="normal"
+                        type="number"
+                        style={{
+                            marginLeft:marginLeft,
+                            width:inputWidth
+                        }}
+                        />
+                    <TextField
+                        label="Rows"
+                        value={this.state.settings.gridHeight}
+                        onChange={this.handleChange("gridHeight")}
+                        margin="normal"
+                        type="number"
+                        style={{
+                            marginLeft:marginLeft,
+                            width:inputWidth
+                        }}
+                        />
+                </Grid>
+
+                <Grid container spacing={0} justify="center" alignItems="center">
+                    <TextField
+                        label="Canvas width"
+                        value={this.state.settings.canvasWidth}
+                        onChange={this.handleChange("canvasWidth")}
+                        margin="normal"
+                        type="number"
+                        style={{
+                            marginLeft:marginLeft,
+                            width:120
+                        }}
+                        />
+                    <TextField
+                        label="Canvas height"
+                        value={this.state.settings.canvasHeight}
+                        onChange={this.handleChange("canvasHeight")}
+                        margin="normal"
+                        type="number"
+                        style={{
+                            marginLeft:marginLeft,
+                            width:120
+                        }}
+                        />
+                    <TextField
+                        label="Animation delay (ms)"
+                        value={this.state.settings.interval}
+                        onChange={this.handleChange("interval")}
+                        margin="normal"
+                        type="number"
+                        style={{
+                            marginLeft:marginLeft,
+                            width:120
+                        }}
+                        />
+                    <TextField
+                        label="Cell margin"
+                        value={this.state.settings.cellMargin}
+                        onChange={this.handleChange("cellMargin")}
+                        margin="normal"
+                        type="number"
+                        style={{
+                            marginLeft:marginLeft,
+                            width:100
+                        }}
+                        />
+                </Grid>
                 <Grid
                     container
                     spacing={0}
@@ -260,17 +264,19 @@ class SettingsScreen extends React.Component {
                                     marginLeft:marginLeft
                                 }}
                             onClick={this.handleAction("save")} >Save</Button>
-
                     </Grid>
-                    <Grid
+
+               </Grid>
+            </IF>
+            <IF isTrue={()=>this.state.activeTab===1}>
+                <Grid
                     container
                     spacing={0}
                     justify="center"
                     style={{marginTop:10}}
-                        >
-                        <PaletteEditor settings={this.props.settings}/>
+                  >
+                    <PaletteEditor settings={this.props.settings}/>
 
-                    </Grid>
                 </Grid>
             </IF>
         </div>
