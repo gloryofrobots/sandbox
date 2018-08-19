@@ -1,28 +1,42 @@
 
 class Renderer {
-    constructor(ctx, colors, width, height, cellwidth, cellheight, cellmargin){
-        this.ctx = ctx;
-        this.width = width;
-        this.height = height;
-        this.colors = colors;
-        this.cellRectRadius = 5;
+    constructor(canvas, settings, onRender){
+        this.canvas = canvas;
+        this.ctx = canvas.getContext("2d");
+        this.ctx.strokeStyle = "rgb(0, 0, 0)";
+        this.onRender = onRender;
+
+        this.setSettings(settings);
+    }
+
+    setSettings(settings) {
+        var cellwidth = (settings.canvasWidth/ settings.gridWidth) - settings.cellMargin;
+        var cellheight = (settings.canvasHeight / settings.gridHeight) - settings.cellMargin;
+
+        this.ctx.canvas.width = settings.canvasWidth;
+        this.ctx.canvas.height = settings.canvasHeight;
+
+        this.colors = settings.palette;
         this.cellWidth = cellwidth;
         this.cellHeight = cellheight;
-        this.margin = cellmargin;
+
+        this.margin = settings.cellMargin;
         this.marginX = this.cellWidth + this.margin;
         this.marginY = this.cellHeight + this.margin;
-        console.log(this);
     }
 
     setPalette(c){
         this.colors = c;
     }
+
     begin(){
         this.ctx.beginPath();
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
     end() {
         this.ctx.stroke();
+        this.onRender();
     }
 
     drawText(x, y, txt) {

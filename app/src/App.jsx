@@ -46,7 +46,8 @@ class App extends React.Component {
         this.settings = new Settings(this.onChangeSettings);
         this.sim = React.createRef();
         this.state = {
-            settings:this.settings.toObject()
+            settings:this.settings.toObject(),
+            updated:this.settings.updatedKeys()
         };
     }
 
@@ -57,17 +58,36 @@ class App extends React.Component {
     }
 
     onChangeSettings(){
-        var sim = this.sim.current;
-        var updated = this.settings.updated;
-        if (updated.size === 1 && updated.has("palette")) {
-            sim.changePalette(this.settings.param("palette"));
-        } else {
-            this.setState({
-                settings:this.settings.toObject()
-            });
-        }
+        this.setState({
+            settings:this.settings.toObject(),
+            updated:this.settings.updatedKeys()
+        });
     }
-                // <MuiThemeProvider muiTheme={getMuiTheme(lightBaseTheme)}>
+    // onChangeSettings(){
+    //     var sim = this.sim.current;
+    //     var settings = this.settings.toObject();
+    //     var updated = this.settings.updated;
+    //     if (updated.size === 1) {
+    //         if(updated.has("palette")) {
+    //             sim.changePalette(settings);
+    //         } else if(updated.has("cellMargin") || updated.has("canvasWidth") || updated.has("canvasHeight")) {
+    //             sim.changeCanvas(settings);
+    //         } else if(updated.has("interval")) {
+    //             this.updateFromSettings(settings);
+    //             // sim.changeInterval(settings);
+    //         } else {
+    //             this.updateFromSettings(settings);
+    //         }
+    //     } else {
+    //         this.updateFromSettings(settings);
+    //     }
+    // }
+
+    // updateFromSettings(settings) {
+    //     this.setState({
+    //         settings:settings
+    //     });
+    // }
 
     onAction(action) {
         // var sim = docum

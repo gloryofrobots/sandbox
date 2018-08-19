@@ -74,9 +74,10 @@ class Picker extends React.Component {
         <Button style={ styles.button } onClick={ this.handleClick } > &nbsp;</Button>
         { this.state.displayColorPicker ? <div style={ styles.popover }>
           <div style={ styles.cover } onClick={ this.handleClose }/>
-          <ChromePicker
+          <SketchPicker
+                disabledAlpha={true}
                 color={ this.state.color }
-                onChange={ this.handleChange }
+                onChangeComplete={ this.handleChange }
                 />
         </div> : null }
 

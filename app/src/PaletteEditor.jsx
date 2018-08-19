@@ -10,7 +10,7 @@ class PaletteEditor extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            colors: this.props.settings.param("palette")
+            colors: this.props.settings.get("palette")
         };
     }
 

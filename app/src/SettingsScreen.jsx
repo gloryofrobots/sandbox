@@ -19,7 +19,7 @@ class SettingsScreen extends React.Component {
         super(props);
         var settings = props.settings;
 
-        var family = settings.param("family");
+        var family = settings.get("family");
         this.state = {
             editEnabled:true,
             settings: settings.toObject(),
@@ -77,6 +77,7 @@ class SettingsScreen extends React.Component {
 
     handleChange(name) {
         return (event) => {
+            this.props.settings.setString(name, event.target.value);
             this.setState({
                 settings: this.updatedSettings(name, event.target.value)
              });

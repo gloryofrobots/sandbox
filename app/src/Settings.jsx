@@ -52,6 +52,10 @@ class Settings {
         this.updated.clear();
     }
 
+    updatedKeys() {
+        return this.updated.keys();
+    }
+
     load() {
         // console.log("LEN", localStorage.length);
         // localStorage.clear();
@@ -121,6 +125,18 @@ class Settings {
         this.triggerSave();
     }
     
+    setString(key, val) {
+        var newVal = val;
+        if (this.isNumber(key)) {
+            newVal = parseInt(newVal, 10);
+            if (_.isNaN(newVal)) {
+                console.error("Invalid settings number");
+                return;
+            }
+        }
+        this.set(key, val);
+    }
+
     set(key, val) {
         this.settings[key] = val;
         this.updated.add(key);
@@ -177,7 +193,7 @@ class Settings {
     }
     
 
-    param(key) {
+    get(key) {
         return this.settings[key];
     }
 

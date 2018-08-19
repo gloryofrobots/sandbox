@@ -1,4 +1,5 @@
 import * as Errors from "./Errors";
+import Renderer from "./Renderer";
 
 import _ from "underscore";
 
@@ -8,7 +9,7 @@ function randi(min, max) {
 
 
 class Automaton {
-    constructor(renderer, params, width, height, onRender) {
+    constructor(renderer, params, width, height) {
         this.params = this.parseParams(params);
         this.validate();
         this.renderer = renderer;
@@ -16,10 +17,14 @@ class Automaton {
         this.width = width;
         this.height = height;
         this.size = this.width * this.height;
-        this.onRender = onRender;
         this._generation = 0;
         console.log("PARAMS", params, this.params);
-        this.clear();
+        this._clear();
+    }
+
+    setRenderSettings(settings){
+        this.renderer.setSettings(settings);
+        this.render();
     }
 
     setPalette(c) {
@@ -27,15 +32,19 @@ class Automaton {
         this.render();
     }
 
+    _clear() {
+        this._generation = 0;
+        this.cells = new Array(this.size);
+        this.cells = this.cells.fill(0, 0, this.size);
+        this.initialCells = this.cells.slice();
+    }
     clear() {
         if(this.isRunning()){
             console.error("Still running");
             return;
         }
-        this._generation = 0;
-        this.cells = new Array(this.size);
-        this.cells = this.cells.fill(0, 0, this.size);
-        this.initialCells = this.cells.slice();
+
+        this._clear();
         this.render();
     }
 
@@ -122,7 +131,6 @@ class Automaton {
             }
         }
         this.renderer.end();
-        this.onRender(this);
     }
 
     update() {

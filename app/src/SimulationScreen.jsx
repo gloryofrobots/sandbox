@@ -60,8 +60,7 @@ class SimulationScreen extends React.Component {
             return;
         }
 
-        var settings = this.props.settings;
-        this.game.run(settings.interval);
+        this.game.run(this.props.settings.interval);
         this.setControls({
             step:false,
             stop:true,
@@ -121,26 +120,6 @@ class SimulationScreen extends React.Component {
     newGame() {
         var settings = this.props.settings;
         console.log("--------------------------SIM NEW GAME", settings);
-        var canvas = document.getElementById("grid");
-        var ctx = canvas.getContext("2d");
-
-        ctx.strokeStyle = "rgb(0, 0, 0)";
-
-        ctx.canvas.width = settings.canvasWidth;
-        ctx.canvas.height = settings.canvasHeight;
-
-        var cellwidth = (settings.canvasWidth/ settings.gridWidth) - settings.cellMargin;
-        var cellheight = (settings.canvasHeight / settings.gridHeight) - settings.cellMargin;
-
-        var render = new Renderer(ctx,
-                                  settings.palette,
-                                  settings.canvasWidth,
-                                  settings.canvasHeight ,
-                                  cellwidth,
-                                  cellheight,
-                                  settings.cellMargin
-        );
-
         var automatonType = automaton(settings.family);
         if (!automatonType){
             alert("Error wrong type");
@@ -149,11 +128,13 @@ class SimulationScreen extends React.Component {
 
         var newGame;
         try {
+            var canvas = document.getElementById("grid");
 
             var counter = $("#generation-counter");
             const onRender = (game) => {
-                counter.html(" GEN: " + game.generation + "");
+                counter.html(" GEN: " + this.generation + "");
             };
+            var render = new Renderer(canvas, settings, onRender);
 
             newGame = new automatonType(
                 render, settings.params, settings.gridWidth,
@@ -192,8 +173,16 @@ class SimulationScreen extends React.Component {
         this.game.randomize();
     }
 
-    changePalette(palette) {
-        this.game.setPalette(palette);
+    // changeInterval(settings) {
+    //     this.game.setInterval(settings.interval);
+    // }
+
+    changePalette(settings) {
+        this.game.setPalette(settings.palette);
+    }
+
+    changeCanvas(settings) {
+        this.game.setRenderSettings(settings);
     }
 
     clear(){
@@ -223,7 +212,24 @@ class SimulationScreen extends React.Component {
         this.game.save(filename);
     }
 
+    shouldComponentUpdate(nextProps, nextState) {
+        var settings = nextProps.settings;
+        updated = nextProps.updated;
+        if(updated.length !== 1) {
+            return true;
+        }
+        if(_.contains(updated, "palette")) {
+            sim.changePalette(settings);
+        } else if(updated.has("cellMargin") || updated.has("canvasWidth") || updated.has("canvasHeight")) {
+            sim.changeCanvas(settings);
+        } else if(updated.has("interval")) {
+            this.updateFromSettings(settings);
+            // sim.changeInterval(settings);
+        } else {
+            this.updateFromSettings(settings);
+        }
 
+    }
 
     render() {
         console.log("SIM RENDER", this.props.settings);
