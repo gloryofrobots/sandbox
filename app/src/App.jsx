@@ -58,9 +58,10 @@ class App extends React.Component {
     }
 
     onChangeSettings(){
+        console.log("CHANGE SETTINGS", this.settings, this.settings.updated, this.settings.updatedKeys());
         this.setState({
             settings:this.settings.toObject(),
-            updated:this.settings.updatedKeys()
+            updatedSettings:this.settings.updatedKeys()
         });
     }
     // onChangeSettings(){
@@ -115,8 +116,8 @@ class App extends React.Component {
                         <hr />
                         <SimulationScreen
                           ref={this.sim}
-                          action={this.state.action}
-                          settings={this.state.settings} />
+                          settings={this.state.settings}
+                          updatedSettings={this.state.updatedSettings}/>
 
 
                         <Route path="/" render={(props)=> (<div></div>)}/>

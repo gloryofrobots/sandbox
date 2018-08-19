@@ -23,7 +23,7 @@ class SimulationScreen extends React.Component {
             }
         };
 
-        console.log("Sim CONST", this.props.settings);
+        console.log("Sim.NEW", this.props.settings);
         this.onRewind = this.onRewind.bind(this);
         this.onStep = this.onStep.bind(this);
         this.onRun = this.onRun.bind(this);
@@ -102,12 +102,12 @@ class SimulationScreen extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
-        console.log("SIM UP", prevProps, this.props);
+        console.log("SIM DID UPDATE", prevProps, this.props);
         if (_.isEqual(prevProps, this.props)) {
             return;
         }
 
-        console.log("MEKING NEW GAME");
+        console.log("MACKING NEW GAME");
         this.newGame();
         this.game.render();
     }
@@ -132,7 +132,7 @@ class SimulationScreen extends React.Component {
 
             var counter = $("#generation-counter");
             const onRender = (game) => {
-                counter.html(" GEN: " + this.generation + "");
+                counter.html(" GEN: " + this.game.generation + "");
             };
             var render = new Renderer(canvas, settings, onRender);
 
@@ -151,11 +151,12 @@ class SimulationScreen extends React.Component {
 
                return;
            } else {
-               console.log(e);
+               console.error(e);
            }
        }
 
         if (this.game !== undefined) {
+            console.log("GAME STOPPED NEW GAME");
             this.game.stop();
             this.game = undefined;
         }
@@ -166,7 +167,7 @@ class SimulationScreen extends React.Component {
 
     randomize() {
         if(this.game.isRunning()) {
-            console.log("GAME IS RUNING", this.game);
+            console.error("GAME IS RUNING", this.game);
             alert("STOP SIMULATION FIRST");
             return;
         }
@@ -187,7 +188,7 @@ class SimulationScreen extends React.Component {
 
     clear(){
         if(this.game.isRunning()) {
-            console.log("GAME IS RUNING", this.game);
+            console.error("GAME IS RUNING", this.game);
             alert("STOP SIMULATION FIRST");
             return;
         }
@@ -196,7 +197,7 @@ class SimulationScreen extends React.Component {
 
     load(filename){
         if(this.game.isRunning()) {
-            console.log("GAME IS RUNING", this.game);
+            console.error("GAME IS RUNING", this.game);
             alert("STOP SIMULATION FIRST");
             return;
         }
@@ -205,7 +206,7 @@ class SimulationScreen extends React.Component {
 
     save(filename){
         if(this.game.isRunning()) {
-            console.log("GAME IS RUNING", this.game);
+            console.error("GAME IS RUNING", this.game);
             alert("STOP SIMULATION FIRST");
             return;
         }
@@ -214,21 +215,29 @@ class SimulationScreen extends React.Component {
 
     shouldComponentUpdate(nextProps, nextState) {
         var settings = nextProps.settings;
-        updated = nextProps.updated;
+        var updated = nextProps.updatedSettings;
+
+        if(_.isUndefined(settings) || _.isUndefined(updated)){
+            return true;
+        }
+
+        console.log("SHOULD", updated);
         if(updated.length !== 1) {
             return true;
         }
         if(_.contains(updated, "palette")) {
-            sim.changePalette(settings);
-        } else if(updated.has("cellMargin") || updated.has("canvasWidth") || updated.has("canvasHeight")) {
-            sim.changeCanvas(settings);
-        } else if(updated.has("interval")) {
-            this.updateFromSettings(settings);
-            // sim.changeInterval(settings);
+            this.changePalette(settings);
+            return false;
+        } else if(_.contains(updated, "cellMargin") ||
+                  _.contains(updated, "canvasWidth") ||
+                  _.contains(updated, "canvasHeight")) {
+            this.changeCanvas(settings);
+            return false;
+        } else if(_.contains(updated, "interval")) {
+            return false;
         } else {
-            this.updateFromSettings(settings);
+            return true;
         }
-
     }
 
     render() {

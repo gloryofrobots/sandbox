@@ -18,7 +18,6 @@ class Automaton {
         this.height = height;
         this.size = this.width * this.height;
         this._generation = 0;
-        console.log("PARAMS", params, this.params);
         this._clear();
     }
 
@@ -82,7 +81,7 @@ class Automaton {
                 return intVal;
             });
             return res;
-            console.log("P", param, Array.from(param), _.map(Array.from(param), (val) => parseInt(val, 10)));
+            // console.log("P", param, Array.from(param), _.map(Array.from(param), (val) => parseInt(val, 10)));
         });
     }
 
@@ -113,7 +112,6 @@ class Automaton {
             return undefined;
         }
 
-        // console.log("cells", index, this.cells, this.cells[index]);
         return this.cells[index];
     }
 
@@ -134,7 +132,6 @@ class Automaton {
     }
 
     update() {
-        console.log("UPDATE", this._generation);
         var newCells = new Array(this.size);
         for(var x = 0; x < this.width; x++ ){
             for(var y = 0; y < this.height; y++) {
@@ -159,18 +156,17 @@ class Automaton {
     }
 
     stop() {
-        console.log("STOP interval", this.interval);
         if(!this.isRunning()){
             console.log("NOT RUNNING");
             return;
         }
+        console.log("STOPPING");
 
         clearInterval(this.interval);
         this.interval = undefined;
     }
 
     run(interval) {
-        console.log("RUN", interval, "Runing", this.isRunning());
         if (this.isRunning()) {
             console.log("ALREADY RUNNING");
             return;
@@ -196,7 +192,7 @@ class GameOfLife extends Automaton {
 
     validate(){
         if (this.params.length != 2) {
-            console.log("INVALID params", this.params);
+            console.error("INVALID params", this.params);
             throw new Error("Invalid params");
         }
     }

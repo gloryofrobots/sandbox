@@ -48,7 +48,6 @@ class Renderer {
     }
 
     drawCell(x, y, cell) {
-        // console.log("DRAW", x, y, cell);
         var color = this.colors[cell];
 
         var xp = x * this.marginX;

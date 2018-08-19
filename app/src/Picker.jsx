@@ -23,13 +23,12 @@ class Picker extends React.Component {
   };
 
   handleChange = (color) => {
-    console.log("color", color);
+    // console.log("color", color);
     this.setState({ color: color.hex });
     this.onChange(color.hex);
   };
 
   render() {
-    // console.log("PICKER", this.state);
     const styles = reactCSS({
       'default': {
         button: {

@@ -48,21 +48,28 @@ class Settings {
     }
 
     onUpdate() {
+        console.log("ON UPDATE", this.updated);
         this._onUpdate();
         this.updated.clear();
     }
 
     updatedKeys() {
-        return this.updated.keys();
+        var arr = [];
+        for (let item of this.updated){
+            arr.push(item);
+        }
+
+        console.log("UPDATED KEYS", arr);
+        return arr;
+        // return _.toArray(this.updated.values());
     }
 
     load() {
-        // console.log("LEN", localStorage.length);
         // localStorage.clear();
         this.settings =
             _.mapObject(this.default, function(val, key) {
                 var cache = localStorage.getItem(key);
-                console.log("<<", key, val, cache);
+                // console.log("<<", key, val, cache);
                 if(_.isUndefined(cache) || _.isNull(cache)) {
                     return val;
                 }
@@ -85,22 +92,13 @@ class Settings {
                     return cache;
                 }
         });
-        console.log("LOAD SETTINGS", this.settings);
+        // console.log("LOAD SETTINGS", this.settings);
     }
 
     toObject() {
         return _.clone(this.settings);
     }
-    // parse(key, val) {
-    //     if(isNumber(key)
-    //                 cache = parseInt(cache, 10);
-    //                 if (_.isNaN(cache)) {
-    //                     console.error("Invalid number in storage");
-    //                     return 0;
-    //                 }
-    //                 return cache;
 
-    // }
     isArray(key) {
         var old = this.default[key];
         if (_.isUndefined(old)){
@@ -130,7 +128,7 @@ class Settings {
         if (this.isNumber(key)) {
             newVal = parseInt(newVal, 10);
             if (_.isNaN(newVal)) {
-                console.error("Invalid settings number");
+                console.error("Invalid settings number", val);
                 return;
             }
         }
@@ -140,6 +138,7 @@ class Settings {
     set(key, val) {
         this.settings[key] = val;
         this.updated.add(key);
+        console.log("SET", key, val, this.updated);
         this.triggerSave();
     }
 
@@ -200,7 +199,7 @@ class Settings {
     save() {
         localStorage.clear();
         _.each(this.settings, (val, key) => {
-            console.log("!!",key, val);
+            // console.log("!!",key, val);
             if(this.isArray(key)) {
                 val = JSON.stringify(val);
             }

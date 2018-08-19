@@ -11,6 +11,7 @@ import FormControl from '@material-ui/core/FormControl';
 import PaletteEditor from "./PaletteEditor";
 import Tooltip from '@material-ui/core/Tooltip';
 import Grid from '@material-ui/core/Grid';
+import {IF} from "./Lang";
 
 import _ from "underscore";
 
@@ -27,7 +28,7 @@ class SettingsScreen extends React.Component {
             rule: settings.getRule(family)
         };
 
-        console.log("SETATE SETTINGS", this.state);
+        // console.log("SETATE SETTINGS", this.state);
         this.onActionCallback = props.onAction;
         this.onToggleEditor = this.onToggleEditor.bind(this);
         this.submitSettings = this.submitSettings.bind(this);
@@ -61,7 +62,7 @@ class SettingsScreen extends React.Component {
     }
 
     handleChangeRule(event) {
-        console.log("CHANGE RULE", event.target.value);
+        // console.log("CHANGE RULE", event.target.value);
         this.setState({
             rule: event.target.value,
             settings: this.updatedSettings("params", event.target.value)
@@ -86,14 +87,13 @@ class SettingsScreen extends React.Component {
 
     submitSettings() {
         this.props.settings.setStrings(this.state.settings);
-        console.log("SUBMIT", this.state, this.props.settings.toObject());
         this.setState({
             settings:this.props.settings.toObject()
         });
     }
 
     render() {
-        console.log("SETTEDIT RENDER", this.state);
+        console.log("SET EDIT RENDER", this.state);
         var inputWidth = 50;
         var marginLeft = 10;
 
@@ -114,7 +114,6 @@ class SettingsScreen extends React.Component {
                         onChange={this.handleChangeRule}>
                         {
                             _.map(this.state.rules, (rule) => {
-                                console.log("rule", rule);
                                 return (<MenuItem key={rule.rule} value={rule.rule}>{rule.name}</MenuItem>);
                             })
                         }
@@ -231,50 +230,49 @@ class SettingsScreen extends React.Component {
                     Toggle Editor
                 </Button>
             </Grid>
-            {
-                this.state.editEnabled ?
-            (<Grid
-                container
-                spacing={0}
-                justify="center"
-                style={{marginTop:10}} >
+            <IF isTrue={()=>this.state.editEnabled===true}>
                 <Grid
                     container
                     spacing={0}
-                    justify="center" >
-                <Button variant="outlined"
-                            style={{
-                                marginLeft:marginLeft
-                            }}
-                        onClick={this.handleAction("randomize")} >Randomize</Button>
-                <Button variant="outlined"
-                            style={{
-                                marginLeft:marginLeft
-                            }}
-                        onClick={this.handleAction("clear")} >Clear</Button>
-                <Button variant="outlined"
-                            style={{
-                                marginLeft:marginLeft
-                            }}
-                        onClick={this.handleAction("load")} >Load</Button>
-                <Button variant="outlined"
-                            style={{
-                                marginLeft:marginLeft
-                            }}
-                        onClick={this.handleAction("save")} >Save</Button>
+                    justify="center"
+                    style={{marginTop:10}} >
+                    <Grid
+                        container
+                        spacing={0}
+                        justify="center" >
+                    <Button variant="outlined"
+                                style={{
+                                    marginLeft:marginLeft
+                                }}
+                            onClick={this.handleAction("randomize")} >Randomize</Button>
+                    <Button variant="outlined"
+                                style={{
+                                    marginLeft:marginLeft
+                                }}
+                            onClick={this.handleAction("clear")} >Clear</Button>
+                    <Button variant="outlined"
+                                style={{
+                                    marginLeft:marginLeft
+                                }}
+                            onClick={this.handleAction("load")} >Load</Button>
+                    <Button variant="outlined"
+                                style={{
+                                    marginLeft:marginLeft
+                                }}
+                            onClick={this.handleAction("save")} >Save</Button>
 
-                </Grid>
-                <Grid
-                container
-                spacing={0}
-                justify="center"
-                style={{marginTop:10}}
-                      >
-                      <PaletteEditor settings={this.props.settings}/>
+                    </Grid>
+                    <Grid
+                    container
+                    spacing={0}
+                    justify="center"
+                    style={{marginTop:10}}
+                        >
+                        <PaletteEditor settings={this.props.settings}/>
 
+                    </Grid>
                 </Grid>
-            </Grid> ) :null
-            }
+            </IF>
         </div>
             );
         }
