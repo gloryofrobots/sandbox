@@ -11,7 +11,6 @@ import PaletteEditor from "./PaletteEditor";
 
 import _ from "underscore";
 
-
 class SimControls extends React.Component {
     constructor(props){
         super(props);

@@ -17,6 +17,35 @@ import {IF} from "./Lang";
 
 import _ from "underscore";
 
+
+const styles = {
+    ruleSelectForm: {
+        marginLeft:10
+    },
+    settingsTab: {
+        minWidth:"50%"
+    },
+    ruleEdit: {
+        marginLeft:10,
+        width:200
+    },
+    cellSide: {
+        marginLeft:10,
+        width:120
+    },
+    defaultInput: {
+        marginLeft:10,
+        width:50
+    },
+    toolButton: {
+        marginLeft:10
+    },
+    paletteGrid: {
+        marginTop:10
+    }
+
+};
+
 class SettingsScreen extends React.Component {
     constructor(props){
         super(props);
@@ -108,19 +137,12 @@ class SettingsScreen extends React.Component {
         });
     }
 
-    render() {
-        console.log("SET EDIT RENDER", this.state);
-        var inputWidth = 50;
-        var marginLeft = 10;
-
+    renderRules() {
         var RuleSelect = (<Button disabled>None</Button>);
-
         if(this.state.rule !== undefined) {
             RuleSelect = (
                 <FormControl
-                    style={{
-                        marginLeft:marginLeft,
-                    }}
+                    style={styles.ruleSelectForm}
                     >
                     <InputLabel shrink>
                         Rule
@@ -137,12 +159,22 @@ class SettingsScreen extends React.Component {
                 </FormControl>
             );
         }
+
+        return RuleSelect;
+    }
+
+    render() {
+        console.log("SET EDIT RENDER", this.state);
+        var inputWidth = 50;
+        var marginLeft = 10;
+
+
         return (
         <div>
 
             <Tabs fullWidth value={this.state.activeTab} onChange={this.onTabChanged}>
-                <Tab style={{minWidth:"50%"}} label="Automaton" />
-                <Tab style={{minWidth:"50%"}} label="Editor" />
+                <Tab style={styles.settingsTab} label="Automaton" />
+                <Tab style={styles.settingsTab} label="Editor" />
             </Tabs>
             <IF isTrue={()=>this.state.activeTab===0}>
                 <Grid container spacing={0} justify="center" alignItems="center">
@@ -157,16 +189,13 @@ class SettingsScreen extends React.Component {
                             <MenuItem value={"bb"}>Brians Brain</MenuItem>
                         </Select>
                     </FormControl>
-                    {RuleSelect}
+                    {this.renderRules()}
                     <TextField
                         label="Edit rule"
                         value={this.state.settings.params}
                         onChange={this.handleChange("params")}
                         margin="normal"
-                        style={{
-                            marginLeft:marginLeft,
-                            width:200
-                        }}
+                        style={styles.ruleEdit}
                         />
                 </Grid>
 
@@ -177,10 +206,7 @@ class SettingsScreen extends React.Component {
                         onChange={this.handleChange("cellSize")}
                         margin="normal"
                         type="number"
-                        style={{
-                            marginLeft:marginLeft,
-                            width:120
-                        }}
+                        style={styles.cellSide}
                         />
                     <TextField
                         label="Cell margin"
@@ -188,10 +214,7 @@ class SettingsScreen extends React.Component {
                         onChange={this.handleChange("cellMargin")}
                         margin="normal"
                         type="number"
-                        style={{
-                            marginLeft:marginLeft,
-                            width:100
-                        }}
+                        style={styles.cellSide}
                         />
                     <TextField
                         label="Cols"
@@ -199,10 +222,7 @@ class SettingsScreen extends React.Component {
                         onChange={this.handleChange("gridWidth")}
                         margin="normal"
                         type="number"
-                        style={{
-                            marginLeft:marginLeft,
-                            width:inputWidth
-                        }}
+                        style={styles.defaultInput}
                         />
                     <TextField
                         label="Rows"
@@ -210,10 +230,7 @@ class SettingsScreen extends React.Component {
                         onChange={this.handleChange("gridHeight")}
                         margin="normal"
                         type="number"
-                        style={{
-                            marginLeft:marginLeft,
-                            width:inputWidth
-                        }}
+                        style={styles.defaultInput}
                         />
                     <TextField
                         label="Animation delay (ms)"
@@ -221,10 +238,7 @@ class SettingsScreen extends React.Component {
                         onChange={this.handleChange("interval")}
                         margin="normal"
                         type="number"
-                        style={{
-                            marginLeft:marginLeft,
-                            width:120
-                        }}
+                        style={styles.cellSide}
                         />
                 </Grid>
                 <Grid
@@ -237,24 +251,16 @@ class SettingsScreen extends React.Component {
                         spacing={0}
                         justify="center" >
                     <Button variant="outlined"
-                                style={{
-                                    marginLeft:marginLeft
-                                }}
+                            style={styles.toolButton}
                             onClick={this.handleAction("randomize")} >Randomize</Button>
                     <Button variant="outlined"
-                                style={{
-                                    marginLeft:marginLeft
-                                }}
+                            style={styles.toolButton}
                             onClick={this.handleAction("clear")} >Clear</Button>
                     <Button variant="outlined"
-                                style={{
-                                    marginLeft:marginLeft
-                                }}
+                            style={styles.toolButton}
                             onClick={this.handleAction("load")} >Load</Button>
                     <Button variant="outlined"
-                                style={{
-                                    marginLeft:marginLeft
-                                }}
+                            style={styles.toolButton}
                             onClick={this.handleAction("save")} >Save</Button>
                     </Grid>
 
@@ -265,7 +271,7 @@ class SettingsScreen extends React.Component {
                     container
                     spacing={0}
                     justify="center"
-                    style={{marginTop:10}}
+                    style={styles.paletteGrid}
                   >
                     <PaletteEditor settings={this.props.settings}/>
 

@@ -13,37 +13,37 @@ var DEFAULT = {
     family:"gl",
     params:"23/3",
     palette: [
-        "#ccc", "#669999", "#9c27b0", "#673ab7", "#3f51b5",
-        "#2196f3", "#03a9f4", "#00bcd4", "#009688", "#4caf50",
-        "#f00", "#0ff", 
-
+        "#cccccc", "#669999", "#9c27b0", "#673ab7",
+        "#3f51b5", "#2196f3", "#03a9f4", "#00bcd4",
+        "#009688", "#4caf50", "#ff0000", "#00ffff", 
         '#4D4D4D', '#999999', '#FFFFFF', '#F44E3B',
         '#FE9200', '#FCDC00', '#DBDF00', '#A4DD00',
         '#68CCCA', '#73D8FF', '#AEA1FF', '#FDA1FF',
         '#333333', '#808080', '#cccccc', '#D33115',
         '#E27300', '#FCC400', '#B0BC00', '#68BC00',
-        '#16A5A5', '#009CE0', '#7B64FF', '#FA28FF',
-        '#000000', '#666666', '#B3B3B3', '#9F0500',
-        '#C45100', '#FB9E00', '#808900', '#194D33',
-        '#0C797D', '#0062B1', '#653294', '#AB149E'
     ]
 };
 
-const RULES = {
-    "bb":[],
-    "gl": [
-        rule("Conway's Life", "23/3"),
-        rule("2x2", "125/36"),
-        rule("34Life", "34/34"),
-        rule("Amoeba", "1358/357"),
-        rule("Assimilaion", "4567/345"),
-        rule("Coagulations", "23567/378"),
-        rule("Coral", "45678/3"),
-        rule("Day&Night", "34678/3678"),
-        rule("Seeds", "/2"),
-        rule("Serviettes", "/234"),
-        rule("WalledCities", "2345/45678"),
-    ]
+// default cellular automaton attributes
+const ATTRS = {
+    "bb":{
+        rules:[]
+    },
+    "gl": {
+        rules:[
+            rule("Conway's Life", "23/3"),
+            rule("2x2", "125/36"),
+            rule("34Life", "34/34"),
+            rule("Amoeba", "1358/357"),
+            rule("Assimilaion", "4567/345"),
+            rule("Coagulations", "23567/378"),
+            rule("Coral", "45678/3"),
+            rule("Day&Night", "34678/3678"),
+            rule("Seeds", "/2"),
+            rule("Serviettes", "/234"),
+            rule("WalledCities", "2345/45678"),
+        ]
+    }
 };
 
 class Settings {
@@ -77,9 +77,26 @@ class Settings {
         return JSON.stringify(this.settings);
     }
 
+    unserialize(data) {
+        var obj;
+        try {
+            obj = JSON.parse(data);
+        } catch (e) {
+            return false;
+        }
+
+        this.settings = obj;
+        this.updated.clear();
+        this.save();
+        this.onUpdate();
+        return true;
+    }
+
     setDefaultValues() {
         localStorage.clear();
         this.load();
+        this.save();
+        this.updated.clear();
         this.onUpdate();
     }
 
@@ -200,7 +217,7 @@ class Settings {
     }
 
     getRules(family) {
-        return RULES[family];
+        return ATTRS[family].rules;
     }
 
     getRule(family) {

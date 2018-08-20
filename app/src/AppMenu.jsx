@@ -54,7 +54,10 @@ class AppMenu extends React.Component {
             const reader = new FileReader();   
             const onRead = (e) => {
                 const text = e.srcElement.result;
-                console.log(text);
+                // console.log(text);
+                if(!this.props.settings.unserialize(text)) {
+                    alert("Invalid settings file");
+                }
             };
             reader.addEventListener('loadend', onRead);
             reader.readAsText(file);

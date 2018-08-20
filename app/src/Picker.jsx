@@ -1,9 +1,10 @@
 import React from 'react';
 import reactCSS from 'reactcss';
-import { PhotoshopPicker, SketchPicker,  ChromePicker, Swatches} from 'react-color';
+import { SketchPicker } from 'react-color';
 import _ from "underscore";
 import Button from '@material-ui/core/Button';
 import {IF} from "./Lang";
+import {determineTextColor} from "./Utils";
 
 class Picker extends React.Component {
     constructor(props){
@@ -45,7 +46,7 @@ class Picker extends React.Component {
         const styles = reactCSS({
         'default': {
             button: {
-                color: "#fff",
+                color: `${determineTextColor(this.state.color)}`,
                 backgroundColor: `${this.state.color}`,
                 '&:hover': {
                     backgroundColor: "#ccc"

@@ -45,6 +45,7 @@ class Automaton {
         this.cells = this.cells.fill(0, 0, this.size);
         this.initialCells = this.cells.slice();
     }
+
     clear() {
         if(this.isRunning()){
             console.error("Still running");
