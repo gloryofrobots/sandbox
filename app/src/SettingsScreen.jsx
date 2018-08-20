@@ -13,6 +13,9 @@ import Tooltip from '@material-ui/core/Tooltip';
 import Grid from '@material-ui/core/Grid';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Checkbox from '@material-ui/core/Checkbox';
+
 import {IF} from "./Lang";
 
 import _ from "underscore";
@@ -119,6 +122,16 @@ class SettingsScreen extends React.Component {
         };
     }
 
+    handleCheckbox(name) {
+        return (event) => {
+            console.log("CHB", typeof event.target.checked);
+            this.props.settings.set(name, event.target.checked);
+            this.setState({
+                settings: this.updatedSettings(name, event.target.checked)
+             });
+        };
+
+    }
     onTabChanged(event, value) {
         console.log("TAB", value);
         this.setState({
@@ -240,6 +253,15 @@ class SettingsScreen extends React.Component {
                         type="number"
                         style={styles.cellSide}
                         />
+                    <FormControlLabel
+                            control={
+                                <Checkbox
+                                checked={this.state.settings.showValues===true}
+                                onChange={this.handleCheckbox("showValues")}
+                                />
+                            }
+                            label="Show values"
+                            />
                 </Grid>
                 <Grid
                     container

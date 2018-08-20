@@ -10,8 +10,9 @@ class Renderer {
     }
 
     setSettings(settings) {
+        this.showValues = settings.showValues;
         this.cellSize = settings.cellSize;
-        this.cellSizeFull = settings.cellSize + settings.cellMargin -1;
+        this.cellSizeFull = settings.cellSize + settings.cellMargin;
 
         this.ctx.canvas.width = this.cellSizeFull * settings.gridWidth - settings.cellMargin;
         this.ctx.canvas.height = this.cellSizeFull * settings.gridWidth - settings.cellMargin;
@@ -24,9 +25,9 @@ class Renderer {
 
     begin(){
         this.ctx.beginPath();
-        // this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        this.ctx.fillStyle = "#0c0";
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        // this.ctx.fillStyle = "#0c0";
+        // this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
     end() {
@@ -35,10 +36,10 @@ class Renderer {
     }
 
     drawText(x, y, txt) {
-        var xp = x * this.cellSizeFull + this.cellSizeFull/2;
-        var yp = y * this.cellSizeFull + this.cellSizeFull/2;
+        var xp = x * this.cellSizeFull + this.cellSize/3;
+        var yp = y * this.cellSizeFull + this.cellSize/1.5;
         this.ctx.fillStyle = "#000";
-        this.ctx.font = "20px Arial";
+        this.ctx.font = `${this.cellSize/2}px Arial`;
         this.ctx.fillText(txt, xp, yp);
     }
 
@@ -50,6 +51,9 @@ class Renderer {
 
         this.ctx.fillStyle = color;
         this.ctx.fillRect(xp, yp, this.cellSize,this.cellSize);
+        if(this.showValues) {
+            this.drawText(x, y, cell);
+        }
     }
 }    
 

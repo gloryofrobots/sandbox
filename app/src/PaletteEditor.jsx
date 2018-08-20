@@ -12,8 +12,9 @@ class PaletteEditor extends React.Component {
         super(props);
         this.onChangeColor = this.onChangeColor.bind(this);
         var colors = this.props.settings.get("palette");
+        var id = this.props.settings.get("currentValue");
         this.state = {
-            current:[0, colors[0]],
+            current:[id, colors[id]],
             colors: colors
         };
     }
@@ -30,6 +31,7 @@ class PaletteEditor extends React.Component {
 
     onButtonClick(pair){
         return () => {
+            this.props.settings.set("currentValue", pair[0]);
             this.setState({current:pair});
         };
     }

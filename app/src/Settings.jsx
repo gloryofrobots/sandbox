@@ -12,6 +12,8 @@ var DEFAULT = {
     interval:100,
     family:"gl",
     params:"23/3",
+    currentValue:0,
+    showValues:false,
     palette: [
         "#cccccc", "#669999", "#9c27b0", "#673ab7",
         "#3f51b5", "#2196f3", "#03a9f4", "#00bcd4",
@@ -107,15 +109,27 @@ class Settings {
         this.onUpdate();
     }
 
+    strToBool(val) {
+        if(val === "true") {
+            return true;
+        } else if (val === "false") {
+            return false;
+        }
+
+        console.error("Invalid Boolean in storage");
+        return undefined;
+    }
+
     load() {
         // localStorage.clear();
         this.settings =
-            _.mapObject(this.default, function(val, key) {
+            _.mapObject(this.default, (val, key) => {
                 var cache = localStorage.getItem(key);
                 // console.log("<<", key, val, cache);
                 if(_.isUndefined(cache) || _.isNull(cache)) {
                     return val;
                 }
+
 
                 if (_.isNumber(val)){
                     cache = parseInt(cache, 10);
@@ -124,6 +138,8 @@ class Settings {
                         return 0;
                     }
                     return cache;
+                } else if(_.isBoolean(val)) {
+                    return this.strToBool(cache);
                 } else if(_.isArray(val)) {
                     cache = JSON.parse(cache);
                     if (_.isUndefined(cache)) {
@@ -152,6 +168,16 @@ class Settings {
 
     }
 
+
+    isBoolean(key) {
+        var old = this.default[key];
+        if (_.isUndefined(old)){
+            console.error("Invalid key");
+            return false;
+        }
+        return _.isBoolean(old);
+    }
+
     isNumber(key) {
         var old = this.default[key];
         if (_.isUndefined(old)){
@@ -175,8 +201,10 @@ class Settings {
                 console.error("Invalid settings number", val);
                 return;
             }
+        } else if(this.isBoolean(key)) {
+            newVal = this.strToBool(newVal);
         }
-        this.set(key, val);
+        this.set(key, newVal);
     }
 
     set(key, val) {
@@ -214,6 +242,8 @@ class Settings {
                     console.error("Invalid settings number");
                     return val;
                 }
+            } else if(this.isBoolean(key)) {
+                return this.strToBool(newVal);
             }
             return newVal;
         });

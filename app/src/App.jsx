@@ -50,6 +50,7 @@ class App extends React.Component {
         this.settings = new Settings(this.onChangeSettings);
         this.sim = React.createRef();
         this.state = {
+            currentValue:0,
             settings:this.settings.toObject(),
             updated:this.settings.updatedKeys()
         };
@@ -78,7 +79,6 @@ class App extends React.Component {
             sim.randomize();
         }
     }
-
 
     render() {
         return (

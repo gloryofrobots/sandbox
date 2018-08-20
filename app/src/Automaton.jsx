@@ -20,6 +20,23 @@ class Automaton {
         this._clear();
     }
 
+    setCell(x, y, value) {
+        var index = this.index(x, y);
+        if (index < 0) {
+            return false;
+        }
+        if(!this.acceptValue(value)){
+            return false;
+        }
+        this.cells[index] = value;
+        this.render();
+        return true;
+    }
+
+    acceptValue(val) {
+        return (val >= 0  && val <= this.getMaxValue());
+    }
+    
     getMaxValue() {
         throw new Error("Abstract");
     }

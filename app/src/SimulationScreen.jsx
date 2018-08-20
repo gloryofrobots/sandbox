@@ -178,22 +178,29 @@ class SimulationScreen extends React.Component {
         var minY = Math.max(cellY - 3, 0);
         var maxY = Math.min(cellY + 3, settings.gridHeight);
 
-        console.log(minX, maxX, minY, maxY);
-        return;
-        for(var _x = minX; _x < maxX; x++){
-            for(var _y = minY; _y < maxY; y++){
+        for(var _x = minX; _x < maxX; _x++){
+            for(var _y = minY; _y < maxY; _y++){
                 var cX0 = cellSide * _x;
                 var cX1 = cX0 + settings.cellSize;
 
                 var cY0 = cellSide * _y;
                 var cY1 = cY0 + settings.cellSize;
                 if(x > cX0 && x < cX1 && y > cY0 && y < cY1) {
-                    console.log("Found XY", x, y, _x, _y);
+                    // console.log("Found XY", x, y, _x, _y);
+                    this.changeCell(_x, _y);
                     return;
                 }
+                // console.log("NOT FOUND", _x, _y);
             }
         }
-        console.log("NOT Found XY");
+        // console.log("NOT Found XY");
+    }
+
+    changeCell(x, y) {
+        var val = this.props.settings.currentValue;
+        if(!this.game.setCell(x, y, val)){
+            alert("Invalid value for this type of automaton");
+        }
     }
 
     newGame() {
@@ -302,13 +309,15 @@ class SimulationScreen extends React.Component {
             this.game.setPalette(settings.palette);
             return false;
         } else if(_.contains(updated, "cellMargin") ||
-                  _.contains(updated, "cellSize")) {
+                  _.contains(updated, "cellSize") ||
+                  _.contains(updated, "showValues")) {
             this.game.setRenderSettings(settings);
             return false;
         } else if(_.contains(updated, "params")) {
             this.game.setParams(settings.params);
             return false;
-        } else if(_.contains(updated, "interval")) {
+        } else if (_.contains(updated, "interval") ||
+                  _.contains(updated, "currentValue")) {
             return false;
         } else {
             return true;
