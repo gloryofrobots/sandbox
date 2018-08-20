@@ -11,6 +11,12 @@ import PaletteEditor from "./PaletteEditor";
 
 import _ from "underscore";
 
+const styles = {
+    generationCounter:{
+        fontSize:"15pt"
+    }
+};
+
 class SimControls extends React.Component {
     constructor(props){
         super(props);
@@ -68,7 +74,7 @@ class SimControls extends React.Component {
     render () {
         return (
             <p className="center">
-                <span  id ="generation-counter">0</span>
+                <span  id="generation-counter" style={styles.generationCounter}>0</span>
                 <Button variant="outlined" onClick={this.onRun} disabled={!this.state.run}>Run</Button>
                 <Button variant="outlined" onClick={this.onStop} disabled={!this.state.stop}>Stop</Button>
                 <Button variant="outlined" onClick={this.onStep} disabled={!this.state.step}>Step</Button>
@@ -219,7 +225,8 @@ class SimulationScreen extends React.Component {
 
             var counter = $("#generation-counter");
             const onRender = (game) => {
-                counter.html(" GEN: " + this.game.generation + "");
+                // counter.html(" GENERATION " + this.game.generation + "");
+                counter.html(" [ " + this.game.generation + " ]");
             };
             var render = new Renderer(canvas, settings, onRender);
 

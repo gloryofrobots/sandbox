@@ -82,7 +82,7 @@ class AppMenu extends React.Component {
 
     }
 
-    render() {
+    render2() {
         const { anchorEl } = this.state;
         const { classes } = this.props;
         const open = Boolean(anchorEl);
@@ -105,6 +105,34 @@ class AppMenu extends React.Component {
             <MenuItem onClick={this.handleAction("exportSettings")}>Export settings</MenuItem>
             <MenuItem onClick={this.handleAction("importSettings")}>Import settings</MenuItem>
             <MenuItem onClick={this.handleAction("defaultSettings")}>Reset settings</MenuItem>
+            </Menu>
+        </div>
+        );
+    }
+    render() {
+        const { anchorEl } = this.state;
+        const { classes } = this.props;
+        const open = Boolean(anchorEl);
+        return (
+        <div>
+
+            <Button
+              className={classes.menuButton}
+              color="inherit"
+              variant="outlined"
+              aria-label="Menu"
+              onClick={this.handleClick}>
+              Settings
+            </Button>
+            <Menu
+                id="simple-menu"
+                anchorEl={anchorEl}
+                open={open}
+                onClose={this.handleClose}
+            >
+            <MenuItem onClick={this.handleAction("exportSettings")}>Export</MenuItem>
+            <MenuItem onClick={this.handleAction("importSettings")}>Import</MenuItem>
+            <MenuItem onClick={this.handleAction("defaultSettings")}>Reset</MenuItem>
             </Menu>
         </div>
         );
