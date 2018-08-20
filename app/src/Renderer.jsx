@@ -13,8 +13,8 @@ class Renderer {
         this.cellSize = settings.cellSize;
         this.cellSizeFull = settings.cellSize + settings.cellMargin -1;
 
-        this.ctx.canvas.width = this.cellSizeFull * settings.gridWidth;
-        this.ctx.canvas.height = this.cellSizeFull * settings.gridWidth;;
+        this.ctx.canvas.width = this.cellSizeFull * settings.gridWidth - settings.cellMargin;
+        this.ctx.canvas.height = this.cellSizeFull * settings.gridWidth - settings.cellMargin;
         this.colors = settings.palette;
     }
 
@@ -24,7 +24,9 @@ class Renderer {
 
     begin(){
         this.ctx.beginPath();
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        // this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.fillStyle = "#0c0";
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
     end() {

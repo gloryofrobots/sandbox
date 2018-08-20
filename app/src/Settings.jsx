@@ -81,9 +81,16 @@ class Settings {
         var obj;
         try {
             obj = JSON.parse(data);
+            _.each(this.default, (val, key) => {
+                var newVal = obj[key];
+                if(typeof newVal !== typeof val) {
+                    throw new Error();
+                }
+            });
         } catch (e) {
             return false;
         }
+
 
         this.settings = obj;
         this.updated.clear();

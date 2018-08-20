@@ -158,6 +158,44 @@ class SimulationScreen extends React.Component {
         this.newGame();
     }
 
+    onCanvasClick(canvas, ev) {
+        var rect = canvas.getBoundingClientRect();
+        var settings = this.props.settings;
+        var cellSide = settings.cellSize + settings.cellMargin - 1;
+        var x = ev.clientX - rect.left;
+        var y = ev.clientY - rect.top;
+        // x = Math.round(x);
+        // y = Math.round(y);
+
+        // var width = canvas.width - settings.cellMargin;
+        // var height = canvas.height - settings.cellMargin;
+        // cellSide = Math.floor(canvas.width / settings.gridWidth);
+
+        var cellX = Math.floor(x / cellSide);
+        var minX = Math.max(cellX - 3, 0);
+        var maxX = Math.min(cellX + 3, settings.gridWidth);
+        var cellY = Math.floor(y / cellSide);
+        var minY = Math.max(cellY - 3, 0);
+        var maxY = Math.min(cellY + 3, settings.gridHeight);
+
+        console.log(minX, maxX, minY, maxY);
+        return;
+        for(var _x = minX; _x < maxX; x++){
+            for(var _y = minY; _y < maxY; y++){
+                var cX0 = cellSide * _x;
+                var cX1 = cX0 + settings.cellSize;
+
+                var cY0 = cellSide * _y;
+                var cY1 = cY0 + settings.cellSize;
+                if(x > cX0 && x < cX1 && y > cY0 && y < cY1) {
+                    console.log("Found XY", x, y, _x, _y);
+                    return;
+                }
+            }
+        }
+        console.log("NOT Found XY");
+    }
+
     newGame() {
         var settings = this.props.settings;
         console.log("--------------------------SIM NEW GAME", settings);
@@ -170,6 +208,7 @@ class SimulationScreen extends React.Component {
         var newGame;
         try {
             var canvas = document.getElementById("grid");
+            canvas.addEventListener('click', (ev)=>this.onCanvasClick(canvas, ev), false);
 
             var counter = $("#generation-counter");
             const onRender = (game) => {
