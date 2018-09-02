@@ -7,9 +7,8 @@ function randi(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-
 class Automaton {
-    constructor(renderer, params, width, height) {
+    constructor(renderer, cells, params, width, height) {
         this.setParams(params);
         this.renderer = renderer;
 
@@ -17,7 +16,18 @@ class Automaton {
         this.height = height;
         this.size = this.width * this.height;
         this._generation = 0;
-        this._clear();
+        console.log("CELLS", cells);
+        if (cells == []) {
+            console.log("CLEAR");
+            this._clear();
+        } else {
+            if (cells.length !== this.size) {
+                console.error("Trying to restore invalid grid", cells);
+                this._clear();
+                return;
+            }
+            this._restore(cells);
+        }
     }
 
     setCell(x, y, value) {
@@ -25,18 +35,19 @@ class Automaton {
         if (index < 0) {
             return false;
         }
-        if(!this.acceptValue(value)){
+        if (!this.acceptValue(value)) {
             return false;
         }
         this.cells[index] = value;
+        this.initialCells[index] = value;
         this.render();
         return true;
     }
 
     acceptValue(val) {
-        return (val >= 0  && val <= this.getMaxValue());
+        return (val >= 0 && val <= this.getMaxValue());
     }
-    
+
     getMaxValue() {
         throw new Error("Abstract");
     }
@@ -46,25 +57,41 @@ class Automaton {
         this.validate();
     }
 
-    setRenderSettings(settings){
-        this.renderer.setSettings(settings);
+    setRenderSettings(settings) {
+        this
+            .renderer
+            .setSettings(settings);
         this.render();
     }
 
     setPalette(c) {
-        this.renderer.setPalette(c);
+        this
+            .renderer
+            .setPalette(c);
         this.render();
     }
 
     _clear() {
         this._generation = 0;
         this.cells = new Array(this.size);
-        this.cells = this.cells.fill(0, 0, this.size);
-        this.initialCells = this.cells.slice();
+        this.cells = this
+            .cells
+            .fill(0, 0, this.size);
+        this.initialCells = this
+            .cells
+            .slice();
+    }
+
+    _restore(cells) {
+        this._generation = 0;
+        this.cells = cells.slice()
+        this.initialCells = this
+            .cells
+            .slice();
     }
 
     clear() {
-        if(this.isRunning()){
+        if (this.isRunning()) {
             console.error("Still running");
             return;
         }
@@ -74,58 +101,64 @@ class Automaton {
     }
 
     randomize() {
-        if(this.isRunning()){
+        if (this.isRunning()) {
             console.error("Still running");
             return;
         }
         this._generation = 0;
-            this.cells = this.cells.map(
-            (val, index, arr) => {
+        this.cells = this
+            .cells
+            .map((val, index, arr) => {
                 return this.genCell();
-        });
+            });
 
-        this.initialCells = this.cells.slice();
+        this.initialCells = this
+            .cells
+            .slice();
         this.render();
     }
 
-    validate(){
+    validate() {
         throw new Error("abstract");
     }
 
     parseParams(params) {
         var result = [];
-        return _.map(params.split("/"), function(_param){
+        return _.map(params.split("/"), function (_param) {
             var param = _param.trim();
             if (param === "") {
                 return [0];
             }
-            var res =  _.map(Array.from(param), (val) =>{
+            var res = _.map(Array.from(param), (val) => {
                 var intVal = parseInt(val, 10);
-                if(isNaN(intVal)) {
+                if (isNaN(intVal)) {
                     throw new Errors.InvalidParamsError();
                 }
                 return intVal;
             });
             return res;
-            // console.log("P", param, Array.from(param), _.map(Array.from(param), (val) => parseInt(val, 10)));
+            // console.log("P", param, Array.from(param), _.map(Array.from(param), (val) =>
+            // parseInt(val, 10)));
         });
     }
 
-    get generation(){
+    get generation() {
         return this._generation;
     }
 
-    genCell(){
+    genCell() {
         return Math.round(Math.random());
     }
 
-    rewind(){
+    rewind() {
         this._generation = 0;
-        this.cells = this.initialCells.slice();
+        this.cells = this
+            .initialCells
+            .slice();
         this.render();
     }
 
-    index(x, y){
+    index(x, y) {
         if (x < 0 || x >= this.width || y < 0 || y > this.height) {
             return -1;
         }
@@ -134,7 +167,7 @@ class Automaton {
 
     get(x, y) {
         var index = this.index(x, y);
-        if (index === -1){
+        if (index === -1) {
             return undefined;
         }
 
@@ -145,22 +178,28 @@ class Automaton {
         throw new Error("abstract");
     }
 
-    render(){
-        this.renderer.begin();
-        for(var x = 0; x < this.width; x++ ){
-            for(var y = 0; y < this.height; y++) {
+    render() {
+        this
+            .renderer
+            .begin();
+        for (var x = 0; x < this.width; x++) {
+            for (var y = 0; y < this.height; y++) {
                 var index = this.index(x, y);
                 var cell = this.cells[index];
-                this.renderer.drawCell(x, y, cell);
+                this
+                    .renderer
+                    .drawCell(x, y, cell);
             }
         }
-        this.renderer.end();
+        this
+            .renderer
+            .end();
     }
 
     update() {
         var newCells = new Array(this.size);
-        for(var x = 0; x < this.width; x++ ){
-            for(var y = 0; y < this.height; y++) {
+        for (var x = 0; x < this.width; x++) {
+            for (var y = 0; y < this.height; y++) {
                 var index = this.index(x, y);
                 var cell = this.cells[index];
                 var newCell = this.calculate(cell, index, x, y);
@@ -172,17 +211,16 @@ class Automaton {
         this.render();
     }
 
-    calculate(cell, index, x, y){
+    calculate(cell, index, x, y) {
         throw new Error("abstract!");
     }
 
-
-    isRunning(){
+    isRunning() {
         return this.interval !== undefined;
     }
 
     stop() {
-        if(!this.isRunning()){
+        if (!this.isRunning()) {
             console.log("NOT RUNNING");
             return;
         }
@@ -198,12 +236,9 @@ class Automaton {
             return;
         }
 
-        this.interval = setInterval(
-            () => {
-                this.update();
-            },
-            interval
-       );
+        this.interval = setInterval(() => {
+            this.update();
+        }, interval);
     }
 }
 
@@ -220,14 +255,14 @@ class GameOfLife extends Automaton {
         return 1;
     }
 
-    validate(){
+    validate() {
         if (this.params.length != 2) {
             console.error("INVALID params", this.params);
             throw new Error("Invalid params");
         }
     }
 
-    calculate(cell, index, x, y){
+    calculate(cell, index, x, y) {
         var count = 0;
         count += this.countNeighbors(x, y + 1);
         count += this.countNeighbors(x, y - 1);
@@ -259,24 +294,13 @@ class GameOfLife extends Automaton {
     }
 }
 
-// class Seeds extends GameOfLife {
-
-//     judge(cell, count) {
-//         if(cell === 1) {
-//             return 0;
-//         }
-
-//         if (count === 2) {
-//             return 1;
-//         }
-
-//         return 0;
-//     }
-// }
+// class Seeds extends GameOfLife {     judge(cell, count) {         if(cell ===
+// 1) {             return 0;         }         if (count === 2) {
+// return 1;         }         return 0;     } }
 
 class BriansBrain extends GameOfLife {
-    genCell(){
-        var cell =  randi(0, 2);
+    genCell() {
+        var cell = randi(0, 2);
         return cell;
     }
 
@@ -285,14 +309,14 @@ class BriansBrain extends GameOfLife {
     }
 
     judge(cell, count) {
-        if(cell === 1) {
+        if (cell === 1) {
             // Dying
             return 2;
         }
         if (cell === 2) {
             return 0;
         }
-        if(count === 2) {
+        if (count === 2) {
             return 1
         }
         return 0;
@@ -300,34 +324,33 @@ class BriansBrain extends GameOfLife {
 }
 
 class Cyclic2D extends Automaton {
-    genCell(){
+    genCell() {
         var maxValue = 2;
         var cell = randi(0, maxValue);
         return cell;
     }
 
-    calculate(cell, index, x, y){
-        // var threshold = this.props.threshold;
-        // var maxValue = this.props.maxValue;
+    calculate(cell, index, x, y) {
+        // var threshold = this.props.threshold; var maxValue = this.props.maxValue;
         var threshold = 1;
         var maxValue = 2;
         var next;
-        if(cell === maxValue) {
+        if (cell === maxValue) {
             next = 0;
         } else {
             next = cell + 1;
         }
-        
-        for (var x1 = x - 1; x1 < x + 1; x1++){
-            for (var y1 = y - 1; y1 < y + 1; y1++){
-                if(x1 === x && y1 === y) {
+
+        for (var x1 = x - 1; x1 < x + 1; x1++) {
+            for (var y1 = y - 1; y1 < y + 1; y1++) {
+                if (x1 === x && y1 === y) {
                     continue;
                 }
 
                 var neighbor = this.get(x1, y1);
-                if(neighbor === next) {
+                if (neighbor === next) {
                     threshold--;
-                    if (threshold === 0){
+                    if (threshold === 0) {
                         return next;
                     }
                 }
@@ -338,8 +361,8 @@ class Cyclic2D extends Automaton {
 }
 
 const TYPES = {
-    "gl":GameOfLife,
-    "bb":BriansBrain
+    "gl": GameOfLife,
+    "bb": BriansBrain
 };
 
 function automaton(type) {

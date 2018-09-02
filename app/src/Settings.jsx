@@ -1,9 +1,7 @@
 import _ from "underscore";
+import ATTRS from "./Attrs"
 
-function rule(name, rule) {
-    return {name:name, rule:rule};
-}
-// ["#ccc", "#669999", "#000", "#f0f", "#f00", "#0ff", "#ff0", "#00f", "#0f0"]
+
 var DEFAULT = {
     gridWidth:10,
     gridHeight:10,
@@ -23,30 +21,11 @@ var DEFAULT = {
         '#68CCCA', '#73D8FF', '#AEA1FF', '#FDA1FF',
         '#333333', '#808080', '#cccccc', '#D33115',
         '#E27300', '#FCC400', '#B0BC00', '#68BC00',
-    ]
+    ],
+    cells: []
 };
 
 // default cellular automaton attributes
-const ATTRS = {
-    "bb":{
-        rules:[]
-    },
-    "gl": {
-        rules:[
-            rule("Conway's Life", "23/3"),
-            rule("2x2", "125/36"),
-            rule("34Life", "34/34"),
-            rule("Amoeba", "1358/357"),
-            rule("Assimilaion", "4567/345"),
-            rule("Coagulations", "23567/378"),
-            rule("Coral", "45678/3"),
-            rule("Day&Night", "34678/3678"),
-            rule("Seeds", "/2"),
-            rule("Serviettes", "/234"),
-            rule("WalledCities", "2345/45678"),
-        ]
-    }
-};
 
 class Settings {
     constructor(onUpdate){
@@ -214,21 +193,6 @@ class Settings {
         this.triggerSave();
     }
 
-
-    triggerSave() {
-        if(!_.isUndefined(this.saveInterval)) {
-            clearTimeout(this.saveInterval);
-        }
-        this.saveInterval = setTimeout(
-            () => {
-                this.save();
-                this.load();
-                this.onUpdate();
-            },
-            500
-        );
-    }
-
     setStrings(settings) {
         this.settings = _.mapObject(this.default, (val, key) => {
             var newVal = settings[key];
@@ -268,6 +232,33 @@ class Settings {
 
     get(key) {
         return this.settings[key];
+    }
+
+    triggerSave() {
+        if(!_.isUndefined(this.saveInterval)) {
+            clearTimeout(this.saveInterval);
+        }
+        this.saveInterval = setTimeout(
+            () => {
+                this.save();
+                this.load();
+                this.onUpdate();
+            },
+            500
+        );
+    }
+
+    saveAutomaton(automaton){
+        if(!_.isUndefined(this.saveAutomatonInterval)) {
+            clearTimeout(this.saveAutomatonInterval);
+        }
+        this.saveAutomatonInterval = setTimeout(
+            () => {
+                var data = JSON.stringify(automaton.cells);
+                localStorage.setItem("cells", data);
+            },
+            2000
+        );
     }
 
     save() {

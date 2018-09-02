@@ -45,8 +45,10 @@ class App extends React.Component {
         super(props);
         this.history = props.history;
 
-        this.onChangeSettings = this.onChangeSettings.bind(this);
-        this.onAction = this.onAction.bind(this);
+        _.bindAll(this,
+             "onChangeSettings", "onAction", "onAutomatonChanged"
+        )
+
         this.settings = new Settings(this.onChangeSettings);
         this.sim = React.createRef();
         this.state = {
@@ -80,6 +82,10 @@ class App extends React.Component {
         }
     }
 
+    onAutomatonChanged(automaton){
+        this.settings.saveAutomaton(automaton);
+    }
+
     render() {
         return (
           <MuiThemeProvider theme={getTheme()}>
@@ -98,6 +104,7 @@ class App extends React.Component {
                         <hr />
                         <SimulationScreen
                           ref={this.sim}
+                          onAutomatonChanged={this.onAutomatonChanged}
                           settings={this.state.settings}
                           updatedSettings={this.state.updatedSettings}/>
 

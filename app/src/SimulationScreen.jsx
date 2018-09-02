@@ -165,6 +165,10 @@ class SimulationScreen extends React.Component {
     }
 
     onCanvasClick(canvas, ev) {
+        if(this.game.generation !== 0) {
+            alert("Rewind simulation before editing board");
+            return;
+        }
         var rect = canvas.getBoundingClientRect();
         var settings = this.props.settings;
         var cellSide = settings.cellSize + settings.cellMargin - 1;
@@ -206,7 +210,9 @@ class SimulationScreen extends React.Component {
         var val = this.props.settings.currentValue;
         if(!this.game.setCell(x, y, val)){
             alert("Invalid value for this type of automaton");
+            return;
         }
+        this.props.onAutomatonChanged(this.game);
     }
 
     newGame() {
@@ -226,17 +232,16 @@ class SimulationScreen extends React.Component {
             var counter = $("#generation-counter");
             const onRender = (game) => {
                 // counter.html(" GENERATION " + this.game.generation + "");
-                counter.html(" [ " + this.game.generation + " ]");
+                counter.html(" [ " + newGame.generation + " ]");
             };
             var render = new Renderer(canvas, settings, onRender);
 
             newGame = new automatonType(
-                render, settings.params, settings.gridWidth,
+                render, settings.cells, settings.params, settings.gridWidth,
                 settings.gridHeight, onRender,
             );
 
        } catch(e) {
-           console.log(e instanceof Errors.InvalidParamsError, Errors, e.prototype, e.constructor.prototype);
            if(e instanceof Errors.InvalidParamsError) {
                alert("Invalid automaton params");
                if(this.game) {
@@ -256,7 +261,7 @@ class SimulationScreen extends React.Component {
         }
         console.log("!!!!!!!!!!!!!!!!!");
         this.game = newGame;
-        this.game.randomize();
+        this.game.render();
     }
 
     randomize() {
