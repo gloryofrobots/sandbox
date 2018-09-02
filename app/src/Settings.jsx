@@ -12,6 +12,7 @@ var DEFAULT = {
     params:"23/3",
     currentValue:0,
     showValues:false,
+    activeTab:0,
     palette: [
         "#cccccc", "#669999", "#9c27b0", "#673ab7",
         "#3f51b5", "#2196f3", "#03a9f4", "#00bcd4",
@@ -228,7 +229,10 @@ class Settings {
         }
         return rules[0].rule;
     }
-    
+   
+    getInfo(family) {
+        return ATTRS[family].info;
+    }
 
     get(key) {
         return this.settings[key];

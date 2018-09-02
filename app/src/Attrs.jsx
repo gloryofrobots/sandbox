@@ -4,6 +4,8 @@ function rule(name, rule) {
     return {name: name, rule: rule};
 }
 
+const EmptyInfo = () => (<div> </div>);
+
 const GLInfo = () => {
     return (
         <div>
@@ -23,6 +25,7 @@ const GLInfo = () => {
 
 const ATTRS = {
     "bb": {
+        info: EmptyInfo,
         rules: []
     },
     "gl": {

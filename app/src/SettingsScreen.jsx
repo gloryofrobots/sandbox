@@ -58,10 +58,11 @@ class SettingsScreen extends React.Component {
         var family = settings.get("family");
         this.state = {
             editEnabled:true,
-            activeTab:1,
             settings: settings.toObject(),
+            activeTab:settings.get("activeTab"),
             rules: settings.getRules(family),
-            rule: settings.getRule(family)
+            rule: settings.getRule(family), 
+            info: settings.getInfo(family)
         };
         // console.log("SETATE SETTINGS", this.state);
         this.onActionCallback = props.onAction;
@@ -89,10 +90,12 @@ class SettingsScreen extends React.Component {
         var family = event.target.value;
         var rules = this.props.settings.getRules(family);
         var rule = this.props.settings.getRule(family);
+        var info = this.props.settings.getInfo(family);
 
         this.setState({
             rules:rules,
             rule:rule,
+            info:info,
             settings: this.updatedSettings("family", event.target.value)
         });
         this.props.settings.setString("family", event.target.value);
@@ -134,6 +137,7 @@ class SettingsScreen extends React.Component {
     }
     onTabChanged(event, value) {
         console.log("TAB", value);
+        this.props.settings.set("activeTab", value);
         this.setState({
             activeTab:value
         });
@@ -146,7 +150,8 @@ class SettingsScreen extends React.Component {
         this.setState({
             settings: settings.toObject(),
             rules: settings.getRules(family),
-            rule: settings.getRule(family)
+            rule: settings.getRule(family),
+            info: settings.getInfo(family)
         });
     }
 
@@ -212,6 +217,51 @@ class SettingsScreen extends React.Component {
                         />
                 </Grid>
 
+                <Grid
+                    container
+                    spacing={0}
+                    justify="center"
+                    style={{marginTop:10}} >
+                    <this.state.info />
+                </Grid>
+                <Grid
+                    container
+                    spacing={0}
+                    justify="center"
+                    style={{marginTop:10}} >
+                    <Grid
+                        container
+                        spacing={0}
+                        justify="center" >
+                    </Grid>
+                    <Grid
+                        container
+                        spacing={0}
+                        justify="center" >
+                    <Button variant="outlined"
+                            style={styles.toolButton}
+                            onClick={this.handleAction("randomize")} >Randomize</Button>
+                    <Button variant="outlined"
+                            style={styles.toolButton}
+                            onClick={this.handleAction("clear")} >Clear</Button>
+                    <Button variant="outlined"
+                            style={styles.toolButton}
+                            onClick={this.handleAction("load")} >Load</Button>
+                    <Button variant="outlined"
+                            style={styles.toolButton}
+                            onClick={this.handleAction("save")} >Save</Button>
+                    </Grid>
+
+               </Grid>
+            </IF>
+            <IF isTrue={()=>this.state.activeTab===1}>
+                <Grid
+                    container
+                    spacing={0}
+                    justify="center"
+                    style={styles.paletteGrid}
+                  >
+
                 <Grid container spacing={0} justify="center" alignItems="center">
                     <TextField
                         label="Cell side"
@@ -263,38 +313,6 @@ class SettingsScreen extends React.Component {
                             label="Show values"
                             />
                 </Grid>
-                <Grid
-                    container
-                    spacing={0}
-                    justify="center"
-                    style={{marginTop:10}} >
-                    <Grid
-                        container
-                        spacing={0}
-                        justify="center" >
-                    <Button variant="outlined"
-                            style={styles.toolButton}
-                            onClick={this.handleAction("randomize")} >Randomize</Button>
-                    <Button variant="outlined"
-                            style={styles.toolButton}
-                            onClick={this.handleAction("clear")} >Clear</Button>
-                    <Button variant="outlined"
-                            style={styles.toolButton}
-                            onClick={this.handleAction("load")} >Load</Button>
-                    <Button variant="outlined"
-                            style={styles.toolButton}
-                            onClick={this.handleAction("save")} >Save</Button>
-                    </Grid>
-
-               </Grid>
-            </IF>
-            <IF isTrue={()=>this.state.activeTab===1}>
-                <Grid
-                    container
-                    spacing={0}
-                    justify="center"
-                    style={styles.paletteGrid}
-                  >
                     <PaletteEditor settings={this.props.settings}/>
 
                 </Grid>

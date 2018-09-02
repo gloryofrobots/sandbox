@@ -75,11 +75,6 @@ class PaletteEditor extends React.Component {
           justify="center"
           alignItems="center"
           >
-            <Grid  style={styles.titleRow} item xs={12}>
-                <Typography variant="subheading" color="inherit" className="app-bar" >
-                  Cell Value/Color
-                </Typography>
-            </Grid>
             <Grid
               container
               spacing={0}
