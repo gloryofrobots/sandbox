@@ -17,7 +17,8 @@ class Automaton {
         this.size = this.width * this.height;
         this._generation = 0;
         console.log("CELLS", cells);
-        if (cells == []) {
+
+        if (!_.isArray(cells) || cells.length === 0) {
             console.log("CLEAR");
             this._clear();
         } else {

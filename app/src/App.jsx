@@ -86,18 +86,21 @@ class App extends React.Component {
         this.settings.saveAutomaton(automaton);
     }
 
+                //   <Typography variant="title" color="inherit" className="app-bar" >
+                //     Cellular Automatons
+                //   </Typography>
     render() {
         return (
           <MuiThemeProvider theme={getTheme()}>
-              <AppBar position="static" className="app-bar">
-
-                <Toolbar>
-                  <Typography variant="title" color="inherit" className="app-bar" >
-                    Cellular Automatons
-                  </Typography>
-                  <AppMenu settings={this.settings} />
-                </Toolbar>
-              </AppBar>
+                <Grid 
+                    container 
+                    spacing={0} 
+                    justify="center" 
+                    alignItems="center"
+                    style={{background:"#333333"}}
+                >
+                    <AppMenu settings={this.settings} />
+                </Grid>
                 <Router>
                       <main>
                        <SettingsScreen settings={this.settings} onAction={this.onAction}/>

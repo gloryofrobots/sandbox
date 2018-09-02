@@ -261,7 +261,7 @@ class Settings {
                 var data = JSON.stringify(automaton.cells);
                 localStorage.setItem("cells", data);
             },
-            2000
+            1000
         );
     }
 
