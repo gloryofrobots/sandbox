@@ -86,10 +86,10 @@ class App extends React.Component {
               <AppBar position="static" className="app-bar">
 
                 <Toolbar>
-                  <AppMenu settings={this.settings} />
                   <Typography variant="title" color="inherit" className="app-bar" >
                     Cellular Automatons
                   </Typography>
+                  <AppMenu settings={this.settings} />
                 </Toolbar>
               </AppBar>
                 <Router>

@@ -4,7 +4,7 @@ const IF = (props) => {
         return (
             props.isTrue() === true ? props.children : null
         );
-    }
+    } 
     if (props.isFalse) {
         return (
             props.isFalse() === false ? props.children : null

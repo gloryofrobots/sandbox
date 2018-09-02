@@ -7,6 +7,7 @@ import IconButton from '@material-ui/core/IconButton';
 import MenuIcon from '@material-ui/icons/Menu';
 import PropTypes from 'prop-types';
 import FileSaver from "file-saver";
+import Grid from '@material-ui/core/Grid';
 import $ from "jquery";
 
 const styles = {
@@ -89,33 +90,6 @@ class AppMenu extends React.Component {
         return (
         <div>
 
-            <IconButton
-              className={classes.menuButton}
-              color="inherit"
-              aria-label="Menu"
-              onClick={this.handleClick}>
-              <MenuIcon />
-            </IconButton>
-            <Menu
-                id="simple-menu"
-                anchorEl={anchorEl}
-                open={open}
-                onClose={this.handleClose}
-            >
-            <MenuItem onClick={this.handleAction("exportSettings")}>Export settings</MenuItem>
-            <MenuItem onClick={this.handleAction("importSettings")}>Import settings</MenuItem>
-            <MenuItem onClick={this.handleAction("defaultSettings")}>Reset settings</MenuItem>
-            </Menu>
-        </div>
-        );
-    }
-    render() {
-        const { anchorEl } = this.state;
-        const { classes } = this.props;
-        const open = Boolean(anchorEl);
-        return (
-        <div>
-
             <Button
               className={classes.menuButton}
               color="inherit"
@@ -134,6 +108,20 @@ class AppMenu extends React.Component {
             <MenuItem onClick={this.handleAction("importSettings")}>Import</MenuItem>
             <MenuItem onClick={this.handleAction("defaultSettings")}>Reset</MenuItem>
             </Menu>
+        </div>
+        );
+    }
+    render() {
+        const { anchorEl } = this.state;
+        const { classes } = this.props;
+        const open = Boolean(anchorEl);
+        return (
+        <div>
+            <Grid container spacing={0} justify="center" alignItems="center">
+                <Button onClick={this.handleAction("exportSettings")}>Export</Button>
+                <Button onClick={this.handleAction("importSettings")}>Import</Button>
+                <Button onClick={this.handleAction("defaultSettings")}>Reset</Button>
+            </Grid>
         </div>
         );
     }
