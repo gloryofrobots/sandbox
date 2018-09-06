@@ -1,362 +1,425 @@
-
 import React from 'react';
-import automaton from "./Automaton";
+import makeAutomaton from "./Automaton";
 import Renderer from "./Renderer";
 import Button from '@material-ui/core/Button';
 import Grid from '@material-ui/core/Grid';
-import $ from "jquery";
 import * as Errors from "./Errors";
 // var $ = require("jquery");
-import PaletteEditor from "./PaletteEditor";
+import Tooltip from '@material-ui/core/Tooltip';
+import ShuffleIcon from '@material-ui/icons/Shuffle';
+import ClearIcon from '@material-ui/icons/Clear';
+import IconButton from '@material-ui/core/IconButton';
 
+import SimulationControls from "./SimulationControls";
+import Cells from "./Cells";
+import $ from "jquery";
 import _ from "underscore";
 
 const styles = {
-    generationCounter:{
-        fontSize:"15pt"
+    generationCounter: {
+        fontSize: "15pt"
     }
 };
 
-class SimControls extends React.Component {
-    constructor(props){
-        super(props);
-        this.state={
-            step:true,
-            stop:false,
-            run:true,
-            rewind:true
-        };
-
-        this.onRewind = this.onRewind.bind(this);
-        this.onStep = this.onStep.bind(this);
-        this.onRun = this.onRun.bind(this);
-        this.onStop = this.onStop.bind(this);
-    }
-
-    stop() {
-        this.onStop();
-    }
-
-    onStep() {
-        this.props.onStep();
-    }
-
-    onRun() {
-        this.setState({
-            step:false,
-            stop:true,
-            run:false,
-            rewind:false
-        });
-        this.props.onRun();
-    }
-
-    onStop() {
-        this.setState({
-            step:true,
-            stop:false,
-            run:true,
-            rewind:true
-        });
-        this.props.onStop();
-    }
-
-    onRewind() {
-        this.setState({
-            step:true,
-            stop:false,
-            run:true,
-            rewind:true
-        });
-        this.props.onRewind();
-    }
-
-    render () {
-        return (
-            <p className="center">
-                <span  id="generation-counter" style={styles.generationCounter}>0</span>
-                <Button variant="outlined" onClick={this.onRun} disabled={!this.state.run}>Run</Button>
-                <Button variant="outlined" onClick={this.onStop} disabled={!this.state.stop}>Stop</Button>
-                <Button variant="outlined" onClick={this.onStep} disabled={!this.state.step}>Step</Button>
-                <Button variant="outlined" onClick={this.onRewind} disabled={!this.state.rewind} >Rewind</Button>
-            </p>
-        );
-    }
-}
-
 class SimulationScreen extends React.Component {
-    constructor(props){
+    constructor(props) {
         super(props);
-        this.state={
-        };
+        this.state = {};
 
         console.log("Sim.NEW", this.props.settings);
 
         this.controls = React.createRef();
-        this.onRewind = this.onRewind.bind(this);
-        this.onStep = this.onStep.bind(this);
-        this.onRun = this.onRun.bind(this);
-        this.onStop = this.onStop.bind(this);
-        this.game=undefined;
+
+        _.bindAll(this, "onRefresh", "onSave", "onRewind", "onStep", "onRun", "onStop", "onClear", "onRandomize");
+        this.automaton = undefined;
     }
 
     onStep() {
-        if (this.game === undefined){
+        if (this.automaton === undefined) {
             console.log("GAME UNDEF");
             return;
         }
-        if (this.game.isRunning()) {
-            alert("Still running");
+        if (this.automaton.isRunning()) {
+            this.notify("Still running");
             return;
         }
-        if (this.game.interval) {
+        if (this.automaton.interval) {
             return;
         }
-        this.game.update();
+        this
+            .automaton
+            .update();
     }
 
     onRun() {
-        if (this.game === undefined){
+        if (this.automaton === undefined) {
             console.log("GAME UNDEF");
             return;
         }
-        if (this.game.isRunning()) {
-            alert("Still running");
+        if (this.automaton.isRunning()) {
+            this.notify("Still running");
             return;
         }
 
-        this.game.run(this.props.settings.interval);
+        this
+            .automaton
+            .run(this.props.settings.get("interval"));
     }
 
     onStop() {
-        if (this.game === undefined){
+        if (this.automaton === undefined) {
             console.log("GAME UNDEF");
             return;
         }
-        this.game.stop();
+        this
+            .automaton
+            .stop();
     }
 
     onRewind() {
-        if (this.game === undefined){
+        if (this.automaton === undefined) {
             console.log("GAME UNDEF");
             return;
         }
-        if (this.game.isRunning()) {
-            alert("Still running");
+        if (this.automaton.isRunning()) {
+            this.notify("Still running");
             return;
         }
-        this.game.rewind();
+        this
+            .automaton
+            .rewind();
     }
 
-    componentDidUpdate(prevProps) {
-        console.log("SIM DID UPDATE", prevProps, this.props);
-        if (_.isEqual(prevProps, this.props)) {
+    isRunning(){
+        return !_.isUndefined(this.automaton) && this.automaton.isRunning();
+    }
+
+    onRandomize() {
+        if(_.isUndefined(this.automaton)){
+            this.notify("Invalid automaton state");
+            return;
+        }
+        if (this.isRunning()) {
+            console.error("GAME IS RUNING", this.automaton);
+            this.notify("STOP SIMULATION FIRST");
+            return;
+        }
+        this
+            .automaton
+            .randomize();
+    }
+
+    onClear() {
+        if(_.isUndefined(this.automaton)){
+            this.notify("Invalid automaton state");
+            return;
+        }
+        if (this.isRunning()) {
+            console.error("GAME IS RUNING", this.automaton);
+            this.notify("STOP SIMULATION FIRST");
+            return;
+        }
+        this
+            .automaton
+            .clear();
+    }
+
+    onRefresh() {
+        if(_.isUndefined(this.automaton)){
+            this.notify("Invalid automaton state");
+            return;
+        }
+        if (this.isRunning()) {
+            console.error("GAME IS RUNING", this.automaton);
+            this.notify("STOP SIMULATION FIRST");
             return;
         }
 
-        console.log("MACKING NEW GAME");
-        this.newGame();
-        this.game.render();
+        var grid = this
+            .props
+            .settings
+            .get("grid");
+
+        try {
+
+            this
+                .automaton
+                .setCells(grid);
+            this.notify("Loaded", 700)
+        } catch(e) {
+            if (e instanceof Errors.InvalidGridError) {
+                this.notify("Incompatible grid data");
+            } else {
+                throw e;
+            }
+
+        }
+    }
+
+    onSave() {
+        if(_.isUndefined(this.automaton)){
+            this.notify("Invalid automaton state");
+            return;
+        }
+        this
+            .props
+            .settings
+            .saveAutomatonGrid(this.automaton.cells);
+        this.notify("Saved", 700)
+    }
+
+    componentDidUpdate(){
+        var canvas = document.getElementById("grid");
+        canvas.addEventListener('click', (ev) => this.onCanvasClick(canvas, ev), false);
     }
 
     componentDidMount() {
         console.log("SIM MOUNT", this.props);
-        this.newGame();
+        var canvas = document.getElementById("grid");
+        canvas.addEventListener('click', (ev) => this.onCanvasClick(canvas, ev), false);
+        this.createSimulation();
     }
 
+    shouldComponentUpdate(nextProps, nextState) {
+        // remaking automaton in some cases;
+        // componentDidUpdate not used here because of props === newProps situation
+        // and because of the need to update automaton with settings new static methods are not usefull
+        if (this._shouldComponentUpdate(nextProps, nextState) === true) {
+            this.createSimulation();
+        }
+        // block canvas from rerendering
+        return false;
+    }
+
+    _shouldComponentUpdate(nextProps, nextState) {
+        if(_.isUndefined(this.automaton)){
+            return true;
+        }
+
+        var settings = nextProps
+            .settings
+            .toObject();
+        var updated = nextProps.updatedSettings;
+
+        if (_.isUndefined(settings) || _.isUndefined(updated) || _.isUndefined(this.automaton)) {
+            console.log("UPDATE REQUIRED");
+            return true;
+        }
+
+        if (this.automaton && this.automaton.isRunning()) {
+            //emulate stop
+            this
+                .controls
+                .current
+                .stop();
+        }
+
+        console.log("SHOULD", updated);
+        if (updated.length === 0) {
+            return false;
+        } else if (updated.length > 1) {
+            console.log("UPDATE REQUIRED");
+            return true;
+        } else if (_.contains(updated, "palette")) {
+            this
+                .automaton
+                .setPalette(settings.palette);
+            return false;
+        } else if (_.contains(updated, "gridWidth") || _.contains(updated, "gridHeight") ){
+            this
+                .controls
+                .current
+                .rewind();
+            this.automaton.setSettings(settings);
+            this
+                .automaton
+                .setRenderSettings(settings);
+            console.log("RESIZE");
+        } else if (_.contains(updated, "cellMargin") || _.contains(updated, "cellSize") || _.contains(updated, "showValues")) {
+            this
+                .automaton
+                .setRenderSettings(settings);
+            return false;
+        } else if (_.contains(updated, "params")) {
+            try{
+                this
+                    .automaton
+                    .setParams(settings.params);
+            } catch (e) {
+                this.notify("Invalid params");
+            }
+
+            this
+                .controls
+                .current
+                .rewind();
+            return false;
+        } else if (_.contains(updated, "interval") || _.contains(updated, "currentValue") || _.contains(updated, "activeTab")) {
+            return false;
+        } else {
+            console.log("UPDATE REQUIRED");
+            return true;
+        }
+    }
+    
     onCanvasClick(canvas, ev) {
-        if(this.game.generation !== 0) {
-            alert("Rewind simulation before editing board");
+        if(!this.automaton) {
+            console.log("Click on broken sim");
             return;
         }
+        if (this.automaton.generation !== 0) {
+            this.notify("Only first generation can be edited. Rewind simulation before editing board");
+            return;
+        }
+        // console.log("CLICK");
         var rect = canvas.getBoundingClientRect();
         var settings = this.props.settings;
-        var cellSide = settings.cellSize + settings.cellMargin - 1;
+        var cellSize = settings.get("cellSize")
+        var cellSide = cellSize + settings.get("cellMargin");
         var x = ev.clientX - rect.left;
         var y = ev.clientY - rect.top;
-        // x = Math.round(x);
-        // y = Math.round(y);
-
-        // var width = canvas.width - settings.cellMargin;
-        // var height = canvas.height - settings.cellMargin;
-        // cellSide = Math.floor(canvas.width / settings.gridWidth);
 
         var cellX = Math.floor(x / cellSide);
-        var minX = Math.max(cellX - 3, 0);
-        var maxX = Math.min(cellX + 3, settings.gridWidth);
+        var minX = Math.max(cellX - 10, 0);
+        var maxX = Math.min(cellX + 10, settings.get("gridWidth"));
         var cellY = Math.floor(y / cellSide);
-        var minY = Math.max(cellY - 3, 0);
-        var maxY = Math.min(cellY + 3, settings.gridHeight);
+        var minY = Math.max(cellY - 10, 0);
+        var maxY = Math.min(cellY + 10, settings.get("gridHeight"));
 
-        for(var _x = minX; _x < maxX; _x++){
-            for(var _y = minY; _y < maxY; _y++){
+        for (var _x = minX; _x < maxX; _x++) {
+            for (var _y = minY; _y < maxY; _y++) {
                 var cX0 = cellSide * _x;
-                var cX1 = cX0 + settings.cellSize;
+                var cX1 = cX0 + cellSize;
 
                 var cY0 = cellSide * _y;
-                var cY1 = cY0 + settings.cellSize;
-                if(x > cX0 && x < cX1 && y > cY0 && y < cY1) {
+                var cY1 = cY0 + cellSize;
+                if (x > cX0 && x < cX1 && y > cY0 && y < cY1) {
                     // console.log("Found XY", x, y, _x, _y);
                     this.changeCell(_x, _y);
+
+                    // this.props.notify("Click " + _x, + " " + _y);
                     return;
                 }
                 // console.log("NOT FOUND", _x, _y);
             }
         }
         // console.log("NOT Found XY");
+
+    }
+
+    notify(msg, duration) {
+        this.props.notify(msg, duration);
     }
 
     changeCell(x, y) {
-        var val = this.props.settings.currentValue;
-        if(!this.game.setCell(x, y, val)){
-            alert("Invalid value for this type of automaton");
+        var val = this
+            .props
+            .settings
+            .get("currentValue");
+
+        if (!this.automaton.setCell(x, y, val)) {
+            this.notify("Invalid value for this type of automaton");
             return;
         }
-        this.props.onAutomatonChanged(this.game);
     }
 
-    newGame() {
-        var settings = this.props.settings;
+    createSimulation() {
+        var settings = this
+            .props
+            .settings
+            .toObject();
         console.log("--------------------------SIM NEW GAME", settings);
-        var automatonType = automaton(settings.family);
-        if (!automatonType){
-            alert("Error wrong type");
+        var automatonType = makeAutomaton(settings.family);
+        if (!automatonType) {
+            this.notify("Error wrong type");
             return;
         }
 
-        var newGame;
+        var automaton;
         try {
             var canvas = document.getElementById("grid");
-            canvas.addEventListener('click', (ev)=>this.onCanvasClick(canvas, ev), false);
-
             var counter = $("#generation-counter");
-            const onRender = (game) => {
-                // counter.html(" GENERATION " + this.game.generation + "");
-                counter.html(" [ " + newGame.generation + " ]");
+            const onRender = () => {
+                // counter.html(" GENERATION " + this.automaton.generation + "");
+                counter.html("Generation [ " + automaton.generation + " ]");
             };
             var render = new Renderer(canvas, settings, onRender);
 
-            newGame = new automatonType(
-                render, settings.cells, settings.params, settings.gridWidth,
-                settings.gridHeight, onRender,
-            );
+            if (settings.grid && settings.grid.length > 0){
+                try {
+                    this.props.cells.setCells(settings.grid);
+                } catch(e) {
+                    this.notify("Error restoring grid");
+                }
+            }
+            automaton = new automatonType(render, this.props.cells, settings);
 
-       } catch(e) {
-           if(e instanceof Errors.InvalidParamsError) {
-               alert("Invalid automaton params");
-               if(this.game) {
-                   this.game.rewind();
-               }
+        } catch (e) {
+            if (e instanceof Errors.InvalidParamsError) {
+               this.notify("Invalid automaton params");
+                if (this.automaton) {
+                    this
+                        .automaton
+                        .rewind();
+                }
 
-               return;
-           } else {
-               console.error(e);
-           }
-       }
+                return;
+            } else {
+                console.error(e);
+                alert("Invalid settings, everything will be reverted to default state");
+                this.props.settings.setDefaultValues();
+                return;
+            }
+        }
 
-        if (this.game !== undefined) {
+        if (this.automaton !== undefined) {
             console.log("GAME STOPPED NEW GAME");
-            this.game.stop();
-            this.game = undefined;
+            this
+                .automaton
+                .stop();
+            this.automaton = undefined;
         }
         console.log("!!!!!!!!!!!!!!!!!");
-        this.game = newGame;
-        this.game.render();
+        this.automaton = automaton;
+        this
+            .props
+            .settings
+            .onAutomatonChanged(this.automaton);
+        this
+            .automaton
+            .render();
     }
 
-    randomize() {
-        if(this.game.isRunning()) {
-            console.error("GAME IS RUNING", this.game);
-            alert("STOP SIMULATION FIRST");
-            return;
-        }
-        this.game.randomize();
-    }
-
-    clear(){
-        if(this.game.isRunning()) {
-            console.error("GAME IS RUNING", this.game);
-            alert("STOP SIMULATION FIRST");
-            return;
-        }
-        this.game.clear();
-    }
-
-    load(filename){
-        if(this.game.isRunning()) {
-            console.error("GAME IS RUNING", this.game);
-            alert("STOP SIMULATION FIRST");
-            return;
-        }
-        this.game.load();
-    }
-
-    save(filename){
-        if(this.game.isRunning()) {
-            console.error("GAME IS RUNING", this.game);
-            alert("STOP SIMULATION FIRST");
-            return;
-        }
-        this.game.save(filename);
-    }
-
-    shouldComponentUpdate(nextProps, nextState) {
-        var settings = nextProps.settings;
-        var updated = nextProps.updatedSettings;
-
-        if(_.isUndefined(settings) || _.isUndefined(updated)){
-            return true;
-        }
-
-        if(this.game && this.game.isRunning()) {
-            //emulate stop
-            this.controls.current.stop();
-        }
-
-        console.log("SHOULD", updated);
-        if(updated.length !== 1) {
-            return true;
-        }
-        if(_.contains(updated, "palette")) {
-            this.game.setPalette(settings.palette);
-            return false;
-        } else if(_.contains(updated, "cellMargin") ||
-                  _.contains(updated, "cellSize") ||
-                  _.contains(updated, "showValues")) {
-            this.game.setRenderSettings(settings);
-            return false;
-        } else if(_.contains(updated, "params")) {
-            this.game.setParams(settings.params);
-            return false;
-        } else if (_.contains(updated, "interval") ||
-                  _.contains(updated, "currentValue")) {
-            return false;
-        } else {
-            return true;
-        }
-    }
 
     render() {
         console.log("SIM RENDER", this.props.settings);
         return (
             <div>
-              <SimControls
-                ref={this.controls}
-                onRun={this.onRun}
-                onStop={this.onStop}
-                onStep={this.onStep}
-                onRewind={this.onRewind}
-                />
-                 <div id="grid-wrapper"> 
-                    <Grid
+                <Grid
                     container
                     direction="row"
                     justify="center"
-                    alignItems="flex-start"
-                    >
-                 <canvas id="grid" className="grid-view"> </canvas>
-                 </Grid>
-                 </div>
+                    alignItems="center"
+                    style={{
+                    margin: 10
+                }}>
+                    <span id="generation-counter" style={styles.generationCounter}></span>
+                </Grid>
+                <SimulationControls
+                    ref={this.controls}
+                    onRun={this.onRun}
+                    onStop={this.onStop}
+                    onStep={this.onStep}
+                    onRewind={this.onRewind}
+                    onSave={this.onSave}
+                    onRandomize={this.onRandomize}
+                    onRefresh={this.onRefresh}
+                    onClear={this.onClear}/>
+                <div id="grid-wrapper">
+                    <Grid container direction="row" justify="center" alignItems="flex-start">
+                        <canvas id="grid" className="grid-view"></canvas>
+                    </Grid>
+                </div>
             </div>
         );
     }

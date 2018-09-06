@@ -1,5 +1,6 @@
 import _ from "underscore";
 import ATTRS from "./Attrs"
+import Conf from "./Conf"
 
 
 var DEFAULT = {
@@ -13,6 +14,7 @@ var DEFAULT = {
     currentValue:0,
     showValues:false,
     activeTab:0,
+    name:"new-automaton",
     palette: [
         "#cccccc", "#669999", "#9c27b0", "#673ab7",
         "#3f51b5", "#2196f3", "#03a9f4", "#00bcd4",
@@ -23,7 +25,7 @@ var DEFAULT = {
         '#333333', '#808080', '#cccccc', '#D33115',
         '#E27300', '#FCC400', '#B0BC00', '#68BC00',
     ],
-    cells: []
+    grid: []
 };
 
 // default cellular automaton attributes
@@ -35,7 +37,25 @@ class Settings {
         this._onUpdate = onUpdate;
         this.onUpdate = this.onUpdate.bind(this);
         this.updated = new Set();
+        this.maxValue = 0;
         this.load();
+    }
+
+    getDefaultName() {
+        var re = /\//gi;
+        var family = this.get("family")
+        var params = this.get("params").replace(re, "_");
+        return `${family}_${params}`;
+    }
+
+    onAutomatonChanged(automaton) {
+        this.maxValue = automaton.getMaxValue();
+        this.updated.clear();
+        this._onUpdate();
+    } 
+
+    getMaxValue() {
+        return this.maxValue;
     }
 
     onUpdate() {
@@ -55,7 +75,8 @@ class Settings {
         // return _.toArray(this.updated.values());
     }
 
-    serialize() {
+    serialize(cells) {
+        this.settings["grid"] = cells.cells; 
         return JSON.stringify(this.settings);
     }
 
@@ -75,7 +96,9 @@ class Settings {
 
 
         this.settings = obj;
+        console.log("UNSERIALIZE", this.settings);
         this.updated.clear();
+        this.updated.add("*")
         this.save();
         this.onUpdate();
         return true;
@@ -86,6 +109,7 @@ class Settings {
         this.load();
         this.save();
         this.updated.clear();
+        this.updated.add("*")
         this.onUpdate();
     }
 
@@ -187,10 +211,20 @@ class Settings {
         this.set(key, newVal);
     }
 
-    set(key, val) {
+    setMany(data) {
+        _.each(data, (value, key)=>{
+            this._set(key, value);
+        });
+    }
+
+    _set(key, val) {
         this.settings[key] = val;
         this.updated.add(key);
         console.log("SET", key, val, this.updated);
+    }
+
+    set(key, val) {
+        this._set(key, val);
         this.triggerSave();
     }
 
@@ -248,21 +282,15 @@ class Settings {
                 this.load();
                 this.onUpdate();
             },
-            500
+            Conf.saveSettingsTimeout
         );
     }
 
-    saveAutomaton(automaton){
-        if(!_.isUndefined(this.saveAutomatonInterval)) {
-            clearTimeout(this.saveAutomatonInterval);
-        }
-        this.saveAutomatonInterval = setTimeout(
-            () => {
-                var data = JSON.stringify(automaton.cells);
-                localStorage.setItem("cells", data);
-            },
-            1000
-        );
+    saveAutomatonGrid(cells){
+        this.settings["grid"] = cells.cells; 
+        //saving directly only one value to speed things up
+        var data = JSON.stringify(this.settings.grid);
+        localStorage.setItem("grid", data);
     }
 
     save() {

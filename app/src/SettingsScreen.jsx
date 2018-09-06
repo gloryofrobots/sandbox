@@ -14,10 +14,13 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
-import ShuffleIcon from '@material-ui/icons/Shuffle';
-import ClearIcon from '@material-ui/icons/Clear';
-import IconButton from '@material-ui/core/IconButton';
+import Typography from '@material-ui/core/Typography';
+import ExpansionPanel from '@material-ui/core/ExpansionPanel';
+import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
+import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 
+import Conf from "./Conf";
 import {IF} from "./Lang";
 
 import _ from "underscore";
@@ -32,6 +35,9 @@ const styles = {
     ruleEdit: {
         marginLeft: 10,
         width: 200
+    },
+    nameEdit: {
+        width: "50%"
     },
     cellSide: {
         marginLeft: 10,
@@ -68,23 +74,18 @@ class SettingsScreen extends React.Component {
             info: settings.getInfo(family)
         };
         // console.log("SETATE SETTINGS", this.state);
-        this.onActionCallback = props.onAction;
+        _.bindAll(this, "onTabChanged", "onSetDefaults", "onToggleEditor", "handleChangeRule", "handleChangeFamily");
+    }
 
-        this.onTabChanged = this
-            .onTabChanged
-            .bind(this);
-        this.onSetDefaults = this
-            .onSetDefaults
-            .bind(this);
-        this.onToggleEditor = this
-            .onToggleEditor
-            .bind(this);
-        this.handleChangeRule = this
-            .handleChangeRule
-            .bind(this);
-        this.handleChangeFamily = this
-            .handleChangeFamily
-            .bind(this);
+    static getDerivedStateFromProps(props, state) {
+        var settings = props.settings;
+        var family = settings.get("family");
+        return {
+            settings: settings.toObject(),
+            rules: settings.getRules(family),
+            rule: settings.getRule(family),
+            info: settings.getInfo(family)
+        };
     }
 
     onToggleEditor() {
@@ -93,43 +94,29 @@ class SettingsScreen extends React.Component {
         });
     }
 
-    handleAction(name) {
-        return () => {
-            this.onActionCallback(name);
-        };
-    }
-
     handleChangeFamily(event) {
         var family = event.target.value;
-        var rules = this
-            .props
-            .settings
-            .getRules(family);
-        var rule = this
-            .props
-            .settings
-            .getRule(family);
-        var info = this
-            .props
-            .settings
-            .getInfo(family);
+        var settings = this.props.settings;
+        var rules = settings.getRules(family);
+        var rule = settings.getRule(family);
+        var info = settings.getInfo(family);
 
+        settings.setString("family", family);
+        settings.setMany({
+            grid: [],
+            currentValue: 0
+        });
         this.setState({
             rules: rules,
             rule: rule,
             info: info,
-            settings: this.updatedSettings("family", event.target.value)
+            settings: settings.toObject()
         });
-        this
-            .props
-            .settings
-            .setString("family", event.target.value);
     }
-
     handleChangeRule(event) {
         this.setState({
             rule: event.target.value,
-            settings: this.updatedSettings("params", event.target.value)
+            settings: this.cloneSettings({"params": event.target.value})
         });
         this
             .props
@@ -137,13 +124,33 @@ class SettingsScreen extends React.Component {
             .setString("params", event.target.value);
     }
 
-    updatedSettings(key, val) {
+    cloneSettings(data) {
         var settings = _.clone(this.state.settings);
-        settings[key] = val;
+        _.each(data, (val, key) => {
+            settings[key] = val;
+        })
         // console.log("upfated", settings);
         return settings;
     }
 
+    handleChangeNumber(name, minValue, maxValue) {
+        return (event) => {
+            var val = event.target.value;
+            var val = parseInt(val, 10);
+            if (val > maxValue) {
+                val = maxValue;
+            } else if(val < minValue) {
+                val = minValue;
+            }
+            this
+                .props
+                .settings
+                .set(name, val);
+            this.setState({
+                settings: this.cloneSettings({[name]: val})
+            });
+        };
+    }
     handleChange(name) {
         return (event) => {
             this
@@ -151,7 +158,7 @@ class SettingsScreen extends React.Component {
                 .settings
                 .setString(name, event.target.value);
             this.setState({
-                settings: this.updatedSettings(name, event.target.value)
+                settings: this.cloneSettings({[name]: event.target.value})
             });
         };
     }
@@ -164,7 +171,7 @@ class SettingsScreen extends React.Component {
                 .settings
                 .set(name, event.target.checked);
             this.setState({
-                settings: this.updatedSettings(name, event.target.checked)
+                settings: this.cloneSettings({[name]: event.target.checked})
             });
         };
 
@@ -198,12 +205,12 @@ class SettingsScreen extends React.Component {
             RuleSelect = (
                 <FormControl style={styles.ruleSelectForm}>
                     <InputLabel shrink>
-                        Rule
+                        Preset
                     </InputLabel>
                     <Select value={this.state.rule} onChange={this.handleChangeRule}>
                         {_.map(this.state.rules, (rule) => {
                             return (
-                                <MenuItem key={rule.rule} value={rule.rule}>{rule.name}</MenuItem>
+                                <MenuItem key={rule.rule} value={rule.rule}>{`${rule.rule} (${rule.name})`}</MenuItem>
                             );
                         })
 }
@@ -229,6 +236,14 @@ class SettingsScreen extends React.Component {
                 </Tabs>
                 <IF isTrue={() => this.state.activeTab === 0}>
                     <Grid container spacing={0} justify="center" alignItems="center">
+                        <TextField
+                            label="Name"
+                            value={this.state.settings.name}
+                            onChange={this.handleChange("name")}
+                            margin="normal"
+                            style={styles.nameEdit}/>
+                    </Grid>
+                    <Grid container spacing={0} justify="center" alignItems="center">
                         <FormControl>
                             <InputLabel shrink>
                                 Family
@@ -238,13 +253,13 @@ class SettingsScreen extends React.Component {
                                 <MenuItem value={"bb"}>Brians Brain</MenuItem>
                             </Select>
                         </FormControl>
-                        {this.renderRules()}
                         <TextField
-                            label="Edit rule"
+                            label="Params"
                             value={this.state.settings.params}
                             onChange={this.handleChange("params")}
                             margin="normal"
                             style={styles.ruleEdit}/>
+                        {this.renderRules()}
                     </Grid>
 
                     <Grid
@@ -257,7 +272,14 @@ class SettingsScreen extends React.Component {
                         marginLeft: "10%",
                         maxWidth: "80%"
                     }}>
-                        <this.state.info/>
+                        <ExpansionPanel>
+                            <ExpansionPanelSummary expandIcon={< ExpandMoreIcon />}>
+                                <Typography>Description</Typography>
+                            </ExpansionPanelSummary>
+                            <ExpansionPanelDetails>
+                                    <this.state.info/>
+                            </ExpansionPanelDetails>
+                        </ExpansionPanel>
                     </Grid>
                     <Grid
                         container
@@ -271,52 +293,40 @@ class SettingsScreen extends React.Component {
                 </IF>
                 <IF isTrue={() => this.state.activeTab === 1}>
                     <Grid container spacing={0} justify="center" style={styles.paletteGrid}>
-
                         <Grid container spacing={0} justify="center" alignItems="center">
-                            <IconButton
-                                variant="outlined"
-                                style={styles.toolButton}
-                                onClick={this.handleAction("randomize")}>
-                                <ShuffleIcon/>
-                            </IconButton>
-                            <IconButton
-                                variant="outlined"
-                                style={styles.toolButton}
-                                onClick={this.handleAction("clear")}>
-                                <ClearIcon/>
-                            </IconButton>
+
                             <TextField
                                 label="Cell side"
                                 value={this.state.settings.cellSize}
-                                onChange={this.handleChange("cellSize")}
+                                onChange={this.handleChangeNumber("cellSize", 0, Conf.maxCellSize)}
                                 margin="normal"
                                 type="number"
                                 style={styles.cellSide}/>
                             <TextField
                                 label="Cell margin"
                                 value={this.state.settings.cellMargin}
-                                onChange={this.handleChange("cellMargin")}
+                                onChange={this.handleChangeNumber("cellMargin", 0, Conf.maxCellSize)}
                                 margin="normal"
                                 type="number"
                                 style={styles.cellSide}/>
                             <TextField
                                 label="Cols"
                                 value={this.state.settings.gridWidth}
-                                onChange={this.handleChange("gridWidth")}
+                                onChange={this.handleChangeNumber("gridWidth",0, Conf.maxGridSide)}
                                 margin="normal"
                                 type="number"
                                 style={styles.defaultInput}/>
                             <TextField
                                 label="Rows"
                                 value={this.state.settings.gridHeight}
-                                onChange={this.handleChange("gridHeight")}
+                                onChange={this.handleChangeNumber("gridHeight", 0, Conf.maxGridSide)}
                                 margin="normal"
                                 type="number"
                                 style={styles.defaultInput}/>
                             <TextField
                                 label="Animation delay (ms)"
                                 value={this.state.settings.interval}
-                                onChange={this.handleChange("interval")}
+                                onChange={this.handleChangeNumber("interval",0, Conf.maxDelay)}
                                 margin="normal"
                                 type="number"
                                 style={styles.cellSide}/>
