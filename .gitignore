@@ -2,3 +2,4 @@
 .venv3_6/*
 *.pyc
 *.log
+app
