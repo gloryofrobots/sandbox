@@ -72,21 +72,42 @@ def deepfilter(fn, lists):
 filternone = lambda lists: deepfilter(lambda v: v is not None, lists)
 
 class Grid:
+    def copy(self):
+        return copy.deepcopy(self)
+
+    def __repr__(self):
+        return str(self)
+
     def __str__(self):
         rows = reversed(self.canonical_rows())
         crows = [" ".join(map(lambda v:STRINGS[v], r)) for r in rows]
         result = "\n".join(crows)
         return result
 
-    def __repr__(self):
-        return str(self)
+def from2dlist(arr):
+    width = len(arr[0])
+    for a in arr:
+        assert(len(a) == width)
 
+    cols = [[] for _ in range(width)]
+    height = len(arr)
+    # print("DATA GRID", width, height)
+    # print("-----------------------------")
+    for x in range(width):
+        col = cols[x]
+        for y in range(height-1, -1, -1):
+            val = arr[y][x]
+            if val is None:
+                break
+            col.append(val)
 
-def makegrid(width, arr):
+    return DGrid(cols=cols)
+
+def from1dlist(arr, width):
     cols = [[] for _ in range(width)]
     height = math.floor(len(arr) / width)
-    print("DATA GRID", width, height)
-    print("-----------------------------")
+    # print("DATA GRID", width, height)
+    # print("-----------------------------")
     for x in range(width):
         col = cols[x]
         for y in range(height-1, -1, -1):
@@ -98,8 +119,27 @@ def makegrid(width, arr):
     return DGrid(cols=cols)
     
 
-class ColGrid(Grid):
+def display(g):
+    rows = list(reversed(g.canonical_rows()))
+    rows = ["%r" % r for r in rows]
+    print("----------")
+    s = "[\n    %s\n]" %  ",\n    ".join(rows)
+    s = s.replace("None", "X")
+    print(s)
 
+def filter_empty(arr):
+    res = []
+    for a in arr:
+        empty = True
+        for v in a:
+            if v is not None:
+                empty = False
+                break
+        if not empty:
+            res.append(a)
+    return res
+
+class ColGrid(Grid):
     def __init__(self, grid=None, cols=None):
         if cols is not None:
             self.cols = cols
@@ -109,8 +149,11 @@ class ColGrid(Grid):
     def canonical_rows(self):
         return canonical_rows(self.canonical_cols())
 
-    def transform(t):
-        self.cols = t.apply(self.cols)
+    def transform(self, t):
+        copy = self.copy()
+        copy.cols = t.apply(copy.cols)
+        copy.cols = filter_empty(copy.cols)
+        return copy
 
 class RowGrid(Grid):
     def __init__(self,grid=None, rows=None):
@@ -119,8 +162,11 @@ class RowGrid(Grid):
         else:
             self.rows = filternone(grid.canonical_rows())
 
-    def transform(t):
-        self.rows = t.apply(self.rows)
+    def transform(self, t):
+        copy = self.copy()
+        copy.rows = t.apply(copy.rows)
+        copy.rows = filter_empty(copy.rows)
+        return copy
 
     def canonical_cols(self):
         return canonical_cols(self.canonical_rows())
