@@ -50,14 +50,14 @@ def test_lib():
     import grid
     DATA = [
         [X, X, X, X, 1, 1, 1],
-        [X, X, 0, 0, 0, 0, 0], 
-        [1, 1, 0, 0, 1, 1, 0], 
+        [X, X, 1, 0, 1, 1, 0], 
+        [1, 1, 0, 0, 0, 1, 0], 
     ]
 
-    replace = l.Map(l.Match(l.Replace([0, 0], [1, 1])))
     g = grid.from2dlist(DATA)
     # g1 = g.transform(l.reduce_concat_equal)
-    g1 = g.transform(l.filter_contains_1)
+    # g1 = g.transform(l.filter_contains_1)
+    g1 = g.transform(l.intersperse_0)
     grid.display(g)
     grid.display(g1)
     print("--------------")
