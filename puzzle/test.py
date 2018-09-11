@@ -53,15 +53,10 @@ def test_lib():
         [X, X, 1, 0, 1, 1, 0], 
         [1, 1, 0, 0, 0, 1, 0], 
     ]
+    p = l.puzzle(DATA)
 
-    g = grid.from2dlist(DATA)
-    # g1 = g.transform(l.reduce_concat_equal)
-    # g1 = g.transform(l.filter_contains_1)
-    g1 = g.transform(l.intersperse_0)
-    grid.display(g)
-    grid.display(g1)
-    print("--------------")
-    print(g1)
+    p.push("intersperse_0")
+    p.display()
 
 
 if __name__ == "__main__":

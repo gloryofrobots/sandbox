@@ -9,7 +9,10 @@ If some of the rows are shorter than the following rows, their elements are skip
 >>> transpose [[10,11],[20],[],[30,31,32]]
 [[10,20,30],[11,31],[32]]
 """
+import grid
 import copy
+
+Any = -1
 
 
 def is_equal_lists(l1, l2):
@@ -93,13 +96,18 @@ class Contains(Func):
     def apply(self, vals):
         return self.val in vals
 
+
 class Zero(Func):
+
     def apply(self, *args):
         return 0
-        
+
+
 class One(Func):
+
     def apply(self, *args):
         return 1
+
 
 class Not(Func):
 
@@ -149,6 +157,7 @@ class Intersperse(Func):
             res.append(self.fn.apply(v))
         return res
 
+
 class Value:
 
     def __init__(self, v):
@@ -162,9 +171,12 @@ class Value:
     def apply(self, vals):
         return self.val
 
+
 class Identity:
+
     def apply(self, val):
         return val
+
 
 class Index:
 
@@ -189,6 +201,7 @@ class IndexValue:
 
         # print("MATCHES2", val == self.val)
         return val == self.val
+
 
 class Match(Func):
 
@@ -236,6 +249,7 @@ class Exact(Func):
         if vals == self.what:
             return self.val
         return None
+
 
 class Mask:
 
@@ -286,86 +300,200 @@ class ConcatEqualColumnsReducer(Reducer):
 # map (intersperse 1)
 # intersperse [1 1 1 1 1]
 
+class Transformation:
 
-reduce_concat_equal = Reduce(ConcatEqualColumnsReducer())
+    def __init__(self, name, fn):
+        self.name = name
+        self.fn = fn
 
-map_filter_0 = Map(
-    Filter(
-        Equal(0)
-    )
+    def apply(self, values):
+        return self.fn.apply(values)
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return self.__str__()
+
+class Puzzle:
+
+    def __init__(self, data, lib):
+        self.initial = grid.from2dlist(data)
+        self.history = [(self.initial, None)]
+        self.lib = lib
+
+    def current(self):
+        return self.history[len(self.history) - 1][0]
+
+    def push(self, name):
+        t = self.lib.get(name)
+        grid = self.current()
+        new_grid = grid.transform(t)
+        self.history.append((new_grid, t))
+
+    def display(self):
+        for g, t in self.history:
+            print("Transformation", t)
+            grid.display(g)
+
+
+
+class Lib:
+
+    def __init__(self):
+        self.trans = {}
+
+    def add(self, name, fn):
+        self.trans[name] = Transformation(name, fn)
+
+    def get(self, name):
+        return self.trans[name]
+
+lib = Lib()
+
+#################
+
+lib.add(
+    "reduce_concat_equal",
+    Reduce(ConcatEqualColumnsReducer())
 )
 
-map_filter_not_0 = Map(
-    Filter(
-        Not(
+#################
+
+lib.add(
+    "map_filter_0",
+    Map(
+        Filter(
             Equal(0)
         )
     )
 )
-map_filter_not_1 = Map(
-    Filter(
-        Not(
+
+#################
+
+lib.add(
+    "map_filter_not_0",
+    Map(
+        Filter(
+            Not(
+                Equal(0)
+            )
+        )
+    )
+)
+
+#################
+
+lib.add(
+    "map_filter_not_1",
+    Map(
+        Filter(
+            Not(
+                Equal(1)
+            )
+        )
+    )
+)
+
+#################
+
+lib.add(
+    "map_filter_1",
+    Map(
+        Filter(
             Equal(1)
         )
     )
 )
-map_filter_1 = Map(
+
+#################
+
+lib.add(
+    "filter_contains_0",
     Filter(
-        Equal(1)
+        Contains(0)
     )
 )
 
-filter_contains_0 = Filter(
-    Contains(0)
-)
+#################
 
-filter_contains_1 = Filter(
-    Contains(1)
-)
-
-replace_0_1 = Map(
-    Match(
-        Exact([0], [1])
+lib.add(
+    "filter_contains_1",
+    Filter(
+        Contains(1)
     )
 )
 
-replace_1_0 = Map(
-    Match(
-        Exact([0], [1])
-    )
-)
+#################
 
-Any = -1
-
-
-replace_0a_a = Map(
-    Match(
-        Mask(
-            [IndexValue(0, 0), IndexValue(1, Any)],
-            [Index(1)]
+lib.add(
+    "replace_0_1",
+    Map(
+        Match(
+            Exact([0], [1])
         )
     )
 )
 
-replace_0a_a0 = Map(
-    Match(
-        Mask(
-            [IndexValue(0, 0), IndexValue(1, Any)],
-            [Index(0), Value(0)]
+#################
+
+lib.add(
+    "replace_1_0",
+    Map(
+        Match(
+            Exact([0], [1])
         )
     )
 )
 
-replace_a1_1 = Map(
-    Match(
-        Mask(
-            [IndexValue(0, Any), IndexValue(1, 1)],
-            [Value(1)]
+#################
+
+lib.add(
+    "replace_0a_a",
+    Map(
+        Match(
+            Mask(
+                [IndexValue(0, 0), IndexValue(1, Any)],
+                [Index(1)]
+            )
         )
     )
 )
 
-intersperse_0 = Map(
+#################
+
+lib.add(
+    "replace_0a_a0",
+    Map(
+        Match(
+            Mask(
+                [IndexValue(0, 0), IndexValue(1, Any)],
+                [Index(0), Value(0)]
+            )
+        )
+    )
+)
+
+#################
+
+
+lib.add(
+    "replace_a1_1",
+    Map(
+        Match(
+            Mask(
+                [IndexValue(0, Any), IndexValue(1, 1)],
+                [Value(1)]
+            )
+        )
+    )
+)
+
+#################
+
+lib.add(
+    "intersperse_0",
+    Map(
         Match(
             Mask(
                 [Value(Any)],
@@ -373,6 +501,27 @@ intersperse_0 = Map(
             )
         )
     )
+)
+
+#################
+
+lib.add(
+    "intersperse_1",
+    Map(
+        Match(
+            Mask(
+                [Value(Any)],
+                [Index(0), Value(1)]
+            )
+        )
+    )
+)
+
+def puzzle(data, _lib=None):
+    if _lib is None:
+        _lib = lib
+
+    return Puzzle(data, lib)
 
 # intersperse_0 = Intersperse(Zero())
 # intersperse_1 = Intersperse(One())
