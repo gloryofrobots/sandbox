@@ -1,7 +1,5 @@
 import math
 import copy
-def calc_index(x, y, width):
-    return y * width + x;
 
 STRINGS = {}
 STRINGS[None] = " "
@@ -12,6 +10,11 @@ COLORS = [
     (195, 206, 190),
     (137, 168, 121)
 ]
+
+X = None
+
+def calc_index(x, y, width):
+    return y * width + x;
 
 def canonical_cols(rows):
     cols = []
@@ -76,13 +79,20 @@ class Grid:
         return copy.deepcopy(self)
 
     def __repr__(self):
-        return str(self)
+        return self.display()
 
     def __str__(self):
         rows = reversed(self.canonical_rows())
         crows = [" ".join(map(lambda v:STRINGS[v], r)) for r in rows]
         result = "\n".join(crows)
         return result
+
+    def display(self):
+        rows = list(reversed(self.canonical_rows()))
+        rows = ["%r" % r for r in rows]
+        s = "[\n    %s\n]" %  ",\n    ".join(rows)
+        s = s.replace("None", "X")
+        return s
 
 def from2dlist(arr):
     width = len(arr[0])
@@ -119,13 +129,6 @@ def from1dlist(arr, width):
     return DGrid(cols=cols)
     
 
-def display(g):
-    rows = list(reversed(g.canonical_rows()))
-    rows = ["%r" % r for r in rows]
-    print("----------")
-    s = "[\n    %s\n]" %  ",\n    ".join(rows)
-    s = s.replace("None", "X")
-    print(s)
 
 def filter_empty(arr):
     res = []

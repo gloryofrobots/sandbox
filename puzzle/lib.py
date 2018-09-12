@@ -9,7 +9,7 @@ If some of the rows are shorter than the following rows, their elements are skip
 >>> transpose [[10,11],[20],[],[30,31,32]]
 [[10,20,30],[11,31],[32]]
 """
-import grid
+from puzzle import grid
 import copy
 
 Any = -1
@@ -292,62 +292,35 @@ class ConcatEqualColumnsReducer(Reducer):
         return acc
 
 
-# filter (contains 1)
-# map (filter (not (contains 1)))
-# map (append [1])
-# map (map (replace 1 -> 0 1))
-# map (reverse)
-# map (intersperse 1)
-# intersperse [1 1 1 1 1]
-
-class Transformation:
-
-    def __init__(self, name, fn):
-        self.name = name
-        self.fn = fn
-
-    def apply(self, values):
-        return self.fn.apply(values)
-
-    def __str__(self):
-        return self.name
-
-    def __repr__(self):
-        return self.__str__()
-
-class Puzzle:
-
-    def __init__(self, data, lib):
-        self.initial = grid.from2dlist(data)
-        self.history = [(self.initial, None)]
-        self.lib = lib
-
-    def current(self):
-        return self.history[len(self.history) - 1][0]
-
-    def push(self, name):
-        t = self.lib.get(name)
-        grid = self.current()
-        new_grid = grid.transform(t)
-        self.history.append((new_grid, t))
-
-    def display(self):
-        for g, t in self.history:
-            print("Transformation", t)
-            grid.display(g)
-
-
-
 class Lib:
+    class Transformation:
+
+        def __init__(self, name, fn):
+            self.name = name
+            self.fn = fn
+
+        def apply(self, values):
+            return self.fn.apply(values)
+
+        def __str__(self):
+            return self.name
+
+        def __repr__(self):
+            return self.__str__()
+
 
     def __init__(self):
         self.trans = {}
 
     def add(self, name, fn):
-        self.trans[name] = Transformation(name, fn)
+        self.trans[name] = Lib.Transformation(name, fn)
 
     def get(self, name):
         return self.trans[name]
+
+#######################################################################
+##LIB DECLARATION #####################################################
+#######################################################################
 
 lib = Lib()
 
@@ -468,7 +441,7 @@ lib.add(
         Match(
             Mask(
                 [IndexValue(0, 0), IndexValue(1, Any)],
-                [Index(0), Value(0)]
+                [Index(1), Value(0)]
             )
         )
     )
@@ -517,12 +490,33 @@ lib.add(
     )
 )
 
-def puzzle(data, _lib=None):
-    if _lib is None:
-        _lib = lib
+#################
 
-    return Puzzle(data, lib)
+lib.add(
+    "append_0",
+    Map(
+        Append([0])
+    )
+)
+
+#################
+
+lib.add(
+    "append_1",
+    Map(
+        Append([1])
+    )
+)
+
 
 # intersperse_0 = Intersperse(Zero())
 # intersperse_1 = Intersperse(One())
 # intersperse_a_1a = Intersperse(One())
+
+# filter (contains 1)
+# map (filter (not (contains 1)))
+# map (append [1])
+# map (map (replace 1 -> 0 1))
+# map (reverse)
+# map (intersperse 1)
+# intersperse [1 1 1 1 1]
