@@ -142,6 +142,24 @@ def filter_empty(arr):
             res.append(a)
     return res
 
+def pad_end(lst):
+    res = copy.deepcopy(lst)
+    max_len = max([len(l) for l in res])
+    for l in res:
+        padding = ([None] * (max_len - len(l)))
+        l += padding
+    return res
+
+def remove_empty(lst):
+    res = []
+    for l in lst:
+        nl = []
+        for v in l:
+            if v is not None:
+                nl.append(v)
+        res.append(nl)
+    return res
+
 class ColGrid(Grid):
     def __init__(self, grid=None, cols=None):
         if cols is not None:
@@ -157,6 +175,7 @@ class ColGrid(Grid):
         copy.cols = t.apply(copy.cols)
         copy.cols = filter_empty(copy.cols)
         return copy
+
 
 class RowGrid(Grid):
     def __init__(self,grid=None, rows=None):
