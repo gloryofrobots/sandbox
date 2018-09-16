@@ -469,7 +469,7 @@ def map_filter(val):
     )
 
 def map_reject(val):
-    Map(
+    return Map(
         Filter(
             Not(
                 Equal(val)
@@ -544,10 +544,30 @@ lib.add(
     map_replace_exact([0], [1])
 )
 
+lib.add(
+    "map_replace_11_0",
+    map_replace_exact([1, 1], [0])
+)
+
+lib.add(
+    "map_replace_0_01",
+    map_replace_exact([0], [0, 1])
+)
+
 
 lib.add(
     "map_replace_1_0",
     map_replace_exact([1], [0])
+)
+
+lib.add(
+    "map_replace_0_2",
+    map_replace_exact([0], [2])
+)
+
+lib.add(
+    "map_replace_2_12",
+    map_replace_exact([2], [1, 2])
 )
 
 #################
@@ -565,6 +585,14 @@ lib.add(
     map_replace(
         [IndexValue(0, 0), IndexValue(1, Any)],
         [Index(1)]
+    )
+)
+
+lib.add(
+    "map_replace_a_1a",
+    map_replace(
+        [IndexValue(0, Any)],
+        [Value(1), Index(0)]
     )
 )
 
