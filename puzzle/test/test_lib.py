@@ -212,6 +212,16 @@ class TestLib(unittest.TestCase):
             ]
         )
 
-        self.p0.push("transpose")
-        self.p0.push("transpose")
-        self.p0.display()
+        self.assertGrid(
+            self.p2,
+            "map_swap",
+            [
+                [1, 0, 1, 1, 0, 0, 1],
+                [0, 0, 1, 0, 0, 0, 0],
+                [0, 1, 0, 0, 0, 0, 0],
+                [0, 0, 1, 0, 0, 1, 0]
+            ]
+        )
+
+        # self.p2.push("map_swap")
+        # self.p2.display()

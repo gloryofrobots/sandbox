@@ -10,7 +10,7 @@ If some of the rows are shorter than the following rows, their elements are skip
 [[10,20,30],[11,31],[32]]
 """
 from puzzle import grid
-import copy
+from copy import copy
 
 Any = -1
 
@@ -45,7 +45,7 @@ class Map(Func):
     def apply(self, values):
         res = []
         for v in values:
-            val = self.fn.apply(v)
+            val = self.fn.apply(copy(v))
             res.append(val)
         return res
 
@@ -56,8 +56,6 @@ class Reduce(Func):
         self.fn = fn
 
     def apply(self, values):
-        # print("REDUXE", values)
-        # vals = copy.copy(values)
         acc = self.fn.initialize(values)
         for i in range(1, len(values)):
             v = values[i]
@@ -73,8 +71,6 @@ class Scanl(Func):
         self.fn = fn
 
     def apply(self, values):
-        # print("REDUXE", values)
-        # vals = copy.copy(values)
         acc = values[0]
         res = []
         res.append(acc)
@@ -92,8 +88,6 @@ class Zip2(Func):
         pass
         
     def apply(self, values):
-        # print("REDUXE", values)
-        # vals = copy.copy(values)
         res = []
         
         for i in range(0, len(values), 2):
@@ -122,7 +116,7 @@ class Zip2(Func):
 class Reducer():
 
     def initialize(self, values):
-        return copy.copy(values[0])
+        return copy(values[0])
 
     # def initialize(self, value):
     #     return value
@@ -137,7 +131,7 @@ class Reducer():
 class ConcatEqualColumnsReducer(Reducer):
 
     def initialize(self, values):
-        return [copy.copy(values[0]), [copy.copy(values[0])]]
+        return [copy(values[0]), [copy(values[0])]]
 
     def finalize(self, state):
         # print("STATE", state)
@@ -152,8 +146,8 @@ class ConcatEqualColumnsReducer(Reducer):
             last += vals
             # print("CHECK AFTER", check is last, check, vals, acc, last)
         else:
-            state[0] = copy.copy(vals)
-            acc.append(copy.copy(vals))
+            state[0] = copy(vals)
+            acc.append(copy(vals))
             # print("CHECK AFTER2", check, vals, acc, last)
 
         # print("ACC2", last, acc)
@@ -162,9 +156,8 @@ class ConcatEqualColumnsReducer(Reducer):
 
 class BinaryReducer(Reducer):
 
-    def __init__(self, false_val, true_val):
-        self.true_val = true_val
-        self.false_val = false_val
+    def __init__(self):
+        pass
 
     def finalize(self, val):
         return [val]
@@ -173,27 +166,18 @@ class BinaryReducer(Reducer):
 class ANDReducer(BinaryReducer):
 
     def reduce(self, val, acc):
-        # print("AND", val, acc)
-        if acc == self.true_val and val == self.true_val:
-            return self.true_val
-        return self.false_val
+        return int(bool(val) and bool(acc))
 
 
 class XORReducer(BinaryReducer):
     def reduce(self, val, acc):
-        if acc == self.true_val and val == self.false_val:
-            return self.true_val
-        elif val == self.true_val and acc == self.false_val:
-            return self.true_val
-        return self.false_val
+        return int(bool(val) ^ bool(acc))
 
 
 class ORReducer(BinaryReducer):
 
     def reduce(self, val, acc):
-        if acc == self.true_val or val == self.true_val:
-            return self.true_val
-        return self.false_val
+        return int(bool(val) or bool(acc))
 
 class Sort(Func):
     def __init__(self, desc):
@@ -296,9 +280,16 @@ class Prepend(Func):
 class Delete(Func):
     def apply(self, values):
         res =  values[1: len(values)]
-        print("DEL", values, res)
         return res
 
+class SwapFirstLast(Func):
+    def apply(self, values):
+        if len(values) < 2:
+            return values
+        t = values[0]
+        values[0] = values[len(values) - 1]
+        values[len(values) - 1] = t
+        return values
 
 class Reverse(Func):
 
@@ -470,90 +461,110 @@ lib = Lib()
 
 #################
 
-lib.add(
-    "map_filter_0",
-    Map(
+def map_filter(val):
+    return Map(
         Filter(
-            Equal(0)
+            Equal(val)
         )
     )
+
+def map_reject(val):
+    Map(
+        Filter(
+            Not(
+                Equal(val)
+            )
+        )
+    )
+    
+    
+lib.add(
+    "map_filter_0",
+    map_filter(0)
 )
-
-#################
-
-# lib.add(
-#     "map_filter_not_0",
-#     Map(
-#         Filter(
-#             Not(
-#                 Equal(0)
-#             )
-#         )
-#     )
-# )
-
-#################
 
 lib.add(
     "map_filter_1",
-    Map(
-        Filter(
-            Equal(1)
-        )
-    )
+    map_filter(1)
 )
+
+lib.add(
+    "map_filter_2",
+    map_filter(2)
+)
+#################
+
+lib.add(
+    "map_reject_0",
+    map_reject(0)
+)
+
+lib.add(
+    "map_reject_1",
+    map_reject(1)
+)
+
+lib.add(
+    "map_reject_2",
+    map_reject(2)
+)
+
+#################
+
+def filter_contains(val):
+    return Filter(
+        Contains(val)
+    )
 
 #################
 
 lib.add(
     "filter_contains_0",
-    Filter(
-        Contains(0)
-    )
+    filter_contains(0)
 )
 
 #################
 
 lib.add(
     "filter_contains_1",
-    Filter(
-        Contains(1)
-    )
+    filter_contains(1)
 )
 
 #################
+
+def map_replace_exact(what, with_what):
+    return Map(
+        Match(
+            Exact(what, with_what)
+        )
+    )
 
 lib.add(
     "map_replace_0_1",
-    Map(
-        Match(
-            Exact([0], [1])
-        )
-    )
+    map_replace_exact([0], [1])
 )
 
-#################
 
 lib.add(
     "map_replace_1_0",
-    Map(
-        Match(
-            Exact([0], [1])
-        )
-    )
+    map_replace_exact([1], [0])
 )
 
 #################
+def map_replace(what, with_what):
+    return Map(
+        Match(
+            Mask(
+                what, with_what
+            )
+        )
+    )
 
 lib.add(
     "map_replace_0a_a",
-    Map(
-        Match(
-            Mask(
-                [IndexValue(0, 0), IndexValue(1, Any)],
-                [Index(1)]
-            )
-        )
+    map_replace(
+        [IndexValue(0, 0), IndexValue(1, Any)],
+        [Index(1)]
     )
 )
 
@@ -561,13 +572,9 @@ lib.add(
 
 lib.add(
     "map_replace_0a_a0",
-    Map(
-        Match(
-            Mask(
-                [IndexValue(0, 0), IndexValue(1, Any)],
-                [Index(1), Value(0)]
-            )
-        )
+    map_replace(
+        [IndexValue(0, 0), IndexValue(1, Any)],
+        [Index(1), Value(0)]
     )
 )
 
@@ -576,13 +583,9 @@ lib.add(
 
 lib.add(
     "map_replace_a1_1",
-    Map(
-        Match(
-            Mask(
-                [IndexValue(0, Any), IndexValue(1, 1)],
-                [Value(1)]
-            )
-        )
+    map_replace(
+            [IndexValue(0, Any), IndexValue(1, 1)],
+            [Value(1)]
     )
 )
 
@@ -590,13 +593,9 @@ lib.add(
 
 lib.add(
     "map_intersperse_0",
-    Map(
-        Match(
-            Mask(
-                [Value(Any)],
-                [Index(0), Value(0)]
-            )
-        )
+    map_replace(
+        [Value(Any)],
+        [Index(0), Value(0)]
     )
 )
 
@@ -604,13 +603,9 @@ lib.add(
 
 lib.add(
     "map_intersperse_1",
-    Map(
-        Match(
-            Mask(
-                [Value(Any)],
-                [Index(0), Value(1)]
-            )
-        )
+    map_replace(
+            [Value(Any)],
+            [Index(0), Value(1)]
     )
 )
 
@@ -653,21 +648,21 @@ lib.add(
 lib.add(
     "map_reduce_and",
     Map(
-        Reduce(ANDReducer(0, 1))
+        Reduce(ANDReducer())
     )
 )
 
 lib.add(
     "map_reduce_or",
     Map(
-        Reduce(ORReducer(0, 1))
+        Reduce(ORReducer())
     )
 )
 
 lib.add(
     "map_reduce_xor",
     Map(
-        Reduce(XORReducer(0, 1))
+        Reduce(XORReducer())
     )
 )
 
@@ -694,7 +689,7 @@ lib.add(
 lib.add(
     "map_scanl_and",
     Map(
-        Scanl(ANDReducer(0, 1))
+        Scanl(ANDReducer())
     )
 )
 
@@ -706,6 +701,11 @@ lib.add(
 lib.add(
     "map_delete",
     Map(Delete())
+)
+
+lib.add(
+    "map_swap",
+    Map(SwapFirstLast())
 )
 
 """
@@ -743,9 +743,6 @@ The nub function removes duplicate elements from a list. In particular, it keeps
 >>> nub [1,2,3,4,3,2,1,2,4,3,5]
 [1,2,3,4,5]
 
-delete x removes the first occurrence of x from its list argument. For example,
->>> delete 'a' "banana"
-"bnana"
 
 union :: Eq a => [a] -> [a] -> [a] Source#
 The union function returns the list union of the two lists. For example,
