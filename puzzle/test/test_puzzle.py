@@ -7,9 +7,9 @@ class TestPuzzle(unittest.TestCase):
 
     def assert_puzzle(self, data, expected, commands, display=False):
         p = puzzle.create(data)
+        print(p.current().canonical_rows())
         for name in commands:
             p.push(name)
-        # print(p.current().canonical_rows())
         if display:
             p.display()
         expected = list(reversed(expected))

@@ -164,12 +164,26 @@ class Grid:
         els = t.apply(els)
         els = filter_empty(els)
         return self.clone(els)
-        # copy = self.copy()
-        # els = t.apply(copy.cols)
-        # copy.cols = t.apply(copy.cols)
-        # copy.cols = filter_empty(copy.cols)
-        # return copy
 
+    def pad_back(self):
+        els = []
+        max_size = max([len(el) for el in self.els])
+        for e in self.els:
+            padding = ([None] * (max_size - len(e)))
+            el = e + padding
+            els.append(el)
+
+        return els
+
+    def pad_front(self):
+        els = []
+        max_size = max([len(el) for el in self.els])
+        for e in self.els:
+            padding = ([None] * (max_size - len(e)))
+            el = padding + e
+            els.append(el)
+
+        return els
 
 class ColGrid(Grid):
     def extract_from_grid(self, grid):
@@ -177,12 +191,6 @@ class ColGrid(Grid):
         
     def canonical_rows(self):
         return canonical_rows(self.canonical_cols())
-
-    # def transform(self, t):
-    #     copy = self.copy()
-    #     copy.cols = t.apply(copy.cols)
-    #     copy.cols = filter_empty(copy.cols)
-    #     return copy
 
 
 class RowGrid(Grid):
@@ -197,47 +205,21 @@ class RowGrid(Grid):
 class DGrid(ColGrid):
 
     def canonical_cols(self):
-        cols = []
-        max_height = max([len(col) for col in self.els])
-        for c in self.els:
-            padding = ([None] * (max_height - len(c)))
-            col = c + padding
-            cols.append(col)
-
-        return cols
+        return self.pad_back()
 
 
 class UGrid(ColGrid):
 
     def canonical_cols(self):
-        cols = []
-        max_height = max([len(col) for col in self.els])
-        for c in self.els:
-            padding = ([None] * (max_height - len(c)))
-            col = padding + c
-            cols.append(col)
-        return cols
-
-
-class LGrid(RowGrid):
-
-    def canonical_rows(self):
-        rows = []
-        max_width = max([len(row) for row in self.els])
-        for r in self.els:
-            padding = ([None] * (max_width - len(r)))
-            row = padding + r
-            rows.append(row)
-        return rows
-
+        return self.pad_front()
 
 class RGrid(RowGrid):
 
     def canonical_rows(self):
-        rows = []
-        max_width = max([len(row) for row in self.els])
-        for r in self.els:
-            padding = ([None] * (max_width - len(r)))
-            row = r + padding
-            rows.append(row)
-        return rows
+        return self.pad_back()
+
+class LGrid(RowGrid):
+
+    def canonical_rows(self):
+        return self.pad_front()
+
